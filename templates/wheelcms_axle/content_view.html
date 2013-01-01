@@ -1,0 +1,10 @@
+<p>
+<b>type info</b><br>
+{% for name, value in spoke.fields %}
+{{name}}: {{value}}<br>
+{% endfor %}
+<b>children</b>
+<br>
+{% for child in instance.children %}
+<a href="{{child.path}}">{{child.content.title}}</a><br>
+{% endfor %}
