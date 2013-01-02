@@ -1,5 +1,14 @@
 {% extends "two.bootstrap/base.html" %}
 
+{% block base_stylesheets %}
+    <link rel="stylesheet" href="/static/css/wheel.css" media="screen, projection, print"/>
+
+{% endblock %}
+
+{% block base_javascript %}
+    <script src="/static/js/wheel.js"></script>
+{% endblock %}
+
 {% block bodytop %}
 {% include "wheelcms_axle/toolbar.html" %}
 {% endblock %}

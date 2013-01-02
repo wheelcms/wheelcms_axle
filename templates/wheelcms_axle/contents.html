@@ -19,11 +19,11 @@ Content listing for {{instance.content.title}}<br>
   </thead>
   <tbody>
     {% for child in instance.children %}
-      <tr data-url="{{child.path}}">
+      <tr class="clickrow" data-url="{{child.path}}">
         <td><input name="selection" type="checkbox" value="{{child.path}}"></td>
         <td>{{child.content.title}}</td>
         <td>Published</td>
-        <td><i class="icon-edit"></td>
+        <td><a href="{{child.path}}/edit"><i class="icon-edit"></a></td>
       </tr>
     {% empty %}
       <tr>
