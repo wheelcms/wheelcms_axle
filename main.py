@@ -1,4 +1,4 @@
-from two.ol.base import RESTLikeHandler, applyrequest
+from two.ol.base import RESTLikeHandler, applyrequest, context
 from wheelcms_axle.models import Node, type_registry
 
 class WheelRESTHandler(RESTLikeHandler):
@@ -14,8 +14,21 @@ class MainHandler(WheelRESTHandler):
         super(MainHandler, self).update_context(request)
         self.context['type_registry'] = type_registry
 
+    @context
+    def spoke(self):
+        """ return type info for the current content, if any """
+        model = self.instance.content()
+        if model:
+            return type_registry.get(model.meta_type)(model)
+        return None
+
     def formclass(self, data=None, instance=None):
-        if not self.instance:
+        """
+            Find and initialize the appropriate form for the current
+            instance. Not consistently used XXX
+        """
+        if not self.instance or not self.instance.content():
+            ## there's no instance, or it's not attached to content
             return None
 
         type = self.instance.content().meta_type
@@ -127,12 +140,11 @@ class MainHandler(WheelRESTHandler):
 
     def view(self):
         """ frontpage / view """
-        self.context['instance'] = self.instance
-        model = self.instance.content()
-        if model:
-            self.context['spoke'] = type_registry.get(model.meta_type)(model)
         return self.template("wheelcms_axle/main.html")
 
     def list(self):
         self.instance = Node.root()
         return self.view()
+
+    def handle_list(self):
+        return self.template("wheelcms_axle/contents.html")

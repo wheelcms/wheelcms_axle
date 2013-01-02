@@ -12,7 +12,9 @@ Create "{{typeinfo.title}}" on "{{instance.content.title}}" {{instance.path}}
 <form method="post" action="." class="form-horizontal">
   {% csrf_token %}
   <input type="hidden" name="type" value="{{type}}">
-  <input type="hidden" name="attach" value="{{attach}}">
+  {% if attach %}
+  <input type="hidden" name="attach" value="1">
+  {% endif %}
   {% include "two.bootstrap/bootstrap-form.html" %}
   <div class="form-actions">
     <input class="btn primary" type="submit" value="Add">

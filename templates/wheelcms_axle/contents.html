@@ -1,0 +1,44 @@
+{% extends "wheelcms_axle/base.html" %}
+
+
+{% block base_main %}
+
+<p>
+{% if not spoke %}
+This node has no content attached.
+{% endif %}
+Content listing for {{instance.content.title}}<br>
+<b>children</b>
+<br>
+<table class="table table-condensed table-hover wheel-contentlist">
+  <thead>
+    <th><input class="toggle-all" type="checkbox"></th>
+    <th>Title</th>
+    <th>State</th>
+    <th></th>
+  </thead>
+  <tbody>
+    {% for child in instance.children %}
+      <tr data-url="{{child.path}}">
+        <td><input name="selection" type="checkbox" value="{{child.path}}"></td>
+        <td>{{child.content.title}}</td>
+        <td>Published</td>
+        <td><i class="icon-edit"></td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="4">No content</td>
+      </tr>
+    {% endfor %}
+    <tr>
+      <td colspan="4">
+        <button class="btn btn-small">Cut</button>
+        <button class="btn btn-small">Copy</button>
+        <button class="btn btn-small">Paste</button>
+        <button class="btn btn-small">Delete</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<a href="{{child.path}}">{{child.content.title}}</a><br>
+{% endblock %}
