@@ -2,5 +2,9 @@
 
 
 {% block base_main %}
+{% if spoke %}
 {% include spoke.view_template %}
+{% else %}
+This node has no content attached.
+{% endif %}
 {% endblock %}

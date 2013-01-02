@@ -59,21 +59,33 @@ class MainHandler(WheelRESTHandler):
     def create(self, *a, **b):
         type = self.request.REQUEST.get('type')
         formclass = type_registry.get(type).form
+        attach = self.request.REQUEST.get('attach', False)
 
         parent = self.parent
 
+        ## if attach: do not accept slug
         if self.post:
-            self.form = formclass(data=self.request.POST, parent=parent)
+            self.form = formclass(data=self.request.POST, parent=parent, attach=attach)
             if self.form.is_valid():
                 ## form validation should handle slug uniqueness (?)
                 p = self.form.save()
-                slug = self.form.cleaned_data['slug']
-                sub = parent.add(slug)
-                sub.set(p)
+                if attach:
+                    parent.set(p)
+                else:
+                    slug = self.form.cleaned_data['slug']
+                    sub = parent.add(slug)
+                    sub.set(p)
                 return self.redirect(parent.path or '/', success="Ok")
         else:
-            self.context['form'] = formclass()
-        self.context['type'] = self.request.REQUEST['type']
+            self.context['form'] = formclass(attach=attach)
+        ## Get spoke model
+        self.context['type'] = type = self.request.REQUEST['type']
+
+        typeinfo = type_registry.get(type)
+        self.context['typeinfo'] = dict(name=typeinfo.name, title=typeinfo.title)
+
+        self.context['attach'] = attach
+        self.context['instance'] = self.parent or '/'
         return self.template("wheelcms_axle/create.html")
 
     def update(self):

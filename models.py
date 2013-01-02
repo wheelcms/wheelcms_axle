@@ -179,7 +179,7 @@ class NodeBase(models.Model):
 
     def __unicode__(self):
         """ readable representation """
-        return u"path %s pos %d" % (self.path, self.position)
+        return u"path %s pos %d" % (self.path or '/', self.position)
 
 WHEEL_NODE_BASECLASS = NodeBase
 class Node(WHEEL_NODE_BASECLASS):

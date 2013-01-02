@@ -11,7 +11,6 @@
  
       <a class="brand" href="#">Wheel CMS</a>
  
-      <!-- Everything you want hidden at 940px or less, place within here -->
       <div class="nav-collapse collapse">
         <ul class="nav">
         <!-- .nav, .navbar-search, .navbar-form, etc -->
@@ -29,6 +28,25 @@
           <li><a href="{{instance.path}}/edit"><i class="icon-edit"></i> Edit {{instance.content.title}}</a></li>
         </ul>
       </div>
+      {% if not spoke %}
+      <div class="nav-collapse collapse">
+        <ul class="nav">
+        <!-- .nav, .navbar-search, .navbar-form, etc -->
+          <li class="dropup">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+              Attach
+              <b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu">
+              {% for name, info in type_registry.iteritems %}
+                <li><a href="{{instance.path}}/@/create?type={{name}}&attach=1">{{name}}</a></li>
+              {% endfor %}
+            </ul>
+          </li>
+          <li><a href="{{instance.path}}/edit"><i class="icon-edit"></i> Edit {{instance.content.title}}</a></li>
+        </ul>
+      </div>
+      {% endif %}
       <div class="pull-right">
         <ul class="nav">
           <li class="dropdown">

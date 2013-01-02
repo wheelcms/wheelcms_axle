@@ -2,12 +2,17 @@
 
 
 {% block base_main %}
+{% if attach %}
 <p>
-Create on Path: {{instance.path}} / {{instance.content.title}}
+Attach "{{typeinfo.title}}" on {{instance.path}}
 </p>
+{% else %}
+Create "{{typeinfo.title}}" on "{{instance.content.title}}" {{instance.path}}
+{% endif %}
 <form method="post" action="." class="form-horizontal">
   {% csrf_token %}
   <input type="hidden" name="type" value="{{type}}">
+  <input type="hidden" name="attach" value="{{attach}}">
   {% include "two.bootstrap/bootstrap-form.html" %}
   <div class="form-actions">
     <input class="btn primary" type="submit" value="Add">
