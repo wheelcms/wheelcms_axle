@@ -60,4 +60,6 @@ class TestMainHandler(object):
         create = handler.create()
         assert create['path'] == "wheelcms_axle/create.html"
         assert 'form' in create['context']
-        
+
+    def test_create_attach(self, client):
+        pytest.skip("Test attaching content in stead of creating")
