@@ -61,5 +61,16 @@ class TestMainHandler(object):
         assert create['path'] == "wheelcms_axle/create.html"
         assert 'form' in create['context']
 
+    def test_update_root(self, client):
+        """ test /edit """
+        root = Node.root()
+        Type1(node=root).save()
+        request = create_request("GET", "/edit")
+        instance = MainHandlerTestable.coerce(dict(instance=""))
+        handler = MainHandlerTestable(request=request, instance=instance)
+        update = handler.update()
+        assert update['path'] == "wheelcms_axle/update.html"
+        assert 'form' in update['context']
+
     def test_create_attach(self, client):
         pytest.skip("Test attaching content in stead of creating")

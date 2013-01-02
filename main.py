@@ -1,4 +1,4 @@
-from two.ol.base import RESTLikeHandler
+from two.ol.base import RESTLikeHandler, applyrequest
 from wheelcms_axle.models import Node, type_registry
 
 class WheelRESTHandler(RESTLikeHandler):
@@ -50,16 +50,25 @@ class MainHandler(WheelRESTHandler):
                 return cls.notfound()
 
         if i.get('instance') is not None:
-            d['instance'] = instance = Node.get(parent_path + '/' + i['instance'])
+            instance_path = i['instance']
+            if not instance_path:  ## it can be ""
+                path = parent_path
+            else:
+                path = parent_path + "/" + instance_path
+
+            d['instance'] = instance = Node.get(path)
 
             if instance is None:
                 return cls.notfound()
         return d
 
-    def create(self, *a, **b):
-        type = self.request.REQUEST.get('type')
+    @applyrequest
+    def create(self, type, attach=False, *a, **b):
+        """
+            Create new sub-content on a node or attach content to an
+            existing node.
+        """
         formclass = type_registry.get(type).form
-        attach = self.request.REQUEST.get('attach', False)
 
         parent = self.parent
 
