@@ -204,6 +204,11 @@ class TestNode(object):
         py.test.raises(DuplicatePathException, node.set_slug, "bbb")
         assert node.slug() == "bbb2"
 
+    def test_node_unattached(self, client):
+        """ a node without content attached """
+        root = Node.root()
+        assert root.content() is None
+
 class TestNodeBase(object):
     """ The base class of a node can be altered. """
 

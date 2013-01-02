@@ -107,9 +107,9 @@ class MainHandler(WheelRESTHandler):
     def view(self):
         """ frontpage / view """
         self.context['instance'] = self.instance
-        # import pdb; pdb.set_trace()
-        
-        self.context['spoke'] = type_registry.get(self.instance.content().meta_type)(self.instance.content())
+        model = self.instance.content()
+        if model:
+            self.context['spoke'] = type_registry.get(model.meta_type)(model)
         return self.template("wheelcms_axle/main.html")
 
     def list(self):

@@ -32,7 +32,10 @@ class NodeBase(models.Model):
         abstract = True
 
     def content(self):
-        return self.contentbase.content()
+        try:
+            return self.contentbase.content()
+        except Content.DoesNotExist:
+            return None
 
     @classmethod
     def get(cls, path):
