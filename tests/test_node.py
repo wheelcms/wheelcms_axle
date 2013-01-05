@@ -209,6 +209,10 @@ class TestNode(object):
         root = Node.root()
         assert root.content() is None
 
+    def test_root_lookup(self, client):
+        """ get("") should implicitly create root node """
+        assert Node.get("").isroot()
+
 class TestNodeBase(object):
     """ The base class of a node can be altered. """
 

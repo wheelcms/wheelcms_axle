@@ -43,6 +43,9 @@ class NodeBase(models.Model):
         try:
             return cls.objects.get(path=path)
         except cls.DoesNotExist:
+            if path == "":
+                return cls.root()
+
             return None
 
     def set(self, content, replace=False):
