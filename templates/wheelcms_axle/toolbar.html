@@ -27,7 +27,7 @@
             </ul>
             </div>
           </li>
-          {% if toolbar_status != "update" %}
+          {% if toolbar_status != "update" and spoke %}
           <li><div><a class="btn btn-mini" href="{{instance.path}}/edit"><i class="icon-edit"></i> Edit</a></div></li>
           {% endif %}
           {% if toolbar_status != "list" %}
