@@ -27,10 +27,16 @@
             </ul>
             </div>
           </li>
-          <li><div><a class="btn btn-mini" href="{{instance.path}}/edit"><i class="icon-edit"></i> Edit {{instance.content.title}}</a></div></li>
+          {% if toolbar_status != "update" %}
+          <li><div><a class="btn btn-mini" href="{{instance.path}}/edit"><i class="icon-edit"></i> Edit</a></div></li>
+          {% endif %}
+          {% if toolbar_status != "list" %}
           <li><div><a class="btn btn-mini" href="{{instance.path}}/list"><i class="icon-list"></i> Contents</a></div></li>
+          {% endif %}
           <!-- make the button toggle -->
-          <li><div><a class="btn btn-mini" href="{{instance.path}}"><i class="icon-eye-open"></i> View</a></div></li>
+          {% if toolbar_status != "view" %}
+          <li><div><a class="btn btn-mini" href="{{instance.path|default:'/'}}"><i class="icon-eye-open"></i> View</a></div></li>
+          {% endif %}
         </ul>
       </div>
       {% if not spoke %}

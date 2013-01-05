@@ -136,10 +136,12 @@ class MainHandler(WheelRESTHandler):
             self.context['form'] = formclass(parent=parent,
                              initial=dict(slug=slug), instance=instance.content())
 
+        self.context['toolbar_status'] = 'update'
         return self.template("wheelcms_axle/update.html")
 
     def view(self):
         """ frontpage / view """
+        self.context['toolbar_status'] = 'view'
         return self.template("wheelcms_axle/main.html")
 
     def list(self):
@@ -147,4 +149,5 @@ class MainHandler(WheelRESTHandler):
         return self.view()
 
     def handle_list(self):
+        self.context['toolbar_status'] = 'list'
         return self.template("wheelcms_axle/contents.html")
