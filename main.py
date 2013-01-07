@@ -101,13 +101,14 @@ class MainHandler(WheelRESTHandler):
         else:
             self.context['form'] = formclass(attach=attach)
         ## Get spoke model
-        self.context['type'] = type = self.request.REQUEST['type']
+        self.context['type'] = type
 
         typeinfo = type_registry.get(type)
         self.context['typeinfo'] = dict(name=typeinfo.name, title=typeinfo.title)
 
         self.context['attach'] = attach
         self.context['instance'] = self.parent or '/'
+        self.context['breadcrumb'] = self.breadcrumb(operation="Create")
         return self.template("wheelcms_axle/create.html")
 
     def update(self):
@@ -137,7 +138,37 @@ class MainHandler(WheelRESTHandler):
                              initial=dict(slug=slug), instance=instance.content())
 
         self.context['toolbar_status'] = 'update'
+        self.context['breadcrumb'] = self.breadcrumb(operation="Edit")
         return self.template("wheelcms_axle/update.html")
+
+    @context
+    def breadcrumb(self, operation=""):
+        """ generate breadcrumb path. """
+        base = self.instance or self.parent
+        if not base:
+            ## parent
+            return []
+
+        parts = base.path.split("/")
+        res = []
+        for i in range(len(parts)):
+            subpath = "/".join(parts[:i+1])
+            node = Node.get(subpath)
+            content = node.content()
+            ## last entry should not get path
+
+            path = subpath or '/'
+            if not operation:
+                if i == len(parts) - 1:
+                    path = ""
+
+            title = content.title if content else "Unattached node %s" % (subpath or '/')
+            res.append((title, path))
+
+        if operation:
+            res.append((operation, ""))
+
+        return res
 
     def view(self):
         """ frontpage / view """
@@ -150,4 +181,5 @@ class MainHandler(WheelRESTHandler):
 
     def handle_list(self):
         self.context['toolbar_status'] = 'list'
+        self.context['breadcrumb'] = self.breadcrumb(operation="Contents")
         return self.template("wheelcms_axle/contents.html")
