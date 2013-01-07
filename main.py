@@ -22,6 +22,14 @@ class MainHandler(WheelRESTHandler):
             return type_registry.get(model.meta_type)(model)
         return None
 
+    @context
+    def content(self):
+        """ return the actual content for the node / spoke """
+        modelinstance = self.instance.content()
+        if modelinstance:
+            return modelinstance
+        return None
+
     def formclass(self, data=None, instance=None):
         """
             Find and initialize the appropriate form for the current
