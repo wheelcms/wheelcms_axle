@@ -3,4 +3,7 @@ $(document).ready(function() {
     $("tr.clickrow").live('click', function() {
         document.location = $(this).data('url');
     });
+    // enable sorting
+    $(".sortable").sortable();
+
 });

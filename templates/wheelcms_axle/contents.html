@@ -17,7 +17,7 @@ Content listing for {{instance.content.title}}<br>
     <th>State</th>
     <th></th>
   </thead>
-  <tbody>
+  <tbody class="sortable">
     {% for child in instance.children %}
       <tr class="clickrow" data-url="{{child.path}}/list">
         <td><input name="selection" type="checkbox" value="{{child.path}}"></td>
