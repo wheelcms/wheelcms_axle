@@ -1,5 +1,6 @@
 from two.ol.base import RESTLikeHandler, applyrequest, context
 from wheelcms_axle.models import Node, type_registry
+from wheelcms_axle.toolbar import Toolbar
 
 class WheelRESTHandler(RESTLikeHandler):
     pass
@@ -12,7 +13,6 @@ class MainHandler(WheelRESTHandler):
 
     def update_context(self, request):
         super(MainHandler, self).update_context(request)
-        self.context['type_registry'] = type_registry
 
     @context
     def spoke(self):
@@ -122,11 +122,14 @@ class MainHandler(WheelRESTHandler):
         self.context['attach'] = attach
         self.context['instance'] = self.parent or '/'
         self.context['breadcrumb'] = self.breadcrumb(operation="Create")
+        self.context['toolbar'] = Toolbar(self.instance, status="create")
         return self.template("wheelcms_axle/create.html")
 
     def update(self):
         instance = self.instance
         parent = instance.parent()
+
+        self.context['toolbar'] = Toolbar(self.instance, status="edit")
 
         type = instance.content().meta_type
         typeinfo = type_registry.get(type)
@@ -150,10 +153,11 @@ class MainHandler(WheelRESTHandler):
             self.context['form'] = formclass(parent=parent,
                              initial=dict(slug=slug), instance=instance.content())
 
-        self.context['toolbar_status'] = 'update'
+        self.context['toolbar'].status = 'update'
         self.context['breadcrumb'] = self.breadcrumb(operation="Edit")
         return self.template("wheelcms_axle/update.html")
 
+        
     @context
     def breadcrumb(self, operation=""):
         """ generate breadcrumb path. """
@@ -192,7 +196,7 @@ class MainHandler(WheelRESTHandler):
 
     def view(self):
         """ frontpage / view """
-        self.context['toolbar_status'] = 'view'
+        self.context['toolbar'] = Toolbar(self.instance)
         return self.template("wheelcms_axle/main.html")
 
     def list(self):
@@ -200,6 +204,6 @@ class MainHandler(WheelRESTHandler):
         return self.view()
 
     def handle_list(self):
-        self.context['toolbar_status'] = 'list'
+        self.context['toolbar'] = Toolbar(self.instance, status="list")
         self.context['breadcrumb'] = self.breadcrumb(operation="Contents")
         return self.template("wheelcms_axle/contents.html")
