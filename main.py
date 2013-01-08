@@ -170,7 +170,14 @@ class MainHandler(WheelRESTHandler):
                 if i == len(parts) - 1:
                     path = ""
 
-            title = content.title if content else "Unattached node %s" % (subpath or '/')
+            if node.isroot():
+                if content:
+                    title = "Home"
+                else:
+                    title = "Unattached rootnode"
+            else:
+                title = content.title if content \
+                                      else "Unattached node %s" % (subpath or '/')
             res.append((title, path))
 
         if operation:
