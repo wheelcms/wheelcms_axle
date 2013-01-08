@@ -89,13 +89,18 @@ class MainHandler(WheelRESTHandler):
             Create new sub-content on a node or attach content to an
             existing node.
         """
+        # import pdb; pdb.set_trace()
+        
         formclass = type_registry.get(type).form
 
         parent = self.parent
 
         ## if attach: do not accept slug
         if self.post:
-            self.form = formclass(data=self.request.POST, parent=parent, attach=attach)
+            self.context['form'] = self.form = formclass(data=self.request.POST,
+                                                         parent=parent,
+                                                         attach=attach,
+                                                         files=self.request.FILES)
             if self.form.is_valid():
                 ## form validation should handle slug uniqueness (?)
                 p = self.form.save()

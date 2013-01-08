@@ -9,7 +9,8 @@ Attach "{{typeinfo.title}}" on {{instance.path}}
 {% else %}
 Create "{{typeinfo.title}}" on "{{instance.content.title}}" {{instance.path}}
 {% endif %}
-<form method="post" action="." class="form-horizontal">
+<form method="post" action="." class="form-horizontal" 
+  {% if form.is_multipart %}enctype="multipart/form-data"{%endif%}>
   {% csrf_token %}
   <input type="hidden" name="type" value="{{type}}">
   {% if attach %}
