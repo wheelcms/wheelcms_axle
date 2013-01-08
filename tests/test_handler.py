@@ -83,15 +83,16 @@ class TestBreadcrumb(object):
         root = Node.root()
         request = create_request("GET", "/edit")
         handler = MainHandlerTestable(request=request, instance=root)
-        assert handler.breadcrumb() == [("Unattached node /", '')]
+        assert handler.breadcrumb() == [("Unattached rootnode", '')]
 
     def test_attached_root(self, client):
-        """ A root node with content attached """
+        """ A root node with content attached. Its name should not be
+            its title but 'Home' """
         root = Node.root()
-        Type1(node=root, title="Root").save()
+        Type1(node=root, title="The rootnode of this site").save()
         request = create_request("GET", "/")
         handler = MainHandlerTestable(request=request, instance=root)
-        assert handler.breadcrumb() == [("Root", '')]
+        assert handler.breadcrumb() == [("Home", '')]
 
     def test_sub(self, client):
         """ a child with content under the root """
@@ -102,11 +103,11 @@ class TestBreadcrumb(object):
         request = create_request("GET", "/")
 
         handler = MainHandlerTestable(request=request, instance=child)
-        assert handler.breadcrumb() == [("Root", '/'), ("Child", "")]
+        assert handler.breadcrumb() == [("Home", '/'), ("Child", "")]
 
         ## root should ignore child
         handler = MainHandlerTestable(request=request, instance=root)
-        assert handler.breadcrumb() == [("Root", '')]
+        assert handler.breadcrumb() == [("Home", '')]
 
     def test_subsub(self, client):
         """ a child with content under the root """
@@ -119,12 +120,12 @@ class TestBreadcrumb(object):
         request = create_request("GET", "/")
 
         handler = MainHandlerTestable(request=request, instance=child2)
-        assert handler.breadcrumb() == [("Root", '/'), ("Child", "/child"),
+        assert handler.breadcrumb() == [("Home", '/'), ("Child", "/child"),
                                         ("Child2", "")]
 
         ## root should ignore child
         handler = MainHandlerTestable(request=request, instance=root)
-        assert handler.breadcrumb() == [("Root", '')]
+        assert handler.breadcrumb() == [("Home", '')]
 
     def test_subsub_unattached(self, client):
         """ a child with content under the root, lowest child unattached """
@@ -136,7 +137,7 @@ class TestBreadcrumb(object):
         request = create_request("GET", "/")
 
         handler = MainHandlerTestable(request=request, instance=child2)
-        assert handler.breadcrumb() == [("Root", '/'), ("Child", "/child"),
+        assert handler.breadcrumb() == [("Home", '/'), ("Child", "/child"),
                                         ("Unattached node /child/child2", "")]
 
     def test_parent_instance(self, client):
@@ -162,7 +163,7 @@ class TestBreadcrumb(object):
 
         handler = MainHandlerTestable(request=request, instance=child2)
         assert handler.breadcrumb(operation="Edit") == [
-            ("Root", '/'), ("Child", "/child"),
+            ("Home", '/'), ("Child", "/child"),
             ("Child2", "/child/child2"), ("Edit", "")]
 
     def test_create(self, client):
@@ -176,7 +177,7 @@ class TestBreadcrumb(object):
         handler = MainHandlerTestable(request=request, instance=child)
         context = handler.create(type="type1")['context']
         assert 'breadcrumb' in context
-        assert context['breadcrumb'] == [('Root', '/'), ('Child', '/child'),
+        assert context['breadcrumb'] == [('Home', '/'), ('Child', '/child'),
                                          ('Create', '')]
 
     def test_update(self, client):
@@ -190,5 +191,5 @@ class TestBreadcrumb(object):
         handler = MainHandlerTestable(request=request, instance=child)
         context = handler.update()['context']
         assert 'breadcrumb' in context
-        assert context['breadcrumb'] == [('Root', '/'), ('Child', '/child'),
+        assert context['breadcrumb'] == [('Home', '/'), ('Child', '/child'),
                                          ('Edit', '')]
