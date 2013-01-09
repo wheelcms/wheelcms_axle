@@ -18,10 +18,12 @@ Content listing for {{instance.content.title}}<br>
     <th></th>
   </thead>
   <tbody class="sortable">
-    <tr>
-      <td></td>
+    {% if not instance.isroot %}
+    <tr class="clickrow" data-url="{{instance.parent.path}}/list">
+      <td><i class="icon-circle-arrow-left"></i></td>
       <td colspan="3">.. (parent)</td>
     </tr>
+    {% endif %}
     {% for child in instance.children %}
       <tr class="clickrow sortablerow" data-url="{{child.path}}/list">
         <td><input name="selection" type="checkbox" value="{{child.path}}"></td>
