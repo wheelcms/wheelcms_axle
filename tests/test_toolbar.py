@@ -93,9 +93,11 @@ class TestToolbar(object):
                 return DummyContent()
 
         toolbar = Toolbar(DummyNode(), "view")
-        # assert toolbar.show_create()
         assert toolbar.children() == []
+        assert not toolbar.show_create()
 
-    def test_show_create(self, client):
-        pass
+    def test_show_create_status_create(self, client):
+        node = Node.root()
+        toolbar = Toolbar(node, "create")
+        assert not toolbar.show_create()
 
