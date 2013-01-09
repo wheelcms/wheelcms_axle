@@ -18,8 +18,12 @@ Content listing for {{instance.content.title}}<br>
     <th></th>
   </thead>
   <tbody class="sortable">
+    <tr>
+      <td></td>
+      <td colspan="3">.. (parent)</td>
+    </tr>
     {% for child in instance.children %}
-      <tr class="clickrow" data-url="{{child.path}}/list">
+      <tr class="clickrow sortablerow" data-url="{{child.path}}/list">
         <td><input name="selection" type="checkbox" value="{{child.path}}"></td>
         <td>{{child.content.title}}</td>
         <td>Published</td>

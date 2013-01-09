@@ -4,6 +4,8 @@ $(document).ready(function() {
         document.location = $(this).data('url');
     });
     // enable sorting
-    $(".sortable").sortable();
+    $(".sortable").sortable({
+        items: "tr.sortablerow"
+    });
 
 });
