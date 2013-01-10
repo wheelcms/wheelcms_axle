@@ -11,9 +11,9 @@
 
 <div class="nav-collapse">
   <ul class="nav">
-    {% for node in toplevel %}
-      <li {% if active %}class="active"{% endif %}>
-        <a href="{{node.path}}">{{node.content.title}}</a></li>
+    {% for item in toplevel %}
+      <li {% if item.active %}class="active"{% endif %}>
+        <a href="{{item.node.path}}">{{item.node.content.title}}</a></li>
     {% endfor %}
   </ul>
 </div>

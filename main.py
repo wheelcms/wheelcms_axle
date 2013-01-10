@@ -21,10 +21,18 @@ class MainHandler(WheelRESTHandler):
             show unpublished/not in navigation?
             
             Return Node or Spokes?
-
-            # XXX find/set active
         """
-        return queries.toplevel_visible_children()
+        context = self.parent
+        if self.instance:
+            context = self.instance
+
+        for child in queries.toplevel_visible_children():
+            ## make sure /foo/bar does not match in /football by adding the /
+            if child == context or context.path.startswith(child.path + '/'):
+                yield dict(active=True, node=child)
+            else:
+                yield dict(active=False, node=child)
+                
 
     @context
     def spoke(self):
