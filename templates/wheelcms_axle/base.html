@@ -2,7 +2,21 @@
 
 {% block base_stylesheets %}
     <link rel="stylesheet" href="/static/css/wheel.css" media="screen, projection, print"/>
+{% endblock %}
 
+{% block topbar %}
+{% block logo %}
+<a class="brand" href="/">Sample</a>
+{% endblock %}
+
+<div class="nav-collapse">
+  <ul class="nav">
+    {% for node in toplevel %}
+      <li {% if active %}class="active"{% endif %}>
+        <a href="{{node.path}}">{{node.content.title}}</a></li>
+    {% endfor %}
+  </ul>
+</div>
 {% endblock %}
 
 {% block base_javascript %}

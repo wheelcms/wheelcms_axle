@@ -1,6 +1,7 @@
 from two.ol.base import RESTLikeHandler, applyrequest, context
 from wheelcms_axle.models import Node, type_registry
 from wheelcms_axle.toolbar import Toolbar
+from wheelcms_axle import queries
 
 class WheelRESTHandler(RESTLikeHandler):
     pass
@@ -13,6 +14,17 @@ class MainHandler(WheelRESTHandler):
 
     def update_context(self, request):
         super(MainHandler, self).update_context(request)
+    
+    @context
+    def toplevel(self):
+        """ return toplevel navigatable/visible items. Perhaps, when logged in,
+            show unpublished/not in navigation?
+            
+            Return Node or Spokes?
+
+            # XXX find/set active
+        """
+        return queries.toplevel_visible_children()
 
     @context
     def spoke(self):
