@@ -229,6 +229,7 @@ class ContentBase(models.Model):
             self.state = self.spoke().workflow().default
 
         super(ContentBase, self).save(*a, **b)
+        return self  ## foo = x.save() is nice
 
     def content(self):
         if self.meta_type:
