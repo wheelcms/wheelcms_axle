@@ -10,6 +10,7 @@ class TestContentCreate(object):
         root = Node.root()
         form = formfactory(Type1)(parent=root,
                                   data=dict(title="hello", slug="world"))
+        # import pytest; pytest.set_trace()
         assert form.is_valid()
         assert form.cleaned_data['slug'] == "world"
         tp1 = form.save()

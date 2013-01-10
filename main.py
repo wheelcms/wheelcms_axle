@@ -19,7 +19,7 @@ class MainHandler(WheelRESTHandler):
         """ return type info for the current content, if any """
         model = self.instance.content()
         if model:
-            return type_registry.get(model.meta_type)(model)
+            return model.spoke()
         return None
 
     @context

@@ -1,5 +1,6 @@
 from django.db import models, IntegrityError
 from django.utils import timezone
+from wheelcms_axle.workflows.default import DefaultWorkflow
 
 import re
 import datetime
@@ -222,11 +223,25 @@ class ContentBase(models.Model):
         self.modified = timezone.now()
         if self.created is None:
             self.created = timezone.now()
+        ## find associated spoke to find workflow default?
+        ## if not self.state and state not in b, get default from spoke
+        if not self.state and 'state' not in b:
+            self.state = self.spoke().workflow().default
+
         super(ContentBase, self).save(*a, **b)
 
     def content(self):
         if self.meta_type:
             return getattr(self, self.meta_type)
+
+    def spoke(self):
+        """ return the spoke for this model """
+        return type_registry.get(self.meta_type)(self)
+
+    @classmethod
+    def get_name(cls):
+        ## include app_label ? #486
+        return cls._meta.object_name.lower()
 
     def __unicode__(self):
         try:
