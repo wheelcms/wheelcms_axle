@@ -52,8 +52,8 @@
               <b class="caret"></b>
             </a>
             <ul class="dropdown-menu">
-              {% for name, info in type_registry.iteritems %}
-                <li><a href="{{instance.path}}/@/create?type={{name}}&attach=1">{{name}}</a></li>
+              {% for type in toolbar.children %}
+                <li><a href="{{instance.path}}/@/create?type={{type.name}}&attach=1">{{type.name}}</a></li>
               {% endfor %}
             </ul>
             </div>
