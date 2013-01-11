@@ -19,7 +19,7 @@ class MainHandler(WheelRESTHandler):
     def toplevel(self):
         """ return toplevel navigatable/visible items. Perhaps, when logged in,
             show unpublished/not in navigation?
-            
+
             Return Node or Spokes?
         """
         context = self.parent
@@ -32,7 +32,7 @@ class MainHandler(WheelRESTHandler):
                 yield dict(active=True, node=child)
             else:
                 yield dict(active=False, node=child)
-                
+
 
     @context
     def spoke(self):
@@ -109,21 +109,23 @@ class MainHandler(WheelRESTHandler):
             Create new sub-content on a node or attach content to an
             existing node.
         """
-        # import pdb; pdb.set_trace()
-        
         formclass = type_registry.get(type).form
 
         parent = self.parent
 
         ## if attach: do not accept slug
         if self.post:
-            self.context['form'] = self.form = formclass(data=self.request.POST,
-                                                         parent=parent,
-                                                         attach=attach,
-                                                         files=self.request.FILES)
+            self.context['form'] = \
+            self.form = formclass(data=self.request.POST,
+                                  parent=parent,
+                                  attach=attach,
+                                  files=self.request.FILES)
             if self.form.is_valid():
                 ## form validation should handle slug uniqueness (?)
-                p = self.form.save()
+                p = self.form.save(commit=False)
+                if self.user().is_authenticated():
+                    p.owner = self.user()
+                p.save()
                 if attach:
                     parent.set(p)
                 else:

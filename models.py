@@ -1,6 +1,7 @@
 from django.db import models, IntegrityError
 from django.utils import timezone
 from wheelcms_axle.workflows.default import DefaultWorkflow
+from django.contrib.auth.models import User
 
 import re
 import datetime
@@ -212,6 +213,9 @@ class ContentBase(models.Model):
     navigation = models.BooleanField(default=False)
 
     meta_type = models.CharField(max_length=20)
+
+    ## can be null for now, should move to null=False eventually
+    owner = models.ForeignKey(User, null=True)
 
     class Meta:
         abstract = True
