@@ -1,5 +1,5 @@
 from two.ol.base import RESTLikeHandler, applyrequest, context
-from wheelcms_axle.models import Node, type_registry
+from wheelcms_axle.models import Node, type_registry, Content
 from wheelcms_axle.toolbar import Toolbar
 from wheelcms_axle import queries
 
@@ -66,7 +66,11 @@ class MainHandler(WheelRESTHandler):
 
         typeinfo = type_registry.get(type)
         parent = self.instance.parent()
-        return typeinfo.form(parent=parent, data=data, instance=instance)
+        try:
+            content = instance.content()
+        except Content.DoesNotExist:
+            content = None
+        return typeinfo.form(parent=parent, data=data, instance=content)
 
     @classmethod
     def coerce(cls, i):
@@ -148,6 +152,7 @@ class MainHandler(WheelRESTHandler):
         return self.template("wheelcms_axle/create.html")
 
     def update(self):
+        # import pytest; pytest.set_trace()
         instance = self.instance
         parent = instance.parent()
 
@@ -166,8 +171,8 @@ class MainHandler(WheelRESTHandler):
             if form.is_valid():
                 form.save()
                 ## handle changed slug
-                slug = form.cleaned_data['slug']
-                if slug != self.instance.slug():
+                slug = form.cleaned_data.get('slug', None)
+                if slug and slug != self.instance.slug():
                     self.instance.set_slug(slug)
 
                 return self.redirect(instance.path, success="Updated")

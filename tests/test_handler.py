@@ -2,7 +2,7 @@ from wheelcms_axle.main import MainHandler
 from wheelcms_axle.models import Node
 from wheelcms_axle.tests.models import Type1
 
-from two.ol.base import NotFound
+from two.ol.base import NotFound, Redirect
 import pytest
 
 from twotest.util import create_request
@@ -75,6 +75,31 @@ class TestMainHandler(object):
     def test_create_attach(self, client):
         pytest.skip("Test attaching content in stead of creating")
 
+    def test_create_post(self, client):
+        request = create_request("POST", "/@/create",
+                                 data=dict(title="Test",
+                                           slug="test"))
+        root = Node.root()
+        handler = MainHandler(request=request, post=True,
+                              instance=dict(parent=root))
+        pytest.raises(Redirect, handler.create, type="type1")
+
+        node = Node.get("/test")
+        assert node.contentbase.title == "Test"
+
+    def test_update_post(self, client):
+        root = Node.root()
+        # import pytest; pytest.set_trace()
+        Type1(node=root, title="Hello").save()
+        request = create_request("POST", "/edit",
+                                 data=dict(title="Test",
+                                           slug=""))
+        root = Node.root()
+        handler = MainHandler(request=request, post=True, instance=root)
+        pytest.raises(Redirect, handler.update)
+
+        root = Node.root()
+        assert root.contentbase.title == "Test"
 
 class TestBreadcrumb(object):
     """ test breadcrumb generation by handler """
@@ -166,7 +191,7 @@ class TestBreadcrumb(object):
             ("Home", '/'), ("Child", "/child"),
             ("Child2", "/child/child2"), ("Edit", "")]
 
-    def test_create(self, client):
+    def test_create_get(self, client):
         """ create should override and add Create operation crumb """
         root = Node.root()
         Type1(node=root, title="Root").save()
