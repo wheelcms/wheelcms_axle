@@ -2,8 +2,24 @@ from django.db import models, IntegrityError
 from django.utils import timezone
 from django.contrib.auth.models import User
 
+from userena.models import UserenaLanguageBaseProfile
+
 import re
 import datetime
+## import pytz
+
+from django.utils.translation import ugettext as _
+
+class WheelProfile(UserenaLanguageBaseProfile):
+    """ timezone, ... ?
+    """
+    ##timezone = models.CharField(max_length=100, default=config.DEFAULT_TIMEZONE,
+    ##    choices=[(x, x) for x in pytz.common_timezones])
+    inform = models.BooleanField(default=False)
+    user = models.OneToOneField(User,
+                                unique=True,
+                                verbose_name=_('user'),
+                                related_name='my_profile')
 
 class NodeException(Exception):
     """ Base class for all Node exceptions """
