@@ -173,7 +173,7 @@ class MainHandler(WheelRESTHandler):
                 ## handle changed slug
                 slug = form.cleaned_data.get('slug', None)
                 if slug and slug != self.instance.slug():
-                    self.instance.set_slug(slug)
+                    self.instance.rename(slug)
 
                 return self.redirect(instance.path, success="Updated")
         else:

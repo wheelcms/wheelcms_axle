@@ -1,22 +1,24 @@
 from django.db import models, IntegrityError
 from django.utils import timezone
-from wheelcms_axle.workflows.default import DefaultWorkflow
 from django.contrib.auth.models import User
 
 import re
 import datetime
 
 class NodeException(Exception):
-    pass
+    """ Base class for all Node exceptions """
 
 class DuplicatePathException(NodeException):
-    pass
+    """ the path is already in use """
 
 class InvalidPathException(NodeException):
-    pass
+    """ The path contains non-valid chars or is too short """
 
 class NodeInUse(NodeException):
-    pass
+    """ the node already has content attached to it """
+
+class CantRenameRoot(NodeException):
+    """ the root's path is "" which cannot be changed """
 
 class NodeBase(models.Model):
     ROOT_PATH = ""
@@ -174,11 +176,19 @@ class NodeBase(models.Model):
         """ last part of self.path """
         return self.path.rsplit("/", 1)[-1]
 
-    def set_slug(self, slug):
+    def rename(self, slug):
         """ change the slug """
+        if self.isroot():
+            raise CantRenameRoot()
+
         newpath = self.path.rsplit("/", 1)[0] + "/" + slug
         if Node.objects.filter(path=newpath).count():
             raise DuplicatePathException(newpath)
+        ## do something transactionish?
+        for childs in Node.objects.filter(path__startswith=self.path + '/'):
+            remainder = childs.path[len(self.path):]
+            childs.path = newpath + remainder
+            childs.save()
         self.path = newpath
         self.save()
 

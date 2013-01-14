@@ -1,5 +1,5 @@
 from wheelcms_axle.models import Node, DuplicatePathException
-from wheelcms_axle.models import InvalidPathException, NodeInUse
+from wheelcms_axle.models import InvalidPathException, CantRenameRoot
 import py.test
 
 class TestNode(object):
@@ -189,21 +189,6 @@ class TestNode(object):
             at bottom + move) """
         py.test.skip("To do")
 
-    def test_change_slug(self, client):
-        """ change a slug """
-        node = Node.root().add("aaa").add("bbb")
-        assert node.slug() == "bbb"
-        node.set_slug("ccc")
-        assert node.slug() == "ccc"
-
-    def test_change_slug_duplicate(self, client):
-        """ change a slug """
-        aaa = Node.root().add("aaa")
-        aaa.add("bbb")
-        node = aaa.add("bbb2")
-        py.test.raises(DuplicatePathException, node.set_slug, "bbb")
-        assert node.slug() == "bbb2"
-
     def test_node_unattached(self, client):
         """ a node without content attached """
         root = Node.root()
@@ -213,6 +198,46 @@ class TestNode(object):
         """ get("") should implicitly create root node """
         assert Node.get("").isroot()
 
-class TestNodeBase(object):
-    """ The base class of a node can be altered. """
+    def test_change_slug(self, client):
+        """ change a slug """
+        node = Node.root().add("aaa").add("bbb")
+        assert node.slug() == "bbb"
+        node.rename("ccc")
+        node = Node.objects.get(pk=node.pk)
+        assert node.slug() == "ccc"
+        assert node.path == "/aaa/ccc"
 
+    def test_change_slug_duplicate(self, client):
+        """ change a slug """
+        aaa = Node.root().add("aaa")
+        aaa.add("bbb")
+        node = aaa.add("bbb2")
+        py.test.raises(DuplicatePathException, node.rename, "bbb")
+        assert node.slug() == "bbb2"
+
+    def test_rename_root(self, client):
+        """ root cannot be renamed """
+        py.test.raises(CantRenameRoot, lambda: Node.root().rename("x"))
+
+    def test_rename_recursive(self, client):
+        """ verify the rename is recursive """
+        aaa = Node.root().add("aaa")
+        bbb = aaa.add("bbb")
+        bbb2 = aaa.add("bbb2")
+        bbb_d = bbb.add("d")
+
+        aaa.rename("ccc")
+        assert Node.objects.get(pk=bbb.pk).path == "/ccc/bbb"
+        assert Node.objects.get(pk=bbb2.pk).path == "/ccc/bbb2"
+        assert Node.objects.get(pk=bbb_d.pk).path == "/ccc/bbb/d"
+
+    def test_rename_recursive_similar(self, client):
+        """ renaming /aaa should't affect /aaaa """
+        aaa = Node.root().add("aaa")
+        aaaa = Node.root().add("aaaa")
+        aa = Node.root().add("aa")
+        bbb = aaaa.add("bbb")
+        bb = aa.add("bb")
+        aaa.rename("ccc")
+        assert Node.objects.get(pk=bbb.pk).path == "/aaaa/bbb"
+        assert Node.objects.get(pk=bb.pk).path == "/aa/bb"
