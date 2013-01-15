@@ -94,6 +94,18 @@ class TestMainHandler(object):
         root = Node.root()
         assert root.contentbase.title == "Test"
 
+    def test_attached_form(self, client):
+        """ The form when attaching should not contain a slug field since it
+            will be attached to an existing node """
+        root = Node.root()
+        Type1(node=root).save()
+        request = create_request("GET", "/")
+        handler = MainHandlerTestable(request=request, instance=root)
+        create = handler.create(type="type1", attach=True)
+
+        form = create['context']['form']
+        assert 'slug' not in form.fields
+
     def test_create_post(self, client):
         request = create_request("POST", "/@/create",
                                  data=dict(title="Test",
