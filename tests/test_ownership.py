@@ -3,7 +3,7 @@ from wheelcms_axle.models import Node
 
 from wheelcms_axle.tests.models import Type1
 from twotest.util import create_request
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
 from two.ol.base import Redirect
 import pytest
@@ -11,7 +11,9 @@ import pytest
 class TestOwnership(object):
     def setup(self):
         """ create a user """
+        managers = Group.objects.get_or_create(name="managers")[0]
         self.user, _ = User.objects.get_or_create(username="jdoe")
+        self.user.groups.add(managers)
 
     def test_save_model(self, client):
         """ saving a model should, by default, not set the owner
@@ -27,7 +29,6 @@ class TestOwnership(object):
         request.user = self.user
 
         root = Node.root()
-        # import pytest; pytest.set_trace()
         handler = MainHandler(request=request, post=True,
                               instance=dict(parent=root))
         pytest.raises(Redirect, handler.create, type="type1")

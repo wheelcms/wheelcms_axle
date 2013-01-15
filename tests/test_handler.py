@@ -6,12 +6,19 @@ from two.ol.base import NotFound, Redirect
 import pytest
 
 from twotest.util import create_request
+from django.contrib.auth.models import User
 
 class MainHandlerTestable(MainHandler):
     """ intercept template() call to avoid rendering """
     def template(self, path):
         return dict(path=path, context=self.context)
 
+def superuser_request(path, method="GET", **data):
+    superuser, _ = User.objects.get_or_create(username="superuser",
+                                                   is_superuser=True)
+    request = create_request(method, path, data=data)
+    request.user = superuser
+    return request
 
 class TestMainHandler(object):
     def test_coerce_instance(self, client):
@@ -51,11 +58,12 @@ class TestMainHandler(object):
         """ coerce a non-existing path for parent """
         pytest.raises(NotFound, MainHandler.coerce, dict(parent="a"))
 
+
     def test_create_get_root(self, client):
         """ test create on root - get """
         root = Node.root()
         Type1(node=root).save()
-        request = create_request("GET", "/", data=dict(type="type1"))
+        request = superuser_request("/", type="type1")
         handler = MainHandlerTestable(request=request, instance=root)
         create = handler.create()
         assert create['path'] == "wheelcms_axle/create.html"
@@ -65,7 +73,7 @@ class TestMainHandler(object):
         """ test /edit """
         root = Node.root()
         Type1(node=root).save()
-        request = create_request("GET", "/edit")
+        request = superuser_request("/edit", method="POST", type="type1")
         instance = MainHandlerTestable.coerce(dict(instance=""))
         handler = MainHandlerTestable(request=request, instance=instance)
         update = handler.update()
@@ -76,7 +84,7 @@ class TestMainHandler(object):
         """ get the form for attaching content """
         root = Node.root()
         Type1(node=root).save()
-        request = create_request("GET", "/", data=dict(type="type1"))
+        request = superuser_request("/", type="type1")
         handler = MainHandlerTestable(request=request, instance=root)
         create = handler.create(type="type1", attach=True)
         assert create['path'] == "wheelcms_axle/create.html"
@@ -84,8 +92,8 @@ class TestMainHandler(object):
 
     def test_create_attach_post(self, client):
         """ post the form for attaching content """
-        request = create_request("POST", "/@/create",
-                                 data=dict(title="Test"))
+        request = superuser_request("/@/create", method="POST",
+                                      title="Test")
         root = Node.root()
         handler = MainHandler(request=request, post=True,
                               instance=dict(parent=root))
@@ -99,7 +107,7 @@ class TestMainHandler(object):
             will be attached to an existing node """
         root = Node.root()
         Type1(node=root).save()
-        request = create_request("GET", "/")
+        request = superuser_request("/")
         handler = MainHandlerTestable(request=request, instance=root)
         create = handler.create(type="type1", attach=True)
 
@@ -107,9 +115,9 @@ class TestMainHandler(object):
         assert 'slug' not in form.fields
 
     def test_create_post(self, client):
-        request = create_request("POST", "/@/create",
-                                 data=dict(title="Test",
-                                           slug="test"))
+        request = superuser_request("/@/create", method="POST",
+                                      title="Test",
+                                      slug="test")
         root = Node.root()
         handler = MainHandler(request=request, post=True,
                               instance=dict(parent=root))
@@ -120,11 +128,10 @@ class TestMainHandler(object):
 
     def test_update_post(self, client):
         root = Node.root()
-        # import pytest; pytest.set_trace()
         Type1(node=root, title="Hello").save()
-        request = create_request("POST", "/edit",
-                                 data=dict(title="Test",
-                                           slug=""))
+        request = superuser_request("/edit", method="POST",
+                                      title="Test",
+                                      slug="")
         root = Node.root()
         handler = MainHandler(request=request, post=True, instance=root)
         pytest.raises(Redirect, handler.update)
@@ -228,7 +235,7 @@ class TestBreadcrumb(object):
         Type1(node=root, title="Root").save()
         child = root.add("child")
         Type1(node=child, title="Child").save()
-        request = create_request("GET", "/child/create")
+        request = superuser_request("/child/create")
 
         handler = MainHandlerTestable(request=request, instance=child)
         context = handler.create(type="type1")['context']
@@ -242,7 +249,7 @@ class TestBreadcrumb(object):
         Type1(node=root, title="Root").save()
         child = root.add("child")
         Type1(node=child, title="Child").save()
-        request = create_request("GET", "/child/create")
+        request = superuser_request("/child/create")
 
         handler = MainHandlerTestable(request=request, instance=child)
         context = handler.update()['context']
