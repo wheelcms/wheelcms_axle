@@ -1,9 +1,9 @@
-class Registry(dict):
-    def register(self, o):
-        self[o.name] = o
+class Registry(object):
+    def __init__(self, wrapped):
+        self.wrapped = wrapped
 
-class SpokeRegistry(Registry):
-    pass
+    def set(self, wrapped):
+        self.wrapped = wrapped
 
-spokes = SpokeRegistry()
-register_spoke = spokes.register
+    def __getattr__(self, k):
+        return getattr(self.wrapped, k)
