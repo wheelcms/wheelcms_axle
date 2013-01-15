@@ -3,6 +3,8 @@ from wheelcms_axle.models import Node, type_registry, Content
 from wheelcms_axle.toolbar import Toolbar
 from wheelcms_axle import queries
 
+from django.contrib.auth.models import Group
+
 class WheelRESTHandler(RESTLikeHandler):
     pass
 
@@ -107,12 +109,20 @@ class MainHandler(WheelRESTHandler):
                 return cls.notfound()
         return d
 
+    def hasaccess(self):
+        user = self.user()
+        return user.is_active and (user.is_superuser or
+                                   user.groups.filter(name="managers").exists())
+
     @applyrequest
     def create(self, type, attach=False, *a, **b):
         """
             Create new sub-content on a node or attach content to an
             existing node.
         """
+        if not self.hasaccess():
+            return self.forbidden()
+
         formclass = type_registry.get(type).form
 
         parent = self.parent
@@ -152,7 +162,9 @@ class MainHandler(WheelRESTHandler):
         return self.template("wheelcms_axle/create.html")
 
     def update(self):
-        # import pytest; pytest.set_trace()
+        if not self.hasaccess():
+            return self.forbidden()
+
         instance = self.instance
         parent = instance.parent()
 
@@ -184,7 +196,7 @@ class MainHandler(WheelRESTHandler):
         self.context['breadcrumb'] = self.breadcrumb(operation="Edit")
         return self.template("wheelcms_axle/update.html")
 
-        
+
     @context
     def breadcrumb(self, operation=""):
         """ generate breadcrumb path. """
@@ -223,6 +235,10 @@ class MainHandler(WheelRESTHandler):
 
     def view(self):
         """ frontpage / view """
+        if self.spoke() and not self.spoke().workflow().is_published():
+            if not self.hasaccess():
+                return self.forbidden()
+
         self.context['toolbar'] = Toolbar(self.instance)
         return self.template("wheelcms_axle/main.html")
 
