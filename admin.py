@@ -1,7 +1,8 @@
 from django.contrib import admin
+from guardian.admin import GuardedModelAdmin
 from wheelcms_axle import models
 
-class NodeAdmin(admin.ModelAdmin):
+class NodeAdmin(GuardedModelAdmin):
     model = models.Node
 
 
