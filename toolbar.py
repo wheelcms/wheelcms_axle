@@ -18,10 +18,10 @@ class Toolbar(object):
         type = self.type()
         ## order?
         ## unconnected, or no restrictions
-        if type is None or type.children is None:
+        if type is None:
             ch = type_registry.values()
         else:
-            ch = type.children
+            ch = type.addable_children()
 
         return [dict(name=c.name()) for c in ch]
 
