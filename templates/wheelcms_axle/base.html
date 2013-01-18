@@ -16,6 +16,27 @@
         <a href="{{item.node.path}}">{{item.node.content.title}}</a></li>
     {% endfor %}
   </ul>
+  <div class="pull-right">
+    {% if user.is_anonymous %}
+    <ul class="nav">
+      <li><a href="{% url userena_signup %}">Register</a></li>
+      <li><a href="{% url userena_signin %}">Signin</a></li>
+    </ul>
+    {% else %}
+    <ul class="nav">
+      <li class="dropdown">
+          <a href="/" data-target="#" class="dropdown-toggle" data-toggle="dropdown">{{user.email}} <b class="caret"></b></a>
+          <ul class="dropdown-menu" role="menu">
+            <li><a href="/"><i class="icon-cog"></i> Preferences</a></li>
+
+            <li><a href="{% url userena_profile_detail user.username %}"><i class="icon-user"></i> Profile</a></li>
+            <li class="divider"></li>
+            <li><a href="{% url userena_signout %}"><i class="icon-off"></i> Logout</a></li>
+          </ul>
+      </li>
+    </ul>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}
 
