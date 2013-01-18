@@ -27,5 +27,7 @@
 {% endblock %}
 
 {% block bodytop %}
+{% if user.is_authenticated %}
 {% include "wheelcms_axle/toolbar.html" %}
+{% endif %}
 {% endblock %}
