@@ -326,6 +326,22 @@ class ImageContent(FileContent):
         abstract = True
 
 
+class Configuration(models.Model):
+    title = models.CharField(max_length=256, blank=False)
+    description = models.TextField(blank=True)
+    theme = models.CharField(max_length=256, blank=True, default="default")
+
+    @classmethod
+    def config(cls):
+        """ singleton-ish pattern """
+        try:
+            instance = Configuration.objects.all()[0]
+        except IndexError:
+            instance = Configuration()
+            instance.save()
+        return instance
+
+
 class TypeRegistry(dict):
     def register(self, t):
         self[t.name()] = t

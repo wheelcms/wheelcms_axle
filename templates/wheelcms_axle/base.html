@@ -1,5 +1,14 @@
 {% extends "two.bootstrap/base.html" %}
 
+{% block bootstrapcss %}
+    {% if config.theme == "default" %}
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css" media="screen, projection, print"/>
+    {% else %}
+    <link rel="stylesheet" href="/static/css/{{config.theme}}-bootstrap.min.css" media="screen, projection, print"/>
+    {% endif %}
+    <link rel="stylesheet" href="/static/css/bootstrap-responsive.min.css" media="screen, projection, print"/>
+{% endblock %}
+
 {% block base_stylesheets %}
     <link rel="stylesheet" href="/static/css/wheel.css" media="screen, projection, print"/>
 {% endblock %}

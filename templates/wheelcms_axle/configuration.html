@@ -1,0 +1,17 @@
+{% extends "wheelcms_axle/base.html" %}
+
+
+{% block base_main %}
+Wheel Configuration
+
+<form method="post" action="." class="form-horizontal" 
+  {% if form.is_multipart %}enctype="multipart/form-data"{%endif%}>
+  {% csrf_token %}
+  {% include "two.bootstrap/bootstrap-form.html" %}
+  <div class="form-actions">
+    <input class="btn primary" type="submit" value="Save">
+    <a href="{{redirect_to}}" class="btn">Cancel</a>
+  </div>
+</form>
+
+{% endblock %}
