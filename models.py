@@ -220,7 +220,12 @@ def far_future():
     """ default expiration is roughly 20 years from now """
     return timezone.now() + datetime.timedelta(days=(20*365+8))
 
+class ContentClass(models.Model):
+    name = models.CharField(max_length=256, blank=False)
+
 class ContentBase(models.Model):
+    CLASSES = ()
+
     node = models.OneToOneField(Node, related_name="contentbase", null=True)
     title = models.CharField(max_length=256, blank=False)
     created = models.DateTimeField(blank=True, null=True)
@@ -243,6 +248,9 @@ class ContentBase(models.Model):
     ## can be null for now, should move to null=False eventually
     owner = models.ForeignKey(User, null=True)
 
+    ## class..
+    classes = models.ManyToManyField(ContentClass, related_name="content")
+
     class Meta:
         abstract = True
 
@@ -259,6 +267,8 @@ class ContentBase(models.Model):
             self.state = self.spoke().workflow().default
 
         super(ContentBase, self).save(*a, **b)
+        for klass in self.CLASSES:
+            self.classes.add(ContentClass.objects.get_or_create(name=klass)[0])
         return self  ## foo = x.save() is nice
 
     def content(self):
@@ -285,6 +295,23 @@ WHEEL_CONTENT_BASECLASS = ContentBase
 
 class Content(WHEEL_CONTENT_BASECLASS):
     pass
+
+
+class FileContent(Content):
+    FILECLASS = "wheel.file"
+    CLASSES = Content.CLASSES + (FILECLASS, )
+
+    class Meta(Content.Meta):
+        abstract = True
+
+
+class ImageContent(FileContent):
+    IMAGECLASS = "wheel.image"
+
+    CLASSES = FileContent.CLASSES + ("wheel.image", )
+
+    class Meta(FileContent.Meta):
+        abstract = True
 
 
 class TypeRegistry(dict):
