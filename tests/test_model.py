@@ -1,3 +1,6 @@
+"""
+    Model specific stuff
+"""
 from wheelcms_spokes.file import File
 from wheelcms_spokes.image import Image
 from wheelcms_axle.tests.models import TestFile, TestImage
@@ -17,7 +20,18 @@ class TestFileContent(object):
         file2, _ = Image.objects.get_or_create(storage=filedata)
         file3, _ = TestFile.objects.get_or_create(storage=filedata)
 
-        files = ContentClass.objects.get(name=FileContent.FILECLASS).content.all()
+        files = ContentClass.objects.get(
+                       name=FileContent.FILECLASS).content.all()
+        assert set(x.content() for x in files) == set((file1, file2, file3))
+
+    def test_combined_manager(self, client):
+        """ create a file, testfile and image and find them using the
+            instances manager """
+        file1, _ = File.objects.get_or_create(storage=filedata)
+        file2, _ = Image.objects.get_or_create(storage=filedata)
+        file3, _ = TestFile.objects.get_or_create(storage=filedata)
+
+        files = FileContent.instances.all()
         assert set(x.content() for x in files) == set((file1, file2, file3))
 
 class TestImageContent(object):
@@ -28,5 +42,16 @@ class TestImageContent(object):
         file2, _ = Image.objects.get_or_create(storage=filedata)
         file3, _ = TestImage.objects.get_or_create(storage=filedata)
 
-        files = ContentClass.objects.get(name=ImageContent.IMAGECLASS).content.all()
+        files = ContentClass.objects.get(
+                       name=ImageContent.IMAGECLASS).content.all()
+        assert set(x.content() for x in files) == set((file2, file3))
+
+    def test_combined_manager(self, client):
+        """ create a file, testfile and image and find them using the
+            instances manager """
+        file1, _ = File.objects.get_or_create(storage=filedata)
+        file2, _ = Image.objects.get_or_create(storage=filedata)
+        file3, _ = TestImage.objects.get_or_create(storage=filedata)
+
+        files = ImageContent.instances.all()
         assert set(x.content() for x in files) == set((file2, file3))

@@ -297,9 +297,19 @@ class Content(WHEEL_CONTENT_BASECLASS):
     pass
 
 
+class ClassContentManager(models.Manager):
+    def __init__(self, name):
+        self.name = name
+
+    def get_query_set(self):
+        return ContentClass.objects.get_or_create(name=self.name)[0].content.all()
+
 class FileContent(Content):
     FILECLASS = "wheel.file"
     CLASSES = Content.CLASSES + (FILECLASS, )
+
+    objects = models.Manager()
+    instances = ClassContentManager(FILECLASS)
 
     class Meta(Content.Meta):
         abstract = True
@@ -307,8 +317,10 @@ class FileContent(Content):
 
 class ImageContent(FileContent):
     IMAGECLASS = "wheel.image"
-
     CLASSES = FileContent.CLASSES + ("wheel.image", )
+
+    objects = models.Manager()
+    instances = ClassContentManager(IMAGECLASS)
 
     class Meta(FileContent.Meta):
         abstract = True
