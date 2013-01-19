@@ -26,9 +26,6 @@ class ConfigurationForm(forms.ModelForm):
         ('united', 'United')))
 
 class ConfigurationHandler(FormHandler, WheelHandlerMixin):
-    ## get "shared" context/setup
-    model = Configuration
-
     def update_context(self, request):
         super(ConfigurationHandler, self).update_context(request)
         self.context['toolbar'] = Toolbar(instance=None, status="special")
