@@ -1,16 +1,16 @@
+{% if toolbar %}
 <div class="navbar navbar-fixed-bottom">
   <div class="navbar-inner">
     <div class="container-fluid">
- 
       <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
       <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </a>
- 
+
       <a class="brand" href="#">Wheel CMS</a>
- 
+
       <div class="nav-collapse collapse">
         <ul class="nav">
           {% if toolbar.show_create %}
@@ -29,19 +29,19 @@
             </div>
           </li>
           {% endif %}
-          {% if toolbar.status != "update" and spoke %}
+          {% if toolbar.show_update %}
           <li><div><a class="btn btn-mini" href="{{instance.path}}/edit"><i class="icon-edit"></i> Edit</a></div></li>
           {% endif %}
-          {% if toolbar.status != "list" %}
+          {% if toolbar.show_list %}
           <li><div><a class="btn btn-mini" href="{{instance.path}}/list"><i class="icon-list"></i> Contents</a></div></li>
           {% endif %}
           <!-- make the button toggle -->
-          {% if toolbar.status != "view" %}
+          {% if toolbar.show_view %}
           <li><div><a class="btn btn-mini" href="{{instance.path|default:'/'}}"><i class="icon-eye-open"></i> View</a></div></li>
           {% endif %}
         </ul>
       </div>
-      {% if not spoke %}
+      {% if toolbar.show_attach %}
       <div class="nav-collapse collapse">
         <ul class="nav">
         <!-- .nav, .navbar-search, .navbar-form, etc -->
@@ -63,6 +63,12 @@
       {% endif %}
       <div class="pull-right">
         <ul class="nav">
+          <li><div><a class="btn btn-mini" href="{% url wheel_config %}"><i class="icon-wrench"></i> Settings</a></div></li>
+        </ul>
+      </div>
+      {# XXX show settings button. Actually requires special privileges? #}
+      <div class="pull-right">
+        <ul class="nav">
           <li>
             <div class="btn-group dropup">
               <a href="/" data-target="#" class="btn btn-mini dropdown-toggle"
@@ -81,3 +87,4 @@
     </div>
   </div>
 </div>
+{% endif %}

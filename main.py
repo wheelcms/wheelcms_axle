@@ -3,9 +3,9 @@ from wheelcms_axle.models import Node, type_registry, Content
 from wheelcms_axle.toolbar import Toolbar
 from wheelcms_axle import queries
 
-from django.contrib.auth.models import Group
+from wheelcms_axle.base import WheelHandlerMixin
 
-class WheelRESTHandler(RESTLikeHandler):
+class WheelRESTHandler(RESTLikeHandler, WheelHandlerMixin):
     pass
 
 
@@ -16,7 +16,7 @@ class MainHandler(WheelRESTHandler):
 
     def update_context(self, request):
         super(MainHandler, self).update_context(request)
-    
+
     @context
     def toplevel(self):
         """ return toplevel navigatable/visible items. Perhaps, when logged in,
