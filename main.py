@@ -250,3 +250,7 @@ class MainHandler(WheelRESTHandler):
         self.context['toolbar'] = Toolbar(self.instance, status="list")
         self.context['breadcrumb'] = self.breadcrumb(operation="Contents")
         return self.template("wheelcms_axle/contents.html")
+
+    def handle_popup(self):
+        """ popup experiments - #524 """
+        return self.template("wheelcms_axle/popup.html")
