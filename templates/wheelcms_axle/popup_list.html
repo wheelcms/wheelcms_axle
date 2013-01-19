@@ -1,0 +1,26 @@
+<table class="table table-condensed table-hover wheel-contentlist">
+  <thead>
+    <th><input class="toggle-all" type="checkbox"></th>
+    <th>Title</th>
+    <th>State</th>
+  </thead>
+  <tbody class="sortable">
+    {% if not instance.isroot %}
+    <tr class="clickrow" data-url="{{instance.parent.path}}/list">
+      <td><i class="icon-circle-arrow-left"></i></td>
+      <td colspan="3">.. (parent)</td>
+    </tr>
+    {% endif %}
+    {% for child in instance.children %}
+      <tr class="clickrow sortablerow" data-url="{{child.path}}/list">
+        <td><input name="selection" type="checkbox" value="{{child.path}}"></td>
+        <td>{{child.content.title}}</td>
+        <td>Published</td>
+      </tr>
+    {% empty %}
+      <tr>
+        <td colspan="4">No content</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
