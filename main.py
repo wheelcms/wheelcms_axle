@@ -1,4 +1,4 @@
-from two.ol.base import RESTLikeHandler, applyrequest, context
+from two.ol.base import RESTLikeHandler, applyrequest, context, json
 from wheelcms_axle.models import Node, type_registry, Content
 from wheelcms_axle.toolbar import Toolbar
 from wheelcms_axle import queries
@@ -254,3 +254,15 @@ class MainHandler(WheelRESTHandler):
     def handle_popup(self):
         """ popup experiments - #524 """
         return self.template("wheelcms_axle/popup.html")
+
+    @json
+    @applyrequest
+    def handle_panel(self, path):
+        node = Node.get(path)
+        panels = []
+        for i in range(3):
+            panels.insert(0, self.render_template("wheelcms_axle/popup_list.html", instance=node))
+            if node.isroot():
+                break
+            node = node.parent()
+        return panels

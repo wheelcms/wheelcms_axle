@@ -1,5 +1,41 @@
 {% extends "wheelcms_axle/base.html" %}
 
+{% block javascript %}
+<script type="text/javascript" charset="utf-8">
+    function load_panels(path) {
+            var panels = $.ajax({
+                url: '/panel?path='+path,
+                dataType:"json",
+                async: false
+                }).responseText;
+            panels = $.parseJSON(panels);
+            console.log(panels);
+            var idx = 0;
+            for(var i= 0; i < 3; i++) {
+                $(".panel" + i).empty();
+            }
+            for(var i=0; i < panels.length; i++) {
+                var paneldata = panels[i];
+                console.log(paneldata);
+                var panel = $(".panel" + i);
+                panel.html(paneldata);
+            }
+    }
+
+    $(document).ready(function() {
+        $("#show_modal").click(function() {
+            $("#myModal").modal();
+            load_panels('');
+        });
+        $("tr.entry").live('click', function() {
+            var path = $(this).data('url');
+            console.log("Clicked " + path);
+            load_panels(path);
+        });
+    });
+</script>
+
+{% endblock %}
 
 {% block base_main %}
 
@@ -21,13 +57,13 @@
       </div>
     </div>
     <div class="row-fluid">
-      <div class="span4">
+      <div class="span4 panel0">
       Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas faucibus dolor at eros consectetur ut consequat enim mollis. Suspendisse ac leo neque, sed suscipit dui. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis ultricies iaculis magna, vel interdum quam volutpat eu. Proin condimentum neque ac tellus adipiscing et tincidunt arcu euismod.
       </div>
-      <div class="span4">
+      <div class="span4 panel1">
       Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas faucibus dolor at eros consectetur ut consequat enim mollis. Suspendisse ac leo neque, sed suscipit dui. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis ultricies iaculis magna, vel interdum quam volutpat eu. Proin condimentum neque ac tellus adipiscing et tincidunt arcu euismod.
       </div>
-      <div class="span4">
+      <div class="span4 panel2">
       Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas faucibus dolor at eros consectetur ut consequat enim mollis. Suspendisse ac leo neque, sed suscipit dui. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis ultricies iaculis magna, vel interdum quam volutpat eu. Proin condimentum neque ac tellus adipiscing et tincidunt arcu euismod.
       </div>
     </div>
@@ -48,7 +84,7 @@
 </div>
 <div class="row">
   <div class="span6">
-<a href="#myModal" role="button" class="btn" data-toggle="modal">Launch demo modal</a>
+<a href="#myModal" id="show_modal" role="button" class="btn" >Launch demo modal</a>
   <p>
   Etiam scelerisque pretium tincidunt. Donec vel ipsum purus. Cras urna mi, molestie a sagittis quis, eleifend nec lorem. Curabitur nec ornare est. Nunc id nibh tortor, ut consequat sem. Morbi et lacus lorem. Cras pharetra magna quis nisi gravida tempus. Nunc metus risus, cursus ut feugiat ac, blandit vitae libero. Ut tellus diam, laoreet eget euismod ut, tincidunt sit amet purus. Quisque eget eros massa, in iaculis mi. Morbi nec nunc eu orci adipiscing lobortis. Sed non nulla urna. Nunc metus massa, luctus sed blandit eu, ultricies vitae orci.
   </p>

@@ -1,11 +1,11 @@
 <div class="row-fluid">
   <div class="span12">
-    some preview
+    {{instance.content.title}}
   </div>
 </div>
 <div>
   <div class="span12">
-    details
+    {{instance.content.meta_type}}
   </div>
 </div>
 <table class="table table-condensed table-hover wheel-contentlist">
@@ -16,13 +16,13 @@
   </thead>
   <tbody class="sortable">
     {% if not instance.isroot %}
-    <tr class="clickrow" data-url="{{instance.parent.path}}/list">
+    <tr class="" data-url="{{instance.parent.path}}/list">
       <td><i class="icon-circle-arrow-left"></i></td>
       <td colspan="3">.. (parent)</td>
     </tr>
     {% endif %}
     {% for child in instance.children %}
-      <tr class="clickrow sortablerow" data-url="{{child.path}}/list">
+      <tr class="entry" data-url="{{child.path}}">
         <td><input name="selection" type="checkbox" value="{{child.path}}"></td>
         <td>{{child.content.title}}</td>
         <td>Published</td>
