@@ -1,10 +1,19 @@
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
-import re
-import random
 
 from wheelcms_axle.models import Node
-from wheelcms_spokes.models import Page
+from wheelcms_spokes.page import Page
+
+lipsum = """<p><b>Lorem ipsum dolor sit amet</b>, consectetur adipiscing elit. Maecenas faucibus dolor at eros consectetur ut consequat enim mollis. Suspendisse ac leo neque, sed suscipit dui. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis ultricies iaculis magna, vel interdum quam volutpat eu.</p>
+<p><i>Proin condimentum neque ac tellus adipiscing et tincidunt arcu euismod</i>. Duis sit amet enim nec sapien rutrum faucibus. Sed eu ultricies justo. Curabitur orci odio, tincidunt ac adipiscing non, commodo vel urna. Phasellus massa elit, scelerisque id pharetra sagittis, facilisis a tortor. Donec sodales nibh in leo suscipit sagittis. Aliquam a leo vitae tortor ullamcorper interdum ac at mauris.</p>"""
+
+def populate(node, level):
+    for i in range(4):
+        print "level %d page %d" % (level, i)
+        n = node.add('sub%d_%d' % (level, i))
+        sub = Page(title="Subpage %d level %d" % (i, level), body=lipsum, state="published", node=n)
+        sub.save()
+        if level > 0:
+            populate(n, level-1)
 
 class Command(BaseCommand):
     """ Normalize existing usernames to match allowed characters """
@@ -12,14 +21,7 @@ class Command(BaseCommand):
     help = 'setup simple content structure'
 
     def handle(self, *args, **options):
-        """ Usage ../bin/django clean_usersnames (0|1) """
         root = Node.root()
-        main = Page(title="Welcome", body="This is the main page")
+        main = Page(title="Welcome", body="This is the main page", state="published", node=root)
         main.save()
-        root.set(main)
-
-        c1 = root.add('sub')
-        sub = Page(title="Subpage", body="I'm a sub page")
-        sub.save()
-        c1.set(sub)
-
+        populate(root, 5)
