@@ -258,11 +258,35 @@ class MainHandler(WheelRESTHandler):
     @json
     @applyrequest
     def handle_panel(self, path):
+        """
+            Generate panels for the file selection popup
+        """
         node = Node.get(path)
         panels = []
+
         for i in range(3):
-            panels.insert(0, self.render_template("wheelcms_axle/popup_list.html", instance=node))
+            instance = dict(children=[], path=node.path or '/',
+                            title=node.content().title,
+                            meta_type=node.content().meta_type)
+            for child in node.children():
+                instance['children'].append(dict(title=child.content().title,
+                                                 path=child.path,
+                                                 meta_type=child.content().meta_type,
+                                                 selected=path.startswith(child.path)))
+            panels.insert(0, self.render_template("wheelcms_axle/popup_list.html",
+                                                  instance=instance,
+                                                  path=path))
             if node.isroot():
                 break
             node = node.parent()
-        return panels
+        crumbs = []
+        node = Node.get(path)
+        while True:
+            if node.isroot():
+                crumbs.insert(0, dict(path=node.path, title="Home"))
+                break
+            crumbs.insert(0, dict(path=node.path or '/', title=node.content().title))
+            node = node.parent()
+
+        crumbtpl = self.render_template("wheelcms_axle/popup_crumbs.html", crumbs=crumbs)
+        return dict(panels=panels, path=path or '/', crumbs=crumbtpl)
