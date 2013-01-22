@@ -1,7 +1,10 @@
-{% extends "wheelcms_axle/base.html" %}
+{% extends "wheelcms_axle/edit_base.html" %}
 
 
 {% block base_main %}
+
+{{ block.super }}
+
 <p>
 Edit Path: {{instance.path}} / {{instance.content.title}}
 </p>

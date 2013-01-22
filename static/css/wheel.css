@@ -1,0 +1,22 @@
+/*
+ * Browse modal customization
+ */
+
+#browseModal .modal-body {
+    height: 300px;
+}
+
+#browseModal {
+    width: 900px;
+    margin: -250px 0 0 -450px;
+}
+
+/* only way I know to take precedence over bootstrap styles */
+#panel0, #panel1, #panel2 {
+    height: 100%;
+    overflow: auto;
+}
+
+#panels {
+    height: 80%;
+}

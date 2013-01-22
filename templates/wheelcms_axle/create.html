@@ -1,7 +1,10 @@
-{% extends "wheelcms_axle/base.html" %}
+{% extends "wheelcms_axle/edit_base.html" %}
 
 
 {% block base_main %}
+
+{{ block.super }}
+
 {% if attach %}
 <p>
 Attach "{{typeinfo.title}}" on {{instance.path}}
