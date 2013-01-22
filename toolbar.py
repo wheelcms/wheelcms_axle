@@ -50,7 +50,7 @@ class Toolbar(object):
 
         if self.status == "update":
             return False
-        if not self.instance or self.instance.content():
+        if not (self.instance and self.instance.content()):
             return False
         return True
 
@@ -79,7 +79,7 @@ class Toolbar(object):
         if self.status == "attach":
             return False
 
-        if not self.instance or self.instance.content():
+        if self.instance and self.instance.content():
             return False
-        return True
+        return bool(self.instance)
 
