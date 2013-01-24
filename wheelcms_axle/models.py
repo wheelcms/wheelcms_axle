@@ -39,7 +39,7 @@ class CantRenameRoot(NodeException):
 class NodeBase(models.Model):
     ROOT_PATH = ""
     ALLOWED_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789_-"
-    MAX_PATHLEN = 20
+    MAX_PATHLEN = 40
     POSITION_INTERVAL = 100
 
     validpathre = re.compile("^[%s]{1,%d}$" % (ALLOWED_CHARS, MAX_PATHLEN))
