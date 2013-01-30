@@ -1,6 +1,16 @@
 {% extends "wheelcms_axle/edit_base.html" %}
 
+{% block javascript %}
 
+{{ block.super }}
+
+<script type="text/javascript">
+  $(document).ready(function() {
+    $("#browseModal").modal();
+    load_panels("/sub5_0", 3);
+  });
+</script>
+{% endblock %}
 {% block base_main %}
 
 {{ block.super }}

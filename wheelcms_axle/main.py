@@ -148,7 +148,7 @@ class MainHandler(WheelRESTHandler):
                     sub.set(p)
                 return self.redirect(parent.path or '/', success="Ok")
         else:
-            self.context['form'] = formclass(attach=attach)
+            self.context['form'] = formclass(parent=parent, attach=attach)
         ## Get spoke model
         self.context['type'] = type
 
@@ -290,3 +290,46 @@ class MainHandler(WheelRESTHandler):
 
         crumbtpl = self.render_template("wheelcms_axle/popup_crumbs.html", crumbs=crumbs)
         return dict(panels=panels, path=path or '/', crumbs=crumbtpl)
+
+    @json
+    @applyrequest
+    def handle_fileup(self, type):
+        ## how to deal with /@/create case? (browser issue)
+
+        ## shares a lot with create()
+        
+        if not self.hasaccess():
+            return self.forbidden()
+
+        formclass = type_registry.get(type).light_form
+
+        parent = self.instance
+
+        ## use get() to return type-specific rendered light-form?
+
+        if not self.post:
+            return dict(form=self.render_template("wheelcms_axle/popup_upload.html",
+                                                  form=formclass(parent=parent)))
+
+
+        self.context['form'] = \
+        self.form = formclass(data=self.request.POST,
+                              parent=parent,
+                              attach=False,
+                              files=self.request.FILES,
+                              )
+        
+        if self.form.is_valid():
+            ## form validation should handle slug uniqueness (?)
+            p = self.form.save(commit=False)
+            if self.user().is_authenticated():
+                p.owner = self.user()
+            p.save()
+            slug = self.form.cleaned_data['slug']
+            sub = parent.add(slug)
+            sub.set(p)
+            return dict(status="ok")
+        ## else return fail
+
+        ## return json encoded error fields? Or BadRequest?
+

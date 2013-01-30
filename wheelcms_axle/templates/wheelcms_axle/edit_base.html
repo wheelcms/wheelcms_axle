@@ -5,8 +5,21 @@
 
 {{ block.super }}
 
+<script src="/static/js/upload/jquery.ui.widget.js"></script>
+<script src="/static/js/upload/jquery.iframe-transport.js"></script>
+<script src="/static/js/upload/jquery.fileupload.js"></script>
+
 <script type="text/javascript" charset="utf-8">
     var current_path = '';
+    
+    function bt_stack_fix() {
+        /*
+         * https://github.com/twitter/bootstrap/issues/4781
+         * http://stackoverflow.com/questions/13649459/twitter-bootstrap-multiple-modal-error
+         */
+        $(document).off('focusin.modal');
+
+    }
 
     function fix_sizes() {
         /*
@@ -53,6 +66,7 @@
 
     function wheel_browser(path, callback) {
         $("#browseModal").modal();
+        bt_stack_fix();
         load_panels(path || '', 3);
 
         $(".modal_select").click(function() {
@@ -78,7 +92,42 @@
             load_panels(path, panelid);
             return false;
         });
+
+
+        function load_form(url, type) {
+            var data = $.ajax({
+                url: url + '/fileup?type=' + type,
+                dataType:"json",
+                async: false
+                }).responseText;
+            data = $.parseJSON(data);
+            var form = data.form;
+            $(".uploadform").html(form);
+
+            $('#fileupload').fileupload({
+                dataType: 'json',
+                url: url + '/fileup',
+                done: function (e, data) {
+                    $("#uploadModal").modal("hide");
+                    load_panels(url, 3);
+                // fail, .. http://api.jquery.com/Types/#Promise
+                }
+            });
+
+        }
+        $(".node_upload").live('click', function() {
+            // hide & reopen browse dialog?
+            var url = $(this).data('url');
+            $("#uploadModal").modal();
+            bt_stack_fix();
+            load_form(url, $(".select_type").val());
+            $(".select_type").change(function() {
+                load_form(url, $(this).val());
+            });
+            return false;
+        });
     });
+
 </script>
 
 {% endblock %}
@@ -117,6 +166,33 @@
     <button class="btn btn-primary">Upload</button>
   </div>
 </div>
+
+<div id="uploadModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="uploadModalLabel">Upload a file</h3>
+  </div>
+  <div class="modal-body">
+    <div class="row-fluid">
+      <div class="span12">
+        <select class="select_type">
+          <option value="image">Upload an Image</option>
+          <option value="file">Upload a File</option>
+        </select>
+      </div>
+    </div>
+    <div class="row-fluid">
+      <div class="span12 uploadform">
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn btn-primary modal_select">Select</button>
+    <button class="btn btn-primary">Upload</button>
+  </div>
+</div>
+
 
 {{ block.super }}
 

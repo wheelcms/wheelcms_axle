@@ -6,11 +6,11 @@
 <div>
   <div class="span12">
     {{instance.path}} {{instance.meta_type}}
+    <a href="#" class="node_upload" data-url="{{instance.path}}" title="Upload content in this node"><i class="icon-upload pull-right node-upload"></i></a>
   </div>
 </div>
 <table class="table table-condensed table-hover wheel-contentlist">
   <thead>
-    <th>Title</th>
   </thead>
   <tbody class="sortable">
     {% for child in instance.children %}
