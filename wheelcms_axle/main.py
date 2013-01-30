@@ -309,7 +309,8 @@ class MainHandler(WheelRESTHandler):
 
         if not self.post:
             return dict(form=self.render_template("wheelcms_axle/popup_upload.html",
-                                                  form=formclass(parent=parent)))
+                                                  form=formclass(parent=parent),
+                                                  type=type))
 
 
         self.context['form'] = \
