@@ -265,14 +265,28 @@ class MainHandler(WheelRESTHandler):
         panels = []
 
         for i in range(3):
-            instance = dict(children=[], path=node.path or '/',
-                            title=node.content().title,
-                            meta_type=node.content().meta_type)
+            content = node.content()
+
+            if content:
+                instance = dict(children=[], path=node.path or '/',
+                                title=content.title,
+                                meta_type=content.meta_type,
+                                content=content,
+                                spoke=content.spoke())
+            else:
+                instance = dict(children=[], path=node.path or '/',
+                                title="Unattached node",
+                                meta_type="none",
+                                content=None,
+                                spoke=None)
+
             for child in node.children():
+                selected = path == child.path or path.startswith(child.path + '/')
                 instance['children'].append(dict(title=child.content().title,
                                                  path=child.path,
                                                  meta_type=child.content().meta_type,
-                                                 selected=path.startswith(child.path)))
+                                                 selected=selected))
+
             panels.insert(0, self.render_template("wheelcms_axle/popup_list.html",
                                                   instance=instance,
                                                   path=path))
@@ -294,12 +308,8 @@ class MainHandler(WheelRESTHandler):
     @json
     @applyrequest
     def handle_fileup(self, type):
-        ## how to deal with /@/create case? (browser issue)
-
-        ## shares a lot with create()
-        
         # import pdb; pdb.set_trace()
-        
+
         if not self.hasaccess():
             return self.forbidden()
 
@@ -321,7 +331,7 @@ class MainHandler(WheelRESTHandler):
                               attach=False,
                               files=self.request.FILES,
                               )
-        
+
         if self.form.is_valid():
             ## form validation should handle slug uniqueness (?)
             p = self.form.save(commit=False)
@@ -332,7 +342,7 @@ class MainHandler(WheelRESTHandler):
             sub = parent.add(slug)
             sub.set(p)
             return dict(status="ok", path=sub.path)
-        ## else return fail
+        ## else return fail. uploaded file can fail (e.g. not be an image)
 
         ## return json encoded error fields? Or BadRequest?
 

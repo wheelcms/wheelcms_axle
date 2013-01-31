@@ -20,3 +20,17 @@
 #panels {
     height: 80%;
 }
+
+/*
+ * Image in panel
+ */
+.detail-image {
+    width: 200px;
+}
+
+/*
+ * Content div in image detail panel
+ */
+.image-content {
+    text-align: center;
+}
