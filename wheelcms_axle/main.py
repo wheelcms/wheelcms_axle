@@ -298,6 +298,8 @@ class MainHandler(WheelRESTHandler):
 
         ## shares a lot with create()
         
+        # import pdb; pdb.set_trace()
+        
         if not self.hasaccess():
             return self.forbidden()
 
@@ -329,7 +331,7 @@ class MainHandler(WheelRESTHandler):
             slug = self.form.cleaned_data['slug']
             sub = parent.add(slug)
             sub.set(p)
-            return dict(status="ok")
+            return dict(status="ok", path=sub.path)
         ## else return fail
 
         ## return json encoded error fields? Or BadRequest?
