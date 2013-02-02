@@ -1,11 +1,14 @@
+import mimetypes
+import re
+import os
+import datetime
+
 from django.db import models, IntegrityError
 from django.utils import timezone
 from django.contrib.auth.models import User
 
 from userena.models import UserenaLanguageBaseProfile
 
-import re
-import datetime
 ## import pytz
 
 from django.utils.translation import ugettext as _
@@ -311,8 +314,29 @@ class FileContent(Content):
     objects = models.Manager()
     instances = ClassContentManager(FILECLASS)
 
+    content_type = models.CharField(blank=True, max_length=256)
+    filename = models.CharField(blank=True, max_length=256)
+
     class Meta(Content.Meta):
         abstract = True
+
+
+    def save(self, *a, **b):
+        """
+            Intercept save, fill in defaults for filename and mimetype if not
+            explicitly set
+        """
+        if not self.filename:
+            self.filename = self.storage.name or self.title
+            ## guess extension if missing?
+        self.filename = os.path.basename(self.filename)
+
+        if not self.content_type:
+            type, encoding = mimetypes.guess_type(self.filename)
+            if type is None:
+                type = "application/octet-stream"
+            self.content_type = type
+        return super(FileContent, self).save(*a, **b)
 
 
 class ImageContent(FileContent):
