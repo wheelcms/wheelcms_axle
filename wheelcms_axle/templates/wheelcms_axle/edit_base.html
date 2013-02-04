@@ -10,91 +10,23 @@
 <script src="/static/js/upload/jquery.fileupload.js"></script>
 
 <script type="text/javascript" charset="utf-8">
-    var current_path = '';
-
     function bt_stack_fix() {
         /*
          * https://github.com/twitter/bootstrap/issues/4781
          * http://stackoverflow.com/questions/13649459/twitter-bootstrap-multiple-modal-error
          */
         $(document).off('focusin.modal');
-
     }
 
-    function fix_sizes() {
-        /*
-         * Make sure the "panels" div takes up exactly the remaining space.
-         * Can this be done in css? XXX
-         */
-        var total = $("#browseModal .modal-body").height();
-        var header = $("#browsecrumbs").height();
-        var remainder = total - header;
-        $("#panels").height(remainder);
-    }
-    function load_panels(path, panelid) {
-            /*
-             * How should the shifting of panels behave? Currently, if possible,
-             * all three columns are used. This may mean that clicking in the first
-             * colum will move the first panel to the second position. But this
-             * doesn't have to be bad - it's a nice way to access the parent
-             */
-            current_path = path;
-            var data = $.ajax({
-                url: '/panel?path='+path,
-                dataType:"json",
-                async: false
-                }).responseText;
-            data = $.parseJSON(data);
-            var panels = data.panels;
-            var crumbs = data.crumbs;
-
-            var path = data.path;
-
-            var idx = 0;
-            for(var i= 0; i < 3; i++) {
-                $(".panel" + i).empty();
-            }
-
-            for(var i=0; i < panels.length; i++) {
-                var paneldata = panels[i];
-                var panel = $(".panel" + i);
-                panel.html(paneldata);
-            }
-            $(".crumbcontainer").html(crumbs);
-            fix_sizes();
-    }
-
-    function wheel_browser(path, callback) {
-        $("#browseModal").modal();
-        bt_stack_fix();
-        load_panels(path || '', 3);
-
-        $(".modal_select").click(function() {
-            if(callback) {
-                callback(current_path);
-            }
-            $("#browseModal").modal('hide');
-        });
-    }
-    $(document).ready(function() {
-        $("#show_modal").click(function(callback) {
-            wheel_browser();
-        });
-        $("tr.entry").live('click', function() {
-            var path = $(this).data('url');
-            var panelid = parseInt($(this).parents("div.panel").data('panel'));
-            load_panels(path, panelid);
-            return false;
-        });
-        $("a.crumb").live('click', function() {
-            var path = $(this).data('url');
-            var panelid = parseInt($(this).parents("div.panel").data('panel'));
-            load_panels(path, panelid);
-            return false;
-        });
-
+    var upload_modal = (function() {
+        var mode = "any";
+        var url = "";
 
         function load_form(url, type) {
+            /*
+             * Used by the upload modal: load the remote upload form, it can
+             * be different depending on the context.
+             */
             if(url == '/') {
                 url = '';
             }
@@ -113,6 +45,7 @@
                 done: function (e, data) {
                     if(data.result.status == "ok") {
                       $("#uploadModal").modal("hide");
+
                       var path = data.result.path;
                       // should scroll to selection(s)!
                       load_panels(path, 3);
@@ -125,20 +58,161 @@
                 // fail, .. http://api.jquery.com/Types/#Promise
                 }
             });
-
         }
-        $(".node_upload").live('click', function() {
+
+        return function(_url, _mode) {
+            /*
+             * Open the upload modal. url is where the content will be uploaded
+             * to, mode determines what content can be uploaded:
+             * - "any" means images and files
+             * - "image" means only images
+             */
+            mode = _mode;
+            url = _url;
+
+            var header = $("#uploadModalLabel");
+            var types = $(".upload_types");
+
+            /* XXX
+             * The uploadable types should be much more dynamic - we may/will
+             * eventually support different types of files and images from
+             * which you can chose.
+             */
+            if(mode == "any") {
+                header.text("Upload content");
+                types.html('<select class="select_type"> ' +
+                           '<option value="image">an Image</option> ' +
+                           '<option value="file">a File</option> ' +
+                           '</select>');
+            } else {
+                header.text("Upload an image");
+                types.html('<select class="select_type"> ' +
+                           '<option value="image">an Image</option> ' +
+                           '</select>');
+            }
             // hide & reopen browse dialog?
-            var url = $(this).data('url');
             $("#uploadModal").modal();
+            $(".upload-alert").empty();
+            $(".upload-alert").removeClass("alert");
             bt_stack_fix();
             load_form(url, $(".select_type").val());
             $(".select_type").change(function() {
                 load_form(url, $(this).val());
             });
             return false;
-        });
-    });
+        }
+    })();
+
+    var wheel_browser = (function() {
+        var _browser;
+        var current_path = '';
+        var mode = "link";
+        var callback = null;
+        var initialized = false;
+
+        function fix_sizes() {
+            /*
+             * Make sure the "panels" div takes up exactly the remaining space.
+             * Can this be done in css? XXX
+             */
+            var total = $("#browseModal .modal-body").height();
+            var header = $("#browsecrumbs").height();
+            var remainder = total - header;
+            $("#panels").height(remainder);
+        }
+        function load_panels(path, panelid) {
+                /*
+                 * How should the shifting of panels behave? Currently, if possible,
+                 * all three columns are used. This may mean that clicking in the first
+                 * colum will move the first panel to the second position. But this
+                 * doesn't have to be bad - it's a nice way to access the parent
+                 */
+                current_path = path;
+                var data = $.ajax({
+                    url: '/panel?path='+encodeURIComponent(path) + "&mode="+mode,
+                    dataType:"json",
+                    async: false
+                    }).responseText;
+                data = $.parseJSON(data);
+                var panels = data.panels;
+                var crumbs = data.crumbs;
+
+                var path = data.path;
+
+                var idx = 0;
+                for(var i= 0; i < 3; i++) {
+                    $(".panel" + i).empty();
+                }
+
+                for(var i=0; i < panels.length; i++) {
+                    var paneldata = panels[i];
+                    var panel = $(".panel" + i);
+                    panel.html(paneldata);
+                }
+                $(".crumbcontainer").html(crumbs);
+                fix_sizes();
+        }
+
+        function init(_mode, _callback) {
+            mode = _mode;
+            callback = _callback;
+            /*
+             * Initialize handlers, set title
+             */
+            var header = $("#browseModalLabel");
+            if(mode == "link") {
+                header.text("Select content to link to");
+            } else {
+                header.text("Select an image to insert");
+            }
+            if(initialized) {
+                return;
+            }
+            initialized = true;
+            // stuff from here on only should be initialized once
+
+            $(".modal_select").click(function() {
+                if(callback) {
+                    callback(current_path);
+                }
+                _browser.modal('hide');
+            });
+
+            /*
+             * cliking an entry in a panel should load the subpanel/content
+             */
+            $("tr.entry").live('click', function() {
+                var path = $(this).data('url');
+                var panelid = parseInt($(this).parents("div.panel").data('panel'));
+                load_panels(path, panelid);
+                return false;
+            });
+            /*
+             * clicking a path component in the breadcrumb should take you there
+             */
+            $("a.crumb").live('click', function() {
+                var path = $(this).data('url');
+                var panelid = parseInt($(this).parents("div.panel").data('panel'));
+                load_panels(path, panelid);
+                return false;
+            });
+            /*
+             * clicking the upload icon should open the upload modal
+             */
+            $(".node_upload").live('click', function() {
+                var url = $(this).data('url');
+                upload_modal(url, mode=="link"?"any":"image");
+            });
+        }
+
+        return function(path, mode, callback) {
+            _browser = $("#browseModal");
+            init(mode, callback);
+            _browser.modal();
+            bt_stack_fix();
+            load_panels(path || '', 3);
+        }
+    })();
 
 </script>
 
@@ -192,11 +266,7 @@
       <div class="span12 form-horizontal">
         <div class="control-group">
           <label class="control-label" for="select_type">Upload</label>
-          <div class="controls">
-            <select class="select_type">
-              <option value="image">an Image</option>
-              <option value="file">a File</option>
-            </select>
+          <div class="controls upload_types">
           </div>
         </div>
       </div>

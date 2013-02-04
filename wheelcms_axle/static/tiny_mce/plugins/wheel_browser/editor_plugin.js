@@ -17,7 +17,8 @@
                     console.log("Selection : " + href + ", " + title);
                 }
 
-                ed.getWin().parent.wheel_browser(href, function(link) {
+                ed.getWin().parent.wheel_browser(href, "link",
+                                                 function(link) {
                     ed.formatter.apply('link', {'href':link}, anchor);
                 });
             });

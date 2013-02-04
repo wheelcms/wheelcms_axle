@@ -6,8 +6,13 @@
 
 <script type="text/javascript">
   $(document).ready(function() {
-    $("#browseModal").modal();
-    load_panels("/sub5_0", 3);
+    wheel_browser("/sub5_0", "link", function(path) {alert(path)});
+    $("#show_modal_link").click(function() {
+        wheel_browser("/sub5_0", "link", function(path) {alert(path)});
+    });
+    $("#show_modal_image").click(function() {
+        wheel_browser("/sub5_0", "image", function(path) {alert(path)});
+    });
   });
 </script>
 {% endblock %}
@@ -24,7 +29,8 @@
 </div>
 <div class="row">
   <div class="span6">
-<a href="#myModal" id="show_modal" role="button" class="btn" >Launch demo modal</a>
+<a href="#myModal" id="show_modal_link" role="button" class="btn" >Launch Link Browser</a>
+<a href="#myModal" id="show_modal_image" role="button" class="btn" >Launch Image Browser</a>
   <p>
   Etiam scelerisque pretium tincidunt. Donec vel ipsum purus. Cras urna mi, molestie a sagittis quis, eleifend nec lorem. Curabitur nec ornare est. Nunc id nibh tortor, ut consequat sem. Morbi et lacus lorem. Cras pharetra magna quis nisi gravida tempus. Nunc metus risus, cursus ut feugiat ac, blandit vitae libero. Ut tellus diam, laoreet eget euismod ut, tincidunt sit amet purus. Quisque eget eros massa, in iaculis mi. Morbi nec nunc eu orci adipiscing lobortis. Sed non nulla urna. Nunc metus massa, luctus sed blandit eu, ultricies vitae orci.
   </p>
