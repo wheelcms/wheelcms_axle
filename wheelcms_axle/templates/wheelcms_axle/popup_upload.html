@@ -1,5 +1,6 @@
-<form id="fileupload" method="post" enctype="multipart/form-data">
+<form id="fileupload" method="post" enctype="multipart/form-data"
+      class="form-horizontal">
   <input type="hidden" name="type" id="upload_type" value="{{type}}">
   {% csrf_token %}
-  {{form}}
+  {% include "two.bootstrap/bootstrap-form.html" %}
 </form>

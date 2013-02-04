@@ -261,6 +261,9 @@ class MainHandler(WheelRESTHandler):
         """
             Generate panels for the file selection popup
         """
+        if not self.hasaccess():
+            return self.forbidden()
+
         node = Node.get(path)
         panels = []
 

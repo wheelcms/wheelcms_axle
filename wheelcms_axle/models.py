@@ -323,8 +323,8 @@ class FileContent(Content):
 
     def save(self, *a, **b):
         """
-            Intercept save, fill in defaults for filename and mimetype if not
-            explicitly set
+            Intercept save, fill in defaults for filename and mimetype if
+            not explicitly set
         """
         if not self.filename:
             self.filename = self.storage.name or self.title
