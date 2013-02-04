@@ -28,17 +28,19 @@
                 });
             });
             ed.addCommand('wheelImage', function() {
-                var anchor = ed.dom.getParent(ed.selection.getNode(), 'A');
+                var node = ed.selection.getNode();
+
                 var href = "";
                 var title = "";
 
-                if(anchor) {
-                    href = ed.dom.getAttrib(anchor, 'href');
-                    title = ed.dom.getAttrib(anchor, 'title');
-                    console.log("Selection : " + href + ", " + title);
+                if(node.nodeName=="IMG") {
+                    src = ed.dom.getAttrib(node, 'src');
+                    // get other attribs
+                    //title = ed.dom.getAttrib(anchor, 'title');
+                    console.log("Selection : " + src);
                 }
 
-                ed.getWin().parent.wheel_browser(href, "image",
+                ed.getWin().parent.wheel_browser(src, "image",
                                                  function(link) {
                     // Fixes crash in Safari
                     if (tinymce.isWebKit) {

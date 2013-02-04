@@ -265,6 +265,9 @@ class MainHandler(WheelRESTHandler):
         if not self.hasaccess():
             return self.forbidden()
 
+        ## temp hack XXX
+        if path.endswith("/download"):
+            path = path[:-9]
         node = Node.get(path)
         panels = []
 
