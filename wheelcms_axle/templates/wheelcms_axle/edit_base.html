@@ -153,6 +153,8 @@
                 }
                 $(".crumbcontainer").html(crumbs);
                 fix_sizes();
+                // find the current selection and see if it's selectable
+                select_state($("tr[data-url='" + path + "']").data("selectable") == "yes");
         }
 
         function select_state(enabled) {
