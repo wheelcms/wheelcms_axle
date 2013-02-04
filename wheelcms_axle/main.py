@@ -345,7 +345,6 @@ class MainHandler(WheelRESTHandler):
             sub = parent.add(slug)
             sub.set(p)
             return dict(status="ok", path=sub.path)
-        ## else return fail. uploaded file can fail (e.g. not be an image)
 
-        ## return json encoded error fields? Or BadRequest?
-
+        ## for now, assume that if something went wrong, it's with the uploaded file
+        return dict(status="error", errors=dict(storage=self.form.errors['storage'].pop()))

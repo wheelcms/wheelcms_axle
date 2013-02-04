@@ -111,10 +111,17 @@
                 dataType: 'json',
                 url: url + '/fileup',
                 done: function (e, data) {
-                    $("#uploadModal").modal("hide");
-                    var path = data.result.path;
-                    // should scroll to selection(s)!
-                    load_panels(path, 3);
+                    if(data.result.status == "ok") {
+                      $("#uploadModal").modal("hide");
+                      var path = data.result.path;
+                      // should scroll to selection(s)!
+                      load_panels(path, 3);
+                    }
+                    else {
+                        // if anything went wrong, it must have been with the uploaded file
+                        $(".upload-alert").text(data.result.errors.storage);
+                        $(".upload-alert").addClass("alert");
+                    }
                 // fail, .. http://api.jquery.com/Types/#Promise
                 }
             });
@@ -177,6 +184,10 @@
     <h3 id="uploadModalLabel">Upload a file</h3>
   </div>
   <div class="modal-body">
+    <div class="row-fluid">
+      <div class="span12 upload-alert">
+      </div>
+    </div>
     <div class="row-fluid">
       <div class="span12 form-horizontal">
         <div class="control-group">
