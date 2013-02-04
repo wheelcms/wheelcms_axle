@@ -358,3 +358,18 @@ class MainHandler(WheelRESTHandler):
 
         ## for now, assume that if something went wrong, it's with the uploaded file
         return dict(status="error", errors=dict(storage=self.form.errors['storage'].pop()))
+
+
+    def handle_download(self):
+        """
+            This doesn't work as expected. handle_download is defined on the spoke,
+            it requires support in the handler in order to be accessed.
+
+            XXX
+
+            We need a generic way to expose additional methods on spokes
+        """
+        try:
+            return self.spoke().handle_download()
+        except AttributeError:
+            return self.notfound()
