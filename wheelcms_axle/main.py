@@ -1,5 +1,5 @@
 from two.ol.base import RESTLikeHandler, applyrequest, context, json
-from wheelcms_axle.models import Node, type_registry, Content
+from wheelcms_axle.models import Node, type_registry, Content, ImageContent
 from wheelcms_axle.toolbar import Toolbar
 from wheelcms_axle import queries
 
@@ -257,9 +257,10 @@ class MainHandler(WheelRESTHandler):
 
     @json
     @applyrequest
-    def handle_panel(self, path):
+    def handle_panel(self, path, mode):
         """
             Generate panels for the file selection popup
+            mode can be either "link" (any content) or "image" (only image based content)
         """
         if not self.hasaccess():
             return self.forbidden()
@@ -269,6 +270,7 @@ class MainHandler(WheelRESTHandler):
 
         for i in range(3):
             content = node.content()
+
 
             if content:
                 instance = dict(children=[], path=node.path or '/',
@@ -284,9 +286,17 @@ class MainHandler(WheelRESTHandler):
                                 spoke=None)
 
             for child in node.children():
+                selectable = False
+
+                if mode == "link":
+                    selectable = True
+                elif isinstance(child.content(), ImageContent):
+                    selectable = True
+
                 selected = path == child.path or path.startswith(child.path + '/')
                 instance['children'].append(dict(title=child.content().title,
                                                  path=child.path,
+                                                 selectable=selectable,
                                                  meta_type=child.content().meta_type,
                                                  selected=selected))
 

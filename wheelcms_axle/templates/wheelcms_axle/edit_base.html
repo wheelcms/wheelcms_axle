@@ -153,6 +153,17 @@
                 fix_sizes();
         }
 
+        function select_state(enabled) {
+            var selectbutton = $("#browseModal .modal_select");
+
+            if(enabled) {
+                selectbutton.removeAttr("disabled");
+            }
+            else {
+                selectbutton.attr("disabled", "disabled");
+            }
+        }
+
         function init(_mode, _callback) {
             mode = _mode;
             callback = _callback;
@@ -165,6 +176,9 @@
             } else {
                 header.text("Select an image to insert");
             }
+
+            select_state(false);
+
             if(initialized) {
                 return;
             }
@@ -185,6 +199,12 @@
                 var path = $(this).data('url');
                 var panelid = parseInt($(this).parents("div.panel").data('panel'));
                 load_panels(path, panelid);
+                if($(this).data("selectable") == "yes") {
+                    select_state(true);
+                }
+                else {
+                    select_state(false);
+                }
                 return false;
             });
             /*

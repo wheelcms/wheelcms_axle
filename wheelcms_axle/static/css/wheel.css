@@ -34,3 +34,12 @@
 .image-content {
     text-align: center;
 }
+
+/*
+ * Content that cannot be selected in the browse Modal (e.g. non-images
+ * when chosing an image
+ */
+.disabled-content {
+    color: grey;
+    font-style: italic;
+}
