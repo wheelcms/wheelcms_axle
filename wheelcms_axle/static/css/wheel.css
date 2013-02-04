@@ -11,6 +11,10 @@
     margin: -250px 0 0 -450px;
 }
 
+/*#browseModal .nav-tabs {
+    margin-bottom: 0px;
+}*/
+
 /* only way I know to take precedence over bootstrap styles */
 #panel0, #panel1, #panel2 {
     height: 100%;
