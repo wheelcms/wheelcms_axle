@@ -21,6 +21,7 @@
     var upload_modal = (function() {
         var mode = "any";
         var url = "";
+        var callback = null;
 
         function load_form(url, type) {
             /*
@@ -47,8 +48,9 @@
                       $("#uploadModal").modal("hide");
 
                       var path = data.result.path;
-                      // should scroll to selection(s)!
-                      load_panels(path, 3);
+                      if(callback) {
+                        callback(path);
+                      }
                     }
                     else {
                         // if anything went wrong, it must have been with the uploaded file
@@ -60,7 +62,7 @@
             });
         }
 
-        return function(_url, _mode) {
+        return function(_url, _mode, _callback) {
             /*
              * Open the upload modal. url is where the content will be uploaded
              * to, mode determines what content can be uploaded:
@@ -69,6 +71,7 @@
              */
             mode = _mode;
             url = _url;
+            callback = _callback;
 
             var header = $("#uploadModalLabel");
             var types = $(".upload_types");
@@ -90,7 +93,6 @@
                            '<option value="image">an Image</option> ' +
                            '</select>');
             }
-            // hide & reopen browse dialog?
             $("#uploadModal").modal();
             $(".upload-alert").empty();
             $(".upload-alert").removeClass("alert");
@@ -154,6 +156,7 @@
         }
 
         function select_state(enabled) {
+            /* enable/disable the 'Select' button */
             var selectbutton = $("#browseModal .modal_select");
 
             if(enabled) {
@@ -221,7 +224,11 @@
              */
             $(".node_upload").live('click', function() {
                 var url = $(this).data('url');
-                upload_modal(url, mode=="link"?"any":"image");
+                // hide & reopen browse dialog?
+                upload_modal(url, mode=="link"?"any":"image", function(path) {
+                    // should scroll to selection(s)!
+                    load_panels(path, 3);
+                });
             });
         }
 
