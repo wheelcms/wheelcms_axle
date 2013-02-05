@@ -247,11 +247,25 @@
             initialized = true;
             // stuff from here on only should be initialized once
 
+            /*
+             * stuff to do once the modal actually shows
+             */
             _browser.on('shown', modal_shown);
+            /*
+             * handle tab changes
+             */
             _browser.find('a[data-toggle="tab"]').on('shown', tab_selected);
 
+            /*
+             * Track changes on the external link input so we can
+             * enable the <select> button
+             */
             $("#external_url").keyup(handle_external_url_change);
 
+            /*
+             * The preview button will attempt to load the
+             * url in an iframe
+             */
             $("#external_url_preview").click(function() {
                 var url = get_external_link();
                 if(url) {
@@ -259,6 +273,10 @@
                 }
                 return false;
             });
+            /*
+             * Clicking the <select> button (if enabled) should insert the link.
+             * This will depend on which tab is showing
+             */
             $(".modal_select").click(function() {
                 if(callback) {
                     var link = ""
@@ -268,6 +286,7 @@
                     }
                     else if(current_tab == "browse_external_link") {
                         link = get_external_link();
+                        args.title = $("#external_link_title").val();
                     }
                     else if(current_tab == "browse_external_image") {
                     }
