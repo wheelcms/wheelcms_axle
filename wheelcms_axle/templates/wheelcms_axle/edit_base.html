@@ -367,6 +367,9 @@
             if(options.target) {
                 $("#external_target").val(options.target);
             }
+            if(path) {
+                select_state(true);
+            }
         }
 
         function load_image(path, options) {
