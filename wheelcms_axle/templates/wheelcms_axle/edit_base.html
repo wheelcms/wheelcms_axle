@@ -359,6 +359,9 @@
         }
 
         function load_link(path, options) {
+            /*
+             * Load an existing link for updating
+             */
             modal.find('a[href="#browse_external_link"]').tab('show');
             $("#external_url").val(path);
             if(options.title) {
@@ -373,11 +376,17 @@
         }
 
         function load_image(path, options) {
+            /*
+             * Load an existing image for updating
+             */
             modal.find('a[href="#browse_external_image"]').tab('show');
             $("#external_image_url").val(path);
         }
 
         function load_local(path, args) {
+            /*
+             * Load content browser
+             */
             modal.find('a[href="#browse_local"]').tab('show');
             load_panels(path || '', 3);
         }
