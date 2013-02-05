@@ -106,7 +106,7 @@
     })();
 
     var wheel_browser = (function() {
-        var _browser;
+        var modal;
         var current_path = '';
         var mode = "link";
         var callback = null;
@@ -130,6 +130,8 @@
             // XXX -10 is a hack - iframe scrollbars?
             iframe.outerHeight(total-tabs-10);
             iframe.outerWidth(iframe.parent().innerWidth());
+
+            $("#browse_external_image").height(total-tabs);
 
         }
 
@@ -202,21 +204,30 @@
                 $("#external_iframe").attr("src", "")
             }
             else if(tab_selected == "browse_external_image") {
-                // clear image fields
+                $("#external_image_title").val("");
+                $("#external_image_url").val("");
+                $("#external_image").attr("src", "{{STATIC_URL}}/img/preview.png")
             }
             current_tab = tab_selected;
         }
 
         function handle_external_url_change(e) {
             // something changed in the url field. This may mean something valid has been entered.
-            var url = $("#external_url").val().replace(/^\s+|\s+$/g, '');
-            if(url) {
-               select_state(true); // we'll accept any content as long as it's not empty 
-            }
-
+            var url = $(this).val().replace(/^\s+|\s+$/g, '');
+            select_state(url); // we'll accept any content as long as it's not empty 
         }
         function get_external_link() {
+            // normalize link 
             var url = $("#external_url").val();
+            url = url.replace(/^\s+|\s+$/g, '');
+            if(url && url.indexOf("http") != 0) {
+                 url = "http://" + url;
+            }
+            return url;
+        }
+        function get_external_image() {
+            // normalize image
+            var url = $("#external_image_url").val();
             url = url.replace(/^\s+|\s+$/g, '');
             if(url && url.indexOf("http") != 0) {
                  url = "http://" + url;
@@ -250,17 +261,18 @@
             /*
              * stuff to do once the modal actually shows
              */
-            _browser.on('shown', modal_shown);
+            modal.on('shown', modal_shown);
             /*
              * handle tab changes
              */
-            _browser.find('a[data-toggle="tab"]').on('shown', tab_selected);
+            modal.find('a[data-toggle="tab"]').on('shown', tab_selected);
 
             /*
              * Track changes on the external link input so we can
              * enable the <select> button
              */
-            $("#external_url").keyup(handle_external_url_change);
+            $("#external_url").bind('keyup input paste', handle_external_url_change);
+            $("#external_image_url").bind('keyup input paste', handle_external_url_change);
 
             /*
              * The preview button will attempt to load the
@@ -270,6 +282,16 @@
                 var url = get_external_link();
                 if(url) {
                     $("#external_iframe").attr("src", url);
+                }
+                return false;
+            });
+            /*
+             * Same thing for image tab
+             */
+            $("#external_image_url_preview").click(function() {
+                var url = get_external_image();
+                if(url) {
+                    $("#external_image").attr("src", url);
                 }
                 return false;
             });
@@ -289,11 +311,13 @@
                         args.title = $("#external_link_title").val();
                     }
                     else if(current_tab == "browse_external_image") {
+                        link = get_external_image();
+                        args.title = $("#external_image_title").val();
                     }
                     console.log("Link = " + link);
                     callback(link, args);
                 }
-                _browser.modal('hide');
+                modal.modal('hide');
             });
 
             /*
@@ -334,19 +358,19 @@
         }
 
         function load_link(path, args) {
-            _browser.find('a[href="#browse_external_link"]').tab('show');
+            modal.find('a[href="#browse_external_link"]').tab('show');
             $("#external_url").val(path);
         }
 
         function load_local(path, args) {
-            _browser.find('a[href="#browse_local"]').tab('show');
+            modal.find('a[href="#browse_local"]').tab('show');
             load_panels(path || '', 3);
         }
 
         return function(path, mode, callback) {
-            _browser = $("#browseModal");
+            modal = $("#browseModal");
             init(mode, callback);
-            _browser.modal();
+            modal.modal();
             bt_stack_fix();
             if(path.indexOf('http') == 0) {
                 load_link(path, {});
@@ -410,8 +434,20 @@
       </div>
       <div id="browse_external_image" class="tab-pane">
         <div class="row-fluid">
-          <div class="row12">
-            External Image
+          <div class="span6">
+            <form>
+              <legend>External Image</legend>
+              <label class="control-label" for="external_image_title">Image title</label>
+              <input id="external_image_title" type="text" name="title" maxlength="256" />
+              <label class="control-label" for="external_image_url">URL</label>
+              <div class="input-append">
+                <input id="external_image_url" type="text" name="url" maxlength="256" />
+                <button id="external_image_url_preview" class="btn">Preview <i class="icon-chevron-right"></i></button>
+              </div>
+            </form>
+          </div>
+          <div class="span6">
+            <img id="external_image" src="{{STATIC_URL}}/img/preview.png" class="img-polaroid">
           </div>
         </div>
       </div>

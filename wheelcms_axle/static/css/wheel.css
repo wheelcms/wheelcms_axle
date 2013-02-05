@@ -47,3 +47,10 @@
     color: grey;
     font-style: italic;
 }
+
+/*
+ * Browse modal image preview
+ */
+#external_image {
+    max-width: 90%;
+}
