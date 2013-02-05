@@ -314,7 +314,6 @@
                         link = get_external_image();
                         args.title = $("#external_image_title").val();
                     }
-                    console.log("Link = " + link);
                     callback(link, args);
                 }
                 modal.modal('hide');
@@ -362,6 +361,11 @@
             $("#external_url").val(path);
         }
 
+        function load_image(path, args) {
+            modal.find('a[href="#browse_external_image"]').tab('show');
+            $("#external_image_url").val(path);
+        }
+
         function load_local(path, args) {
             modal.find('a[href="#browse_local"]').tab('show');
             load_panels(path || '', 3);
@@ -373,7 +377,11 @@
             modal.modal();
             bt_stack_fix();
             if(path.indexOf('http') == 0) {
-                load_link(path, {});
+                if(mode == "link") {
+                    load_link(path, {});
+                } else {
+                    load_image(path, {});
+                }
             }
             else {
                 load_local(path);

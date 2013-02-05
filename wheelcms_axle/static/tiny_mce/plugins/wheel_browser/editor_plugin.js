@@ -30,7 +30,7 @@
             ed.addCommand('wheelImage', function() {
                 var node = ed.selection.getNode();
 
-                var href = "";
+                var src = "";
                 var title = "";
 
                 if(node.nodeName=="IMG") {
