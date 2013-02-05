@@ -201,6 +201,7 @@
             else if(tab_selected == "browse_external_link") {
                 $("#external_title").val("");
                 $("#external_url").val("");
+                $("#external_target").val("");
                 $("#external_iframe").attr("src", "")
             }
             else if(tab_selected == "browse_external_image") {
@@ -308,7 +309,8 @@
                     }
                     else if(current_tab == "browse_external_link") {
                         link = get_external_link();
-                        args.title = $("#external_link_title").val();
+                        args.title = $("#external_title").val();
+                        args.target = $("#external_target").val();
                     }
                     else if(current_tab == "browse_external_image") {
                         link = get_external_image();
@@ -356,12 +358,18 @@
             });
         }
 
-        function load_link(path, args) {
+        function load_link(path, options) {
             modal.find('a[href="#browse_external_link"]').tab('show');
             $("#external_url").val(path);
+            if(options.title) {
+                $("#external_title").val(options.title);
+            }
+            if(options.target) {
+                $("#external_target").val(options.target);
+            }
         }
 
-        function load_image(path, args) {
+        function load_image(path, options) {
             modal.find('a[href="#browse_external_image"]').tab('show');
             $("#external_image_url").val(path);
         }
@@ -371,16 +379,16 @@
             load_panels(path || '', 3);
         }
 
-        return function(path, mode, callback) {
+        return function(path, mode, options, callback) {
             modal = $("#browseModal");
             init(mode, callback);
             modal.modal();
             bt_stack_fix();
             if(path.indexOf('http') == 0) {
                 if(mode == "link") {
-                    load_link(path, {});
+                    load_link(path, options);
                 } else {
-                    load_image(path, {});
+                    load_image(path, options);
                 }
             }
             else {
@@ -433,6 +441,8 @@
                 <input id="external_url" type="text" name="url" maxlength="256" />
                 <button id="external_url_preview" class="btn">Preview <i class="icon-chevron-right"></i></button>
               </div>
+              <label class="control-label" for="external_target">Link target</label>
+              <input id="external_target" type="text" name="target" maxlength="256" />
             </form>
           </div>
           <div class="span6">

@@ -6,12 +6,12 @@
 
 <script type="text/javascript">
   $(document).ready(function() {
-    wheel_browser("/sub5_0", "image", function(path) {alert(path)});
+    wheel_browser("/sub5_0", "image", {}, function(path) {alert(path)});
     $("#show_modal_link").click(function() {
-        wheel_browser("/sub5_0", "link", function(path) {alert(path)});
+        wheel_browser("/sub5_0", "link", {}, function(path) {alert(path)});
     });
     $("#show_modal_image").click(function() {
-        wheel_browser("/sub5_0", "image", function(path) {alert(path)});
+        wheel_browser("/sub5_0", "image", {}, function(path) {alert(path)});
     });
   });
 </script>
