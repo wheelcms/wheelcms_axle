@@ -314,6 +314,8 @@
                     else if(current_tab == "browse_external_image") {
                         link = get_external_image();
                         args.title = $("#external_image_title").val();
+                        args.size = $("input[type='radio'][name='external_image_size']:checked").val();
+                        console.log(args);
                     }
                     callback(link, args);
                 }
@@ -366,8 +368,14 @@
             if(options.title) {
                 $("#external_title").val(options.title);
             }
+            else {
+                $("#external_title").val("");
+            }
             if(options.target) {
                 $("#external_target").val(options.target);
+            }
+            else {
+                $("#external_target").val("");
             }
             if(path) {
                 select_state(true);
@@ -380,6 +388,21 @@
              */
             modal.find('a[href="#browse_external_image"]').tab('show');
             $("#external_image_url").val(path);
+            if(options.size) {
+                $("input[type='radio'][name='external_image_size'][value='" + options.size + "']").attr("checked", "checked");
+            }
+            else {
+                $("input[type='radio'][name='external_image_size'][value='original']").attr("checked", "checked");
+            }
+            if(options.title) {
+                $("#external_image_title").val(options.title);
+            }
+            else {
+                $("#external_image_title").val("");
+            }
+            if(path) {
+                select_state(true);
+            }
         }
 
         function load_local(path, args) {
@@ -483,6 +506,25 @@
               <div class="input-append">
                 <input id="external_image_url" type="text" name="url" maxlength="256" />
                 <button id="external_image_url_preview" class="btn">Preview <i class="icon-chevron-right"></i></button>
+              </div>
+              <label class="control-label" for="image_size">Size</label>
+              <div class="controls" id="image_size">
+                {# XXX make this dynamic / centrally defined #}
+                <label class="checkbox">
+                  <input type="radio" name="external_image_size" value="original"> Original
+                </label>
+                <label class="checkbox">
+                  <input type="radio" name="external_image_size" value="thumb"> Thumb
+                </label>
+                <label class="checkbox">
+                  <input type="radio" name="external_image_size" value="small"> Small
+                </label>
+                <label class="checkbox">
+                  <input type="radio" name="external_image_size" value="medium"> Medium
+                </label>
+                <label class="checkbox">
+                  <input type="radio" name="external_image_size" value="large"> Large
+                </label>
               </div>
             </form>
           </div>

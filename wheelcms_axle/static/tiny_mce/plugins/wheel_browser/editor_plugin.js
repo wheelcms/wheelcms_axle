@@ -30,7 +30,7 @@
                         /* messy way to insert a link .. */
                         var marker = "#wheel_temp_url#";
                         ed.execCommand("mceInsertLink", false, marker, {skip_undo : 1});
-		                var elementArray = tinymce.grep(dom.select("a"),
+                        var elementArray = tinymce.grep(dom.select("a"),
                                    function(n) {
                                          return dom.getAttrib(n, 'href') == marker;
                                    });
@@ -54,8 +54,8 @@
 
                 if(node.nodeName=="IMG") {
                     src = ed.dom.getAttrib(node, 'src');
-                    // get other attribs
-                    //title = ed.dom.getAttrib(anchor, 'title');
+                    options.title = ed.dom.getAttrib(node, 'alt') || ed.dom.getAttrib(node, 'title');
+                    options.size = ed.dom.getAttrib(node, 'class') || 'original';
                     console.log("Selection : " + src);
                 }
 
@@ -66,9 +66,16 @@
                         ed.getWin().focus();
                     }
                     var args = {src:link + '/download'};
-                    ed.execCommand('mceInsertContent', false, ed.dom.createHTML('img', args), {skip_undo : 1});
-                    ed.undoManager.add();
+                    if(options.title) {
+                        args.title = options.title;
+                        args.alt = options.title;
+                    }
+                    args['class'] = options.size || 'original';
 
+                    ed.execCommand('mceInsertContent', false,
+                                   ed.dom.createHTML('img', args),
+                                   {skip_undo : 1});
+                    ed.undoManager.add();
                 });
             });
         },
