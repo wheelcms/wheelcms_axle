@@ -13,4 +13,16 @@
   </div>
 </div>
 {% endblock %}
-{% block content %}{% endblock %}
+{% block content %}
+  {% if selectable %}
+  <div class="row-fluid">
+    <div class="span12">
+      <label class="control-label" for="local_image_title">Title</label>
+      <input id="local_image_title" type="text" name="local_title" value="{{instance.content.title}}"
+           maxlength="256">
+      <label class="control-label" for="local_image_title">Target</label>
+      <input id="local_image_target" type="text" name="local_title" value="" maxlength="256">
+    </div>
+  </div>
+  {% endif %}
+{% endblock %}

@@ -306,7 +306,8 @@ class MainHandler(WheelRESTHandler):
             panels.insert(0, self.render_template("wheelcms_axle/popup_list.html",
                                                   instance=instance,
                                                   path=path,
-                                                  mode=mode))
+                                                  mode=mode,
+                                                  selectable=(i==0)))
             if node.isroot():
                 break
             node = node.parent()
