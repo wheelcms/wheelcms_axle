@@ -1,5 +1,6 @@
 TINYMCE_DEFAULT_CONFIG = {
     'theme': "advanced", 
+    'content_css': '/static/css/wheel_content.css',
     'relative_urls': False, 
     'theme_advanced_toolbar_location':'top', 
     'theme_advanced_resizing':True, 

@@ -1,0 +1,21 @@
+/*
+ * Image sizes
+ */
+img.img_content_original {
+}
+
+img.img_content_thumb {
+    width: 60px;
+}
+
+img.img_content_small {
+    width: 120px;
+}
+
+img.img_content_medium {
+    width: 250px;
+}
+
+img.img_content_large {
+    width: 400px;
+}
