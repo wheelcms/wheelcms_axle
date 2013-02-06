@@ -395,6 +395,17 @@
             init(mode, callback);
             modal.modal();
             bt_stack_fix();
+            // move to init?
+            if(mode == "link") {
+                // hide image
+                $("#image_tab").hide()
+                $("#link_tab").show()
+            }
+            else { // image
+                // hide link
+                $("#image_tab").show()
+                $("#link_tab").hide()
+            }
             if(path.indexOf('http') == 0) {
                 if(mode == "link") {
                     load_link(path, options);
@@ -419,9 +430,9 @@
 <div id="browseModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="browseModalLabel" aria-hidden="true">
   <div class="modal-body tabbable">
     <ul class="nav nav-tabs">
-      <li class="active"><a href="#browse_local" data-toggle="tab">Local / Browse</a></li>
-      <li class=""><a href="#browse_external_link" data-toggle="tab">External Link</a></li>
-      <li class=""><a href="#browse_external_image" data-toggle="tab">External Image</a></li>
+      <li id="local_tab" class="active"><a href="#browse_local" data-toggle="tab">Local / Browse</a></li>
+      <li id="link_tab" class=""><a href="#browse_external_link" data-toggle="tab">External Link</a></li>
+      <li id="image_tab" class=""><a href="#browse_external_image" data-toggle="tab">External Image</a></li>
       <li class="pull-right"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button></a>
     </ul>
 
