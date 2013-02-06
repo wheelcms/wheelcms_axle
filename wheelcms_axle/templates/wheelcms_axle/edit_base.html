@@ -304,7 +304,14 @@
                     var link = ""
                     var args = {}
                     if(current_tab == "browse_local") {
+                        /*
+                         * combine link/image mode. Worst case we'll fill in some properties
+                         * as undefined that won't be used by that mode anyway
+                         */
                         link = current_path;
+                        args.title = $("#local_image_title").val();
+                        args.target = $("#local_image_target").val();
+                        args.size = $("input[type='radio'][name='local_image_size']:checked").val();
                     }
                     else if(current_tab == "browse_external_link") {
                         link = get_external_link();
@@ -405,12 +412,26 @@
             }
         }
 
-        function load_local(path, args) {
+        function load_local(path, options) {
             /*
              * Load content browser
              */
             modal.find('a[href="#browse_local"]').tab('show');
             load_panels(path || '', 3);
+            // can be file or image!
+            if(options.title) {
+                $("#local_image_title").val(options.title);
+            }
+            if(options.target) {
+                $("#local_image_target").val(options.target);
+            }
+            if(options.size) {
+                $("input[type='radio'][name='local_image_size'][value='" + options.size + "']").attr("checked", "checked");
+            }
+            else {
+                $("input[type='radio'][name='local_image_size'][value='original']").attr("checked", "checked");
+            }
+            // else use default: content title
         }
 
         return function(path, mode, options, callback) {
@@ -437,7 +458,7 @@
                 }
             }
             else {
-                load_local(path);
+                load_local(path, options);
             }
         }
     })();
