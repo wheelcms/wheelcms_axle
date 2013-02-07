@@ -1,5 +1,9 @@
 from two.ol.base import RESTLikeHandler, applyrequest, context, json
 from wheelcms_axle.models import Node, type_registry, Content, ImageContent
+
+## XXX If wheelcms_axle depends on FileSpoke, the base Spoke(s) definition(s)
+## should probably be part of axle (and wheelcms_spoke holds actual
+## implementations)
 from wheelcms_spokes.models import FileSpoke
 
 from wheelcms_axle.toolbar import Toolbar
