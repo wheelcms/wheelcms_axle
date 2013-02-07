@@ -1,5 +1,7 @@
 from two.ol.base import RESTLikeHandler, applyrequest, context, json
 from wheelcms_axle.models import Node, type_registry, Content, ImageContent
+from wheelcms_spokes.models import FileSpoke
+
 from wheelcms_axle.toolbar import Toolbar
 from wheelcms_axle import queries
 
@@ -274,19 +276,26 @@ class MainHandler(WheelRESTHandler):
         for i in range(3):
             content = node.content()
 
-
             if content:
+                ## FileSpoke also includes ImageSpoke
+                # import pdb; pdb.set_trace()
+                
+                spoke = content.spoke()
+                addables = [x for x in spoke.addable_children() if issubclass(x, FileSpoke)]
                 instance = dict(children=[], path=node.path or '/',
                                 title=content.title,
                                 meta_type=content.meta_type,
                                 content=content,
-                                spoke=content.spoke())
+                                spoke=spoke,
+                                addables=addables)
             else:
+                addables = [x for x in type_registry.values() if issubclass(x, FileSpoke)]
                 instance = dict(children=[], path=node.path or '/',
                                 title="Unattached node",
                                 meta_type="none",
                                 content=None,
-                                spoke=None)
+                                spoke=None,
+                                addables=addables)
 
             for child in node.children():
                 selectable = False
