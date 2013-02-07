@@ -264,6 +264,9 @@ class MainHandler(WheelRESTHandler):
     @json
     @applyrequest
     def handle_panel(self, path, mode):
+        return self.panels(path, mode)
+
+    def panels(self, path, mode):
         """
             Generate panels for the file selection popup
             mode can be either "link" (any content) or "image" (only image based content)

@@ -10,6 +10,9 @@ from django.contrib.auth.models import User
 
 class MainHandlerTestable(MainHandler):
     """ intercept template() call to avoid rendering """
+    def render_template(self, template, **context):
+        return dict(template=template, context=context)
+
     def template(self, path):
         return dict(path=path, context=self.context)
 
