@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 
 from userena.models import UserenaLanguageBaseProfile
 
+from .impexp import WheelSerializer
 ## import pytz
 
 from django.utils.translation import ugettext as _
@@ -228,6 +229,8 @@ class ContentClass(models.Model):
 
 class ContentBase(models.Model):
     CLASSES = ()
+
+    serializer = WheelSerializer
 
     node = models.OneToOneField(Node, related_name="contentbase", null=True)
     title = models.CharField(max_length=256, blank=False)
