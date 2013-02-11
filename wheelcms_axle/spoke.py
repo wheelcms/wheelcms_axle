@@ -5,7 +5,7 @@ from wheelcms_axle.forms import formfactory, FileFormfactory
 from wheelcms_axle.workflows.default import DefaultWorkflow
 
 from wheelcms_axle.models import type_registry
-from wheelcms_spokes.templates import template_registry
+from wheelcms_axle.templates import template_registry
 
 from two.ol.util import classproperty
 

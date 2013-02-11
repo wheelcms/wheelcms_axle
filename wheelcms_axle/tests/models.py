@@ -26,6 +26,7 @@ class TestFile(FileContent):
 
 class TestFileType(Spoke):
     model = TestFile
+    children = ()
 
 class OtherTestFile(FileContent):
     storage = models.FileField(upload_to="files", blank=False)
@@ -33,6 +34,7 @@ class OtherTestFile(FileContent):
 
 class OtherTestFileType(Spoke):
     model = OtherTestFile
+    children = ()
 
 
 class TestImage(ImageContent):
@@ -41,6 +43,7 @@ class TestImage(ImageContent):
 
 class TestImageType(Spoke):
     model = TestImage
+    children = ()
 
 class OtherTestImage(ImageContent):
     storage = models.ImageField(upload_to="images", blank=False)
@@ -48,6 +51,7 @@ class OtherTestImage(ImageContent):
 
 class OtherTestImageType(Spoke):
     model = OtherTestImage
+    children = ()
 
 
 type_registry.register(Type1Type)

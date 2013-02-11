@@ -5,7 +5,7 @@ from django import forms
 from wheelcms_axle.models import Node
 
 from wheelcms_axle.models import type_registry
-from wheelcms_spokes.templates import template_registry
+from wheelcms_axle.templates import template_registry
 
 
 class BaseForm(forms.ModelForm):

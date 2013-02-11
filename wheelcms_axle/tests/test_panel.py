@@ -6,8 +6,8 @@
 from ..models import Node
 
 from .models import Type1
-from wheelcms_spokes.image import Image
-from wheelcms_spokes.file import File
+from wheelcms_axle.tests.models import TestImage
+from wheelcms_axle.tests.models import TestFile
 
 from .test_handler import MainHandlerTestable, superuser_request
 
@@ -46,8 +46,8 @@ class TestPanel(object):
         """ setup some children """
         root = Node.root()
         i1 = Type1(node=root.add("type1")).save()
-        i2 = Image(storage=storage, node=root.add("image")).save()
-        i3 = File(storage=storage, node=root.add("file")).save()
+        i2 = TestImage(storage=storage, node=root.add("image")).save()
+        i3 = TestFile(storage=storage, node=root.add("file")).save()
 
         return root, i1.node, i2.node, i3.node
 
@@ -88,7 +88,7 @@ class TestPanel(object):
         assert len(children) == 3
         assert set(x['path'] for x in children) == set(('/type1', '/image', '/file'))
         for c in children:
-            if c['meta_type'] == 'image':
+            if c['meta_type'] == 'testimage':
                 assert c['selectable']
             else:
                 assert not c['selectable']
@@ -115,7 +115,7 @@ class TestPanel(object):
         children = root_panel['context']['instance']['children']
         assert len(children) == 3
         for c in children:
-            if c['meta_type'] == 'image':
+            if c['meta_type'] == 'testimage':
                 assert c['selectable']
                 assert c['selected']
             else:
