@@ -55,6 +55,7 @@ class TestSerializer(object):
         Serialization of default fields, custom field methods
     """
     def test_base(self, client):
+        """ test the base content fields """
         t = Type1(state="published", title="Test", navigation=True).save()
         tt = Type1Type(t)
         s = WheelSerializer()
@@ -74,6 +75,7 @@ class TestSerializer(object):
         assert not res.find('node')
 
     def test_owner(self, client):
+        """ owners are exported to their usernames """
         owner = User.objects.get_or_create(username="johndoe")[0]
         tt = Type1Type(Type1(owner=owner).save())
         res = WheelSerializer().serialize(tt)
@@ -85,5 +87,11 @@ class BaseSpokeImportExportTest(object):
         Base test for any spoke that uses the default
         serialization or implements (extends) its own.
     """
+    def test_capable_serialize(self, client):
+        """ verify the spoke is able to serialize itself """
+        pass
 
+    def test_capable_deserialize(self, client):
+        """ verify the spoke is able to deserialize itself """
+        pass
     ## how about Image/File base types?
