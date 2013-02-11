@@ -1,6 +1,6 @@
-from wheelcms_axle.models import Content, FileContent, ImageContent
-from wheelcms_spokes.models import Spoke
-from wheelcms_axle.models import type_registry
+from wheelcms_axle.content import Content, FileContent, ImageContent
+from wheelcms_axle.spoke import Spoke
+from wheelcms_axle.content import type_registry
 
 from django.db import models
 
@@ -27,6 +27,13 @@ class TestFile(FileContent):
 class TestFileType(Spoke):
     model = TestFile
 
+class OtherTestFile(FileContent):
+    storage = models.FileField(upload_to="files", blank=False)
+
+
+class OtherTestFileType(Spoke):
+    model = OtherTestFile
+
 
 class TestImage(ImageContent):
     storage = models.ImageField(upload_to="images", blank=False)
@@ -35,8 +42,17 @@ class TestImage(ImageContent):
 class TestImageType(Spoke):
     model = TestImage
 
+class OtherTestImage(ImageContent):
+    storage = models.ImageField(upload_to="images", blank=False)
+
+
+class OtherTestImageType(Spoke):
+    model = OtherTestImage
+
 
 type_registry.register(Type1Type)
 type_registry.register(Type2Type)
 type_registry.register(TestFileType)
 type_registry.register(TestImageType)
+type_registry.register(OtherTestFileType)
+type_registry.register(OtherTestImageType)

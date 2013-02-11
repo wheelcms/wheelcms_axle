@@ -1,4 +1,4 @@
-from wheelcms_axle.models import type_registry
+from wheelcms_axle.content import type_registry
 
 class Toolbar(object):
     """

@@ -1,9 +1,8 @@
 """
     Model specific stuff
 """
-from wheelcms_spokes.file import File
-from wheelcms_spokes.image import Image
 from wheelcms_axle.tests.models import TestFile, TestImage
+from wheelcms_axle.tests.models import OtherTestFile, OtherTestImage
 from wheelcms_axle.models import FileContent, ImageContent, ContentClass
 
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -16,8 +15,8 @@ class TestFileContent(object):
     """ verify File based content can be found in a single query """
     def test_combined(self, client):
         """ create a file, testfile and image, query the base and find all """
-        file1, _ = File.objects.get_or_create(storage=filedata)
-        file2, _ = Image.objects.get_or_create(storage=filedata)
+        file1, _ = OtherTestFile.objects.get_or_create(storage=filedata)
+        file2, _ = OtherTestImage.objects.get_or_create(storage=filedata)
         file3, _ = TestFile.objects.get_or_create(storage=filedata)
 
         files = ContentClass.objects.get(
@@ -27,8 +26,8 @@ class TestFileContent(object):
     def test_combined_manager(self, client):
         """ create a file, testfile and image and find them using the
             instances manager """
-        file1, _ = File.objects.get_or_create(storage=filedata)
-        file2, _ = Image.objects.get_or_create(storage=filedata)
+        file1, _ = OtherTestFile.objects.get_or_create(storage=filedata)
+        file2, _ = OtherTestImage.objects.get_or_create(storage=filedata)
         file3, _ = TestFile.objects.get_or_create(storage=filedata)
 
         files = FileContent.instances.all()
@@ -38,8 +37,8 @@ class TestImageContent(object):
     """ verify Image based content can be found in a single query """
     def test_combined(self, client):
         """ create a file, testfile and image, query the base and find all """
-        file1, _ = File.objects.get_or_create(storage=filedata)
-        file2, _ = Image.objects.get_or_create(storage=filedata)
+        file1, _ = OtherTestFile.objects.get_or_create(storage=filedata)
+        file2, _ = OtherTestImage.objects.get_or_create(storage=filedata)
         file3, _ = TestImage.objects.get_or_create(storage=filedata)
 
         files = ContentClass.objects.get(
@@ -49,8 +48,8 @@ class TestImageContent(object):
     def test_combined_manager(self, client):
         """ create a file, testfile and image and find them using the
             instances manager """
-        file1, _ = File.objects.get_or_create(storage=filedata)
-        file2, _ = Image.objects.get_or_create(storage=filedata)
+        file1, _ = OtherTestFile.objects.get_or_create(storage=filedata)
+        file2, _ = OtherTestImage.objects.get_or_create(storage=filedata)
         file3, _ = TestImage.objects.get_or_create(storage=filedata)
 
         files = ImageContent.instances.all()

@@ -1,11 +1,12 @@
 """
     Test the toolbar class
 """
-from wheelcms_axle.models import Node, type_registry, TypeRegistry
+from wheelcms_axle.node import Node
+from wheelcms_axle.content import type_registry, TypeRegistry
 from wheelcms_axle.toolbar import Toolbar
 from wheelcms_axle.tests.models import Type1, Type1Type, Type2Type
 
-from wheelcms_spokes.models import Spoke
+from wheelcms_axle.spoke import Spoke
 
 class TestToolbar(object):
     """
