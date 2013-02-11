@@ -38,10 +38,20 @@
 
       </unattached>
     </site>
+
+    Should a field be serialized to <title> or <field name="title">? The
+    former will not allow for a schema definition
 """
 
 from xml.etree.ElementTree import Element, SubElement, tostring
 from django.utils.encoding import smart_unicode
+from django.contrib.auth.models import User
+
+from .content import type_registry
+
+class SerializationException(Exception):
+    pass
+
 
 class WheelSerializer(object):
     """ (de) serialize wheel content """
@@ -57,6 +67,12 @@ class WheelSerializer(object):
         if value is None:
             return ""
         return smart_unicode(value.username)
+
+    def deserialize_owner(self, field, tree):
+        username = tree.text
+        if not username:
+            return None
+        return User.objects.get(username=username)
 
     def serialize(self, spoke):
         o = spoke.instance
@@ -78,13 +94,35 @@ class WheelSerializer(object):
                 fields[field.name] = value
         xmlfields = Element("fields")
         for k, v in fields.iteritems():
-            e = SubElement(xmlfields, k)
+            e = SubElement(xmlfields, "field")
+            e.attrib['name'] = k
             e.text = v
         return xmlfields
 
 
-    def deserialize(self, xml):
-        pass
+    def deserialize(self, spoke, tree):
+        model = spoke.model
+        fields = {}
+        # import pytest; pytest.set_trace()
+        for field_node in tree.findall("field"):
+            field_name = field_node.attrib.get("name")
+            if not field_name:
+                raise SerializationException("Missing name attribute")
+            field = model._meta.get_field(field_name)
+
+            handler = getattr(self, "deserialize_%s" % field.name, None)
+            if handler:
+                fields[field_name] = handler(field, field_node)
+
+            ##elif field.rel and isinstance(field.rel, models.ManyToManyRel):
+            ##    m2m_data[field.name] = self._handle_m2m_field_node(field_node, field)
+            ##elif field.rel and isinstance(field.rel, models.ManyToOneRel):
+            ##    data[field.attname] = self._handle_fk_field_node(field_node, field)
+            else:
+                value = field.to_python(field_node.text)
+                fields[field.name] = value
+        m = model(**fields).save()
+        return spoke(m)
 
 
 class Exporter(object):
@@ -101,7 +139,9 @@ class Exporter(object):
         except AttributeError:
             spoke = None
 
-        xmlcontent = SubElement(parent, "content", dict(slug=node.slug()))
+        xmlcontent = SubElement(parent, "content",
+                                dict(slug=node.slug(),
+                                type=spoke.model.get_name()))
         if spoke:
             contentxml = spoke.serializer().serialize(spoke)
             xmlcontent.append(contentxml)
@@ -123,4 +163,27 @@ class Exporter(object):
         return root
 
 class Importer(object):
-    pass
+    def __init__(self, verbose=0):
+        self.verbose = verbose
+
+    def import_node(self, node, tree):
+        type = tree.attrib['type']
+        slug = tree.attrib['slug']
+        spoke = type_registry.get(type)
+        s = spoke.serializer().deserialize(spoke, tree)
+        if slug == "":
+            n = node
+        else:
+            n = node.add(slug)
+        n.set(s.instance)
+
+        for child in tree.find("children"):
+            self.import_node(n, child)
+
+    def run(self, node, tree, base=""):
+        version = tree.attrib['version']
+        xmlbase = tree.attrib['base']
+        # import pytest; pytest.set_trace()
+        for content in tree.findall("content"):
+            self.import_node(node, content)
+
