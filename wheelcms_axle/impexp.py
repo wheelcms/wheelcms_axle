@@ -45,14 +45,30 @@ from django.utils.encoding import smart_unicode
 
 class WheelSerializer(object):
     """ (de) serialize wheel content """
+    skip = ('node', )
+
     def __init__(self):
         pass
+
+    def serialize_owner(self, field, o):
+        # import pytest; pytest.set_trace()
+        value = getattr(o, field.name, None)
+        # value = smart_unicode(value)
+        if value is None:
+            return ""
+        return smart_unicode(value.username)
 
     def serialize(self, spoke):
         o = spoke.instance
         fields = {}
         for field in o._meta.concrete_model._meta.fields:
-            if field.serialize:
+            handler = getattr(self, "serialize_%s" % field.name, None)
+            if field.name in self.skip:
+                continue
+
+            if handler:
+                fields[field.name] = handler(field, o)
+            elif field.serialize:
                 if field.rel is None:
                     value = field.value_to_string(o)
                 else:
@@ -69,6 +85,7 @@ class WheelSerializer(object):
 
     def deserialize(self, xml):
         pass
+
 
 class Exporter(object):
     VERSION = 1
@@ -104,3 +121,6 @@ class Exporter(object):
         root.set('base', base)
         self.export_node(root, node)
         return root
+
+class Importer(object):
+    pass
