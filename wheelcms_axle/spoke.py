@@ -7,6 +7,8 @@ from wheelcms_axle.workflows.default import DefaultWorkflow
 from wheelcms_axle.models import type_registry
 from wheelcms_axle.templates import template_registry
 
+from .impexp import WheelSerializer
+
 from two.ol.util import classproperty
 
 
@@ -22,6 +24,8 @@ class Spoke(object):
 
     ## explicit children - explicit children that can be added
     explicit_children = None
+
+    serializer = WheelSerializer
 
     def __init__(self, o):
         self.o = o

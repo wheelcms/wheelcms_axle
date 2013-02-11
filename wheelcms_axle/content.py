@@ -8,22 +8,20 @@ from django.db import models
 
 from .registry import Registry
 
-from .node import Node ## circular
-
-from .impexp import WheelSerializer
+from .node import Node
 
 
 def far_future():
     """ default expiration is roughly 20 years from now """
     return timezone.now() + datetime.timedelta(days=(20*365+8))
 
+
 class ContentClass(models.Model):
     name = models.CharField(max_length=256, blank=False)
 
+
 class ContentBase(models.Model):
     CLASSES = ()
-
-    serializer = WheelSerializer
 
     node = models.OneToOneField(Node, related_name="contentbase", null=True)
     title = models.CharField(max_length=256, blank=False)
@@ -90,7 +88,9 @@ class ContentBase(models.Model):
         except Node.DoesNotExist:
             return u"Unconnected %s: %s" % (self.meta_type, self.title)
 
+
 WHEEL_CONTENT_BASECLASS = ContentBase
+
 
 class Content(WHEEL_CONTENT_BASECLASS):
     pass
@@ -102,6 +102,7 @@ class ClassContentManager(models.Manager):
 
     def get_query_set(self):
         return ContentClass.objects.get_or_create(name=self.name)[0].content.all()
+
 
 class FileContent(Content):
     FILECLASS = "wheel.file"
@@ -144,6 +145,7 @@ class ImageContent(FileContent):
 
     class Meta(FileContent.Meta):
         abstract = True
+
 
 class TypeRegistry(dict):
     def register(self, t):

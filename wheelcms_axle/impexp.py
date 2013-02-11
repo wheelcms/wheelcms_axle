@@ -48,7 +48,8 @@ class WheelSerializer(object):
     def __init__(self):
         pass
 
-    def serialize(self, o):
+    def serialize(self, spoke):
+        o = spoke.instance
         fields = {}
         for field in o._meta.concrete_model._meta.fields:
             if field.serialize:
@@ -76,11 +77,16 @@ class Exporter(object):
         self.verbose = verbose
 
     def export_node(self, parent, node):
-        content = node.content()
+        # import pdb; pdb.set_trace()
+        
+        try:
+            spoke = node.content().spoke()
+        except AttributeError:
+            spoke = None
 
         xmlcontent = SubElement(parent, "content", dict(slug=node.slug()))
-        if content:
-            contentxml = content.serializer().serialize(content)
+        if spoke:
+            contentxml = spoke.serializer().serialize(spoke)
             xmlcontent.append(contentxml)
 
         children = SubElement(xmlcontent, "children")
