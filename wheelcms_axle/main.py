@@ -282,9 +282,12 @@ class MainHandler(WheelRESTHandler):
         if not self.hasaccess():
             return self.forbidden()
 
-        ## temp hack XXX
-        if path.endswith("/download"):
-            path = path[:-9]
+        ## remove optional 'action', marked by a +
+        ## not sure if this is the right place to do this, or if the browser
+        ## modal should have been invoked without the action in the first place
+        if '+' in path:
+            path = path.split("+", 1)[0].rstrip('/')
+
         node = Node.get(path)
         panels = []
 
