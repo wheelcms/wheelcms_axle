@@ -65,7 +65,7 @@
                     if (tinymce.isWebKit) {
                         ed.getWin().focus();
                     }
-                    var args = {src:link + '/download'};
+                    var args = {src:link + '/+download'};
                     if(options.title) {
                         args.title = options.title;
                         args.alt = options.title;

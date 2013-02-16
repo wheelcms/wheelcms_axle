@@ -105,7 +105,7 @@ class FileSpoke(Spoke):
     def light_form(cls):
         return FileFormfactory(cls.model, light=True)
 
-    def handle_download(self):
+    def action_download(self, handler, request, action):
         """ provide a direct download
 
             What's the best option: redirect to {{MEDIA_URL}}/<path> or
