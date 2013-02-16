@@ -11,6 +11,8 @@ class Type1(Content):
 class Type1Type(Spoke):
     model = Type1
 
+    def action_hello(self, handler, request, action):
+        return ("Hello", request, handler, self, action)
 
 class Type2(Content):
     pass

@@ -239,16 +239,25 @@ class MainHandler(WheelRESTHandler):
 
     def view(self):
         """ frontpage / view """
+        action = self.kw.get('action', '')
+
         if self.spoke() and not self.spoke().workflow().is_published():
             if not self.hasaccess():
                 return self.forbidden()
 
+        if action:
+            handler = getattr(self.spoke(), 'action_' + action, None)
+            if handler:
+                return handler(self, self.request, action)
+            else:
+                return self.notfound()
+
         self.context['toolbar'] = Toolbar(self.instance)
         return self.template("wheelcms_axle/main.html")
 
-    def list(self):
+    def list(self, action=""):
         self.instance = Node.root()
-        return self.view()
+        return self.view(action)
 
     def handle_list(self):
         self.context['toolbar'] = Toolbar(self.instance, status="list")
@@ -267,7 +276,8 @@ class MainHandler(WheelRESTHandler):
     def panels(self, path, mode):
         """
             Generate panels for the file selection popup
-            mode can be either "link" (any content) or "image" (only image based content)
+            mode can be either "link" (any content) or "image" (only image
+            based content)
         """
         if not self.hasaccess():
             return self.forbidden()
