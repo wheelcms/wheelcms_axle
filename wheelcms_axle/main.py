@@ -255,9 +255,9 @@ class MainHandler(WheelRESTHandler):
         self.context['toolbar'] = Toolbar(self.instance)
         return self.template("wheelcms_axle/main.html")
 
-    def list(self, action=""):
+    def list(self):
         self.instance = Node.root()
-        return self.view(action)
+        return self.view()
 
     def handle_list(self):
         self.context['toolbar'] = Toolbar(self.instance, status="list")
