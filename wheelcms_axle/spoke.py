@@ -12,6 +12,14 @@ from .impexp import WheelSerializer
 from two.ol.util import classproperty
 
 
+def action(f):
+    """
+        mark a method as being an action.
+    """
+    f.action = True
+    return f
+
+
 class Spoke(object):
     model = Content  ## is it smart to set this to Content? A nonsensible default..
     workflowclass = DefaultWorkflow
@@ -105,7 +113,8 @@ class FileSpoke(Spoke):
     def light_form(cls):
         return FileFormfactory(cls.model, light=True)
 
-    def action_download(self, handler, request, action):
+    @action
+    def download(self, handler, request, action):
         """ provide a direct download
 
             What's the best option: redirect to {{MEDIA_URL}}/<path> or

@@ -1,5 +1,5 @@
 from wheelcms_axle.content import Content, FileContent, ImageContent
-from wheelcms_axle.spoke import Spoke
+from wheelcms_axle.spoke import Spoke, action
 from wheelcms_axle.content import type_registry
 
 from django.db import models
@@ -11,7 +11,8 @@ class Type1(Content):
 class Type1Type(Spoke):
     model = Type1
 
-    def action_hello(self, handler, request, action):
+    @action
+    def hello(self, handler, request, action):
         return ("Hello", request, handler, self, action)
 
 class Type2(Content):

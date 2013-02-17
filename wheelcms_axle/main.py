@@ -246,8 +246,8 @@ class MainHandler(WheelRESTHandler):
                 return self.forbidden()
 
         if action:
-            handler = getattr(self.spoke(), 'action_' + action, None)
-            if handler:
+            handler = getattr(self.spoke(), action, None)
+            if handler and getattr(handler, 'action', False):
                 return handler(self, self.request, action)
             else:
                 return self.notfound()
