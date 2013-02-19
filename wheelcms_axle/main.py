@@ -260,9 +260,22 @@ class MainHandler(WheelRESTHandler):
         return self.view()
 
     def handle_list(self):
+        if not self.hasaccess():
+            return self.forbidden()
         self.context['toolbar'] = Toolbar(self.instance, status="list")
         self.context['breadcrumb'] = self.breadcrumb(operation="Contents")
         return self.template("wheelcms_axle/contents.html")
+
+    def handle_contents(self):
+        """ handle the /contents method. Usually this will give a listing
+            of child-content, but in certain cases this makes no sense (e.g.
+            childless content, or content that simply can't have children.
+            
+            This also may behave differently depending on the user's access
+        """
+        if self.spoke() and self.spoke().addable_children():
+            return self.redirect(self.instance.path + '/list')
+        return self.redirect(self.instance.path)
 
     def handle_popup(self):
         """ popup experiments - #524 """

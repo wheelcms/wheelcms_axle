@@ -24,7 +24,7 @@ Content listing for {{instance.content.title}}<br>
     </tr>
     {% endif %}
     {% for child in instance.children %}
-      <tr class="clickrow sortablerow" data-url="{{child.path}}/list">
+      <tr class="clickrow sortablerow" data-url="{{child.path}}/contents">
         <td><input name="selection" type="checkbox" value="{{child.path}}"></td>
         <td>{{child.content.title}}</td>
         <td>Published</td>
