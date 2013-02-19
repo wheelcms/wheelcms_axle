@@ -297,9 +297,10 @@ class MainHandler(WheelRESTHandler):
             if content:
                 ## FileSpoke also includes ImageSpoke
                 # import pdb; pdb.set_trace()
-                
+
                 spoke = content.spoke()
-                addables = [x for x in spoke.addable_children() if issubclass(x, FileSpoke)]
+                addables = [x for x in spoke.addable_children()
+                            if issubclass(x, FileSpoke)]
                 instance = dict(children=[], path=node.path or '/',
                                 title=content.title,
                                 meta_type=content.meta_type,
@@ -307,7 +308,8 @@ class MainHandler(WheelRESTHandler):
                                 spoke=spoke,
                                 addables=addables)
             else:
-                addables = [x for x in type_registry.values() if issubclass(x, FileSpoke)]
+                addables = [x for x in type_registry.values()
+                            if issubclass(x, FileSpoke)]
                 instance = dict(children=[], path=node.path or '/',
                                 title="Unattached node",
                                 meta_type="none",
@@ -323,18 +325,21 @@ class MainHandler(WheelRESTHandler):
                 elif isinstance(child.content(), ImageContent):
                     selectable = True
 
-                selected = path == child.path or path.startswith(child.path + '/')
-                instance['children'].append(dict(title=child.content().title,
-                                                 path=child.path,
-                                                 selectable=selectable,
-                                                 meta_type=child.content().meta_type,
-                                                 selected=selected))
+                selected = path == child.path or \
+                           path.startswith(child.path + '/')
+                instance['children'].append(
+                                      dict(title=child.content().title,
+                                           path=child.path,
+                                           selectable=selectable,
+                                           meta_type=child.content().meta_type,
+                                           selected=selected))
 
-            panels.insert(0, self.render_template("wheelcms_axle/popup_list.html",
-                                                  instance=instance,
-                                                  path=path,
-                                                  mode=mode,
-                                                  selectable=(i==0)))
+            panels.insert(0,
+                          self.render_template("wheelcms_axle/popup_list.html",
+                                               instance=instance,
+                                               path=path,
+                                               mode=mode,
+                                               selectable=(i==0)))
             if node.isroot():
                 break
             node = node.parent()
