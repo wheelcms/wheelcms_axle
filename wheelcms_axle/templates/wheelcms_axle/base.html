@@ -37,7 +37,7 @@
     {% if user.is_anonymous %}
     <ul class="nav">
       <li><a href="{% url userena_signup %}">Register</a></li>
-      <li><a href="{% url userena_signin %}">Signin</a></li>
+      <li><a href="{% url userena_signin %}?next={{request.path}}">Signin</a></li>
     </ul>
     {% else %}
     <ul class="nav">
