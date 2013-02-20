@@ -131,6 +131,8 @@ class MainHandler(WheelRESTHandler):
 
         parent = self.parent
 
+        self.context['redirect_cancel'] = (parent.path or '/') + \
+                                          "?info=Create+cancelled"
         ## if attach: do not accept slug
         if self.post:
             self.context['form'] = \
@@ -172,6 +174,8 @@ class MainHandler(WheelRESTHandler):
         instance = self.instance
         parent = instance.parent()
 
+        self.context['redirect_cancel'] = (self.instance.path or '/') + \
+                                          "?info=Update+cancelled"
         self.context['toolbar'] = Toolbar(self.instance, status="edit")
 
         type = instance.content().meta_type
