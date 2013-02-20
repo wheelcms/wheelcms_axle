@@ -63,8 +63,8 @@ class Spoke(object):
         return self.workflowclass(self)
 
     def view_template(self):
-        if not self.o.template or \
-           not template_registry.valid_for_model(self.model, self.o.template):
+        if not self.instance.template or \
+           not template_registry.valid_for_model(self.model, self.instance.template):
             default = template_registry.defaults.get(self.model)
             if default:
                 return default
@@ -75,7 +75,7 @@ class Spoke(object):
 
             return "wheelcms_axle/content_view.html"
 
-        return self.o.template
+        return self.instance.template
 
     def detail_template(self):
         """ A small detail template, used in browse modal """
@@ -83,8 +83,8 @@ class Spoke(object):
 
     def fields(self):
         """ iterate over fields in model """
-        for i in self.o._meta.fields:
-            yield (i.name, getattr(self.o, i.name))
+        for i in self.instance._meta.fields:
+            yield (i.name, getattr(self.instance, i.name))
 
     @classmethod
     def addable_children(cls):
