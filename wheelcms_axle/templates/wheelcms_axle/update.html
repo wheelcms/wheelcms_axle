@@ -5,9 +5,6 @@
 
 {{ block.super }}
 
-<p>
-Edit Path: {{instance.path}} / {{instance.content.title}}
-</p>
 <form method="post" action="." class="form-horizontal"
   {% if form.is_multipart %}enctype="multipart/form-data"{%endif%}>
   {% csrf_token %}
