@@ -12,7 +12,16 @@ class BaseForm(forms.ModelForm):
     class Meta:
         exclude = ["node", "meta_type", "owner", "classes"]
 
+
+    def content_fields(self):
+        return set(self.fields) - set(self.advanced_fields())
+
+    def advanced_fields(self):
+        return ["created", "modified", "publication", "expire", "state",
+                "template", "navigation", "fropsel"]
+
     slug = forms.Field(required=False)
+    fropsel = forms.Field(required=True)
 
     def __init__(self, parent, attach=False, *args, **kwargs):
         """

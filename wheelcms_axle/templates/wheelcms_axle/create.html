@@ -7,23 +7,63 @@
 
 <p>
 {% if attach %}
-Attach "{{typeinfo.title}}" on {{instance.path}}
+Attach "{{typeinfo.title}}" to {{instance.path}}
 {% else %}
-Create "{{typeinfo.title}}" on "{{instance.content.title}}" {{instance.path}}
+Create "{{typeinfo.title}}" under <a href="{{instance.path|default:'/'}}">"{{instance.content.title}}"</a>
 {% endif %}
 </p>
-<form method="post" action="." class="form-horizontal" 
-  {% if form.is_multipart %}enctype="multipart/form-data"{%endif%}>
-  {% csrf_token %}
-  <input type="hidden" name="type" value="{{type}}">
-  {% if attach %}
-  <input type="hidden" name="attach" value="1">
+<div class="tabbable">
+  {% if 0 %}
+  <ul class="nav nav-tabs">
+    <li class="active"><a href="#content" data-toggle="tab">Content</a></li>
+    <li><a href="#properties" data-toggle="tab">Properties</a></li>
+    <li><a href="#seo" data-toggle="tab">SEO</li>
+  </ul>
   {% endif %}
-  {% include "two.bootstrap/bootstrap-form.html" %}
-  <div class="form-actions">
-    <input class="btn primary" type="submit" value="Add">
-    <a href="{{redirect_cancel}}" class="btn">Cancel</a>
-  </div>
-</form>
 
+  <div class="tab-content">
+    <div id="content" class="tab-pane active">
+      <form method="post" action="." class="form-horizontal" 
+        {% if form.is_multipart %}enctype="multipart/form-data"{%endif%}>
+        {% csrf_token %}
+        <input type="hidden" name="type" value="{{type}}">
+        {% if attach %}
+        <input type="hidden" name="attach" value="1">
+        {% endif %}
+        <div class="accordion" id="edit-accordion">
+          <div class="accordion-group">
+            <div class="accordion-heading">
+              <a class="accordion-toggle" data-toggle="collapse" data-parent="#edit-accordion" href="#collapsebase">Content</a>
+            </div>
+            <div id="collapsebase" class="accordion-body collapse in">
+              <div class="accordion-inner">
+                {% include "two.bootstrap/bootstrap-form.html" with fields=form.content_fields %}
+              </div>
+            </div>
+          </div>
+          <div class="accordion-group">
+            <div class="accordion-heading">
+              <a class="accordion-toggle" data-toggle="collapse" data-parent="#edit-accordion" href="#collapseadvanced">Advanced</a>
+            </div>
+            <div id="collapseadvanced" class="accordion-body collapse">
+              <div class="accordion-inner">
+                 {% include "two.bootstrap/bootstrap-form.html" with fields=form.advanced_fields %}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <input class="btn primary" type="submit" value="Add">
+          <a href="{{redirect_cancel}}" class="btn">Cancel</a>
+        </div>
+      </form>
+    </div>
+    <div id="properties" class="tab-pane">
+      Properties
+    </div>
+    <div id="seo" class="tab-pane">
+      SEO
+    </div>
+  </div>
+</div>
 {% endblock %}
