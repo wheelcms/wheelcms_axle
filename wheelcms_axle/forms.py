@@ -18,10 +18,11 @@ class BaseForm(forms.ModelForm):
 
     def advanced_fields(self):
         return ["created", "modified", "publication", "expire", "state",
-                "template", "navigation", "fropsel"]
+                "template", "navigation", "important"]
 
     slug = forms.Field(required=False)
-    fropsel = forms.Field(required=True)
+    # just an experiment, to have a required field in the advanced section
+    # important = forms.Field(required=True)
 
     def __init__(self, parent, attach=False, *args, **kwargs):
         """
