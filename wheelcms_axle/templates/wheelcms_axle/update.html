@@ -1,19 +1,11 @@
-{% extends "wheelcms_axle/admin_base.html" %}
+{% extends "wheelcms_axle/base_form.html" %}
 
+{% block form_header %} {% endblock %}
 
-{% block base_main %}
-
-{{ block.super }}
-
-<form method="post" action="." class="form-horizontal"
-  {% if form.is_multipart %}enctype="multipart/form-data"{%endif%}>
-  {% csrf_token %}
-  <input type="hidden" name="type" value="{{type}}">
-  {% include "two.bootstrap/bootstrap-form.html" %}
-  <div class="form-actions">
-    <input class="btn primary" type="submit" value="Update">
-    <a href="{{redirect_cancel}}" class="btn">Cancel</a>
-  </div>
-</form>
-
+{% block form_tabs %} {% endblock %}
+{% block form_actions %}
+<div class="form-actions">
+  <input class="btn primary" type="submit" value="Update">
+  <a href="{{redirect_cancel}}" class="btn">Cancel</a>
+</div>
 {% endblock %}
