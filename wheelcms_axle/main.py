@@ -130,9 +130,12 @@ class MainHandler(WheelRESTHandler):
         formclass = type_registry.get(type).form
 
         parent = self.parent
+        if parent and parent.path:
+            parentpath = parent.path
+        else:
+            parentpath = '/'
 
-        self.context['redirect_cancel'] = (parent.path or '/') + \
-                                          "?info=Create+cancelled"
+        self.context['redirect_cancel'] = parentpath + "?info=Create+cancelled"
         ## if attach: do not accept slug
         if self.post:
             self.context['form'] = \
