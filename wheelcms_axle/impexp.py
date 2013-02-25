@@ -133,7 +133,7 @@ class Exporter(object):
 
     def export_node(self, parent, node):
         # import pdb; pdb.set_trace()
-        
+
         try:
             spoke = node.content().spoke()
         except AttributeError:
@@ -153,7 +153,7 @@ class Exporter(object):
     def run(self, node, base="", unattached=True, attachinline=True):
         """ export node and all content beneath it. If unattached is True,
             also export unattached content.
-            
+
             attachments can be inline or exported to a folder
         """
         root = Element("site")
