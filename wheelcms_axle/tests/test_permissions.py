@@ -58,12 +58,12 @@ class BasePermissionTest(object):
     def test_create_get(self, client):
         """ only powerusers can get the createform """
         handler = self.setup_handler()
-        self.check(handler.create, type="type1")
+        self.check(handler.create, type=Type1.get_name())
 
     def test_create_post(self, client):
         """ only powerusers can post the createform """
         handler = self.setup_handler(method="POST")
-        self.check(handler.create, type="type1")
+        self.check(handler.create, type=Type1.get_name())
 
     def test_update_get(self, client):
         """ only powerusers can view the update form """

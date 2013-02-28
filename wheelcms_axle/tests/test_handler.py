@@ -66,7 +66,7 @@ class TestMainHandler(object):
         """ test create on root - get """
         root = Node.root()
         Type1(node=root).save()
-        request = superuser_request("/", type="type1")
+        request = superuser_request("/", type=Type1.get_name())
         handler = MainHandlerTestable(request=request, instance=root)
         create = handler.create()
         assert create['path'] == "wheelcms_axle/create.html"
@@ -76,7 +76,7 @@ class TestMainHandler(object):
         """ test /edit """
         root = Node.root()
         Type1(node=root).save()
-        request = superuser_request("/edit", method="POST", type="type1")
+        request = superuser_request("/edit", method="POST", type=Type1.get_name())
         instance = MainHandlerTestable.coerce(dict(instance=""))
         handler = MainHandlerTestable(request=request, instance=instance)
         update = handler.update()
@@ -87,9 +87,9 @@ class TestMainHandler(object):
         """ get the form for attaching content """
         root = Node.root()
         Type1(node=root).save()
-        request = superuser_request("/", type="type1")
+        request = superuser_request("/", type=Type1.get_name())
         handler = MainHandlerTestable(request=request, instance=root)
-        create = handler.create(type="type1", attach=True)
+        create = handler.create(type=Type1.get_name(), attach=True)
         assert create['path'] == "wheelcms_axle/create.html"
         assert 'form' in create['context']
 
@@ -100,7 +100,7 @@ class TestMainHandler(object):
         root = Node.root()
         handler = MainHandler(request=request, post=True,
                               instance=dict(parent=root))
-        pytest.raises(Redirect, handler.create, type="type1", attach=True)
+        pytest.raises(Redirect, handler.create, type=Type1.get_name(), attach=True)
 
         root = Node.root()
         assert root.contentbase.title == "Test"
@@ -112,7 +112,7 @@ class TestMainHandler(object):
         Type1(node=root).save()
         request = superuser_request("/")
         handler = MainHandlerTestable(request=request, instance=root)
-        create = handler.create(type="type1", attach=True)
+        create = handler.create(type=Type1.get_name(), attach=True)
 
         form = create['context']['form']
         assert 'slug' not in form.fields
@@ -124,7 +124,7 @@ class TestMainHandler(object):
         root = Node.root()
         handler = MainHandler(request=request, post=True,
                               instance=dict(parent=root))
-        pytest.raises(Redirect, handler.create, type="type1")
+        pytest.raises(Redirect, handler.create, type=Type1.get_name())
 
         node = Node.get("/test")
         assert node.contentbase.title == "Test"
@@ -241,7 +241,7 @@ class TestBreadcrumb(object):
         request = superuser_request("/child/create")
 
         handler = MainHandlerTestable(request=request, instance=child)
-        context = handler.create(type="type1")['context']
+        context = handler.create(type=Type1.get_name())['context']
         assert 'breadcrumb' in context
         assert context['breadcrumb'] == [('Home', '/'), ('Child', '/child'),
                                          ('Create', '')]

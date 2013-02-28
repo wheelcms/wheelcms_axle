@@ -65,12 +65,9 @@ class MainHandler(WheelRESTHandler):
             ## there's no instance, or it's not attached to content
             return None
 
-        type = self.instance.content().meta_type
+        typename = self.instance.content().get_name()
 
-        if not type:
-            return None
-
-        typeinfo = type_registry.get(type)
+        typeinfo = type_registry.get(typename)
         parent = self.instance.parent()
         try:
             content = instance.content()
@@ -181,8 +178,8 @@ class MainHandler(WheelRESTHandler):
                                           "?info=Update+cancelled"
         self.context['toolbar'] = Toolbar(self.instance, status="edit")
 
-        type = instance.content().meta_type
-        typeinfo = type_registry.get(type)
+        typename = instance.content().get_name()
+        typeinfo = type_registry.get(typename)
         formclass =  typeinfo.form
         slug = instance.slug()
 

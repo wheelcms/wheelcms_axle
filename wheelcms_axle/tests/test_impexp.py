@@ -68,22 +68,22 @@ class TestExporter(object):
         c1 = root_children_content[0]
         assert c1.tag == "content"
         assert c1.attrib['slug'] == "c1"
-        assert c1.attrib['type'] == 'type1'
+        assert c1.attrib['type'] == Type1.get_name()
 
         c1_1 = c1.find("children").find("content")
         assert c1_1.tag == "content"
         assert c1_1.attrib['slug'] == "c1_1"
-        assert c1_1.attrib['type'] == 'type2'
+        assert c1_1.attrib['type'] == Type2.get_name()
 
         c2 = root_children_content[1]
         assert c2.tag == "content"
         assert c2.attrib['slug'] == "c2"
-        assert c2.attrib['type'] == 'type2'
+        assert c2.attrib['type'] == Type2.get_name()
 
         c2_1 = c2.find("children").find("content")
         assert c2_1.tag == "content"
         assert c2_1.attrib['slug'] == "c2_1"
-        assert c2_1.attrib['type'] == 'type1'
+        assert c2_1.attrib['type'] == Type1.get_name()
 
 
 class TestImporter(object):
@@ -97,7 +97,7 @@ class TestImporter(object):
     """
     xml = """
 <site base="" version="1">
- <content slug="" type="type1">
+ <content slug="" type="tests.type1">
   <fields>
    <field name="publication">2013-02-11T15:58:46.004222+00:00</field>
    <field name="created">2013-02-11T15:58:46.004279+00:00</field>
@@ -112,7 +112,7 @@ class TestImporter(object):
    <field name="navigation">False</field>
   </fields>
   <children>
-   <content slug="c1" type="type1">
+   <content slug="c1" type="tests.type1">
     <fields>
      <field name="publication">2013-02-11T15:58:46.006591+00:00</field>
      <field name="created">2013-02-11T15:58:46.006646+00:00</field>
@@ -127,7 +127,7 @@ class TestImporter(object):
      <field name="navigation">False</field>
     </fields>
     <children>
-     <content slug="c1_1" type="type2">
+     <content slug="c1_1" type="tests.type2">
       <fields>
        <field name="publication">2013-02-11T15:58:46.012434+00:00</field>
        <field name="created">2013-02-11T15:58:46.012483+00:00</field>
@@ -155,7 +155,7 @@ class TestImporter(object):
         res = importer.run(Node.root(), tree)
 
         root = Node.root()
-        assert root.content().meta_type == "type1"
+        assert root.content().meta_type == Type1.__name__.lower()
         assert len(root.children()) == 1
         assert root.children()[0].path == "/c1"
 
@@ -187,7 +187,7 @@ class TestSerializer(object):
         assert res.find("field[@name='modified']").text
         assert res.find("field[@name='expire']").text
         assert res.find("field[@name='navigation']").text == "True"
-        assert res.find("field[@name='meta_type']").text == tt.model.get_name()
+        assert res.find("field[@name='meta_type']").text == tt.model.__name__.lower()
         assert not res.find("field[@name='owner']")
         assert not res.find("field[@name='node']")
 

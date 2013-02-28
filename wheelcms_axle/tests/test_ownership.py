@@ -31,7 +31,7 @@ class TestOwnership(object):
         root = Node.root()
         handler = MainHandler(request=request, post=True,
                               instance=dict(parent=root))
-        pytest.raises(Redirect, handler.create, type="type1")
+        pytest.raises(Redirect, handler.create, type=Type1.get_name())
 
         node = Node.get("/test")
         assert node.contentbase.title == "Test"

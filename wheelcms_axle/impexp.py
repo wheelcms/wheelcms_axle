@@ -168,9 +168,9 @@ class Importer(object):
         self.verbose = verbose
 
     def import_node(self, node, tree):
-        type = tree.attrib['type']
+        typename = tree.attrib['type']
         slug = tree.attrib['slug']
-        spoke = type_registry.get(type)
+        spoke = type_registry.get(typename)
         s = spoke.serializer().deserialize(spoke, tree)
         if slug == "":
             n = node

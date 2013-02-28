@@ -74,12 +74,12 @@ class ContentBase(models.Model):
 
     def spoke(self):
         """ return the spoke for this model """
-        return type_registry.get(self.meta_type)(self)
+        return type_registry.get(self.get_name())(self)
 
     @classmethod
     def get_name(cls):
         ## include app_label ? #486
-        return cls._meta.object_name.lower()
+        return "%s.%s" % (cls._meta.app_label.lower(), cls._meta.object_name.lower())
 
     def __unicode__(self):
         try:

@@ -1,6 +1,10 @@
 """
     Model specific stuff
 """
+from django.core.files.uploadedfile import SimpleUploadedFile
+
+from two.ol.util import classproperty
+
 from wheelcms_axle.tests.models import TestFile, TestImage
 from wheelcms_axle.tests.models import OtherTestFile, OtherTestImage
 from wheelcms_axle.tests.models import TestFileType, TestImageType
@@ -8,7 +12,6 @@ from wheelcms_axle.tests.models import OtherTestFileType, OtherTestImageType
 from wheelcms_axle.tests.models import Type1Type
 from wheelcms_axle.models import FileContent, ImageContent, ContentClass
 
-from django.core.files.uploadedfile import SimpleUploadedFile
 
 from wheelcms_axle.node import Node
 from wheelcms_axle.content import TypeRegistry, type_registry
@@ -42,7 +45,10 @@ class BaseSpokeTest(BaseLocalRegistry):
         Basic spoke testing
     """
     type = None
-    typename = None
+
+    @classproperty
+    def typename(cls):
+        return cls.type.model.get_name()
 
     def test_name(self, client):
         """
@@ -211,7 +217,6 @@ class TestType1Spoke(BaseSpokeTest):
         Run base tests on test type 'type1'
     """
     type = Type1Type
-    typename = "type1"
 
     def test_fields(self, client):
         """ base tests + extra field """
@@ -224,7 +229,6 @@ class TestType1SpokeTemplate(BaseSpokeTemplateTest):
         Run base template tests on test type 'type1'
     """
     type = Type1Type
-    typename = "type1"
 
 
 class ModellessSpoke(Spoke):
