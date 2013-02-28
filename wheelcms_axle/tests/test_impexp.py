@@ -207,10 +207,14 @@ class BaseSpokeImportExportTest(object):
     type = None
     spoke = None
 
+    def create(self, **kw):
+        t = self.type(**kw).save()
+        tt = self.spoke(t)
+        return tt
+
     def test_capable_serialize(self, client):
         """ verify the spoke is able to serialize itself """
-        t = self.type(state="published", title="Test", navigation=True).save()
-        tt = self.spoke(t)
+        tt = self.create(state="published", title="Test", navigation=True)
         s = tt.serializer()
         res = s.serialize(tt)
         assert isinstance(res, Element)
@@ -220,9 +224,7 @@ class BaseSpokeImportExportTest(object):
         ## step 0: create user / owner
         owner = User.objects.get_or_create(username="johndoe")[0]
         ## step 1: build XML
-        t = self.type(state="published", title="Hello World",
-                      navigation=True, owner=owner).save()
-        tt = self.spoke(t)
+        tt = self.create(state="published", title="Hello World", navigation=True, owner=owner)
         s = tt.serializer()
         res = s.serialize(tt)
 

@@ -75,6 +75,7 @@ class WheelSerializer(object):
         return User.objects.get(username=username)
 
     def serialize(self, spoke):
+        # import pytest; pytest.set_trace()
         o = spoke.instance
         fields = {}
         for field in o._meta.concrete_model._meta.fields:
