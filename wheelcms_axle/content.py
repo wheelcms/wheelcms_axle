@@ -35,7 +35,7 @@ class ContentBase(models.Model):
     ## workflow determines possible states and their meaning
     state = models.CharField(max_length=30, blank=True)
 
-    template = models.CharField(max_length=255, blank=True)
+    template = models.CharField(max_length=255, blank=True, default="")
 
     ## one could argue that this can be a property on a node
     navigation = models.BooleanField(default=False)

@@ -121,7 +121,13 @@ class WheelSerializer(object):
             ##    data[field.attname] = self._handle_fk_field_node(field_node, field)
             else:
                 value = field.to_python(field_node.text)
-                fields[field.name] = value
+                ##
+                ## In stead of setting a null value on a field that doesn't
+                ## accept it, simply skip the field and let the default handle
+                ## the value
+                if value is not None or field.null:
+                    fields[field_name] = value
+        # print model, fields
         m = model(**fields).save()
         return spoke(m)
 
@@ -171,7 +177,8 @@ class Importer(object):
         typename = tree.attrib['type']
         slug = tree.attrib['slug']
         spoke = type_registry.get(typename)
-        s = spoke.serializer().deserialize(spoke, tree)
+        fields = tree.find("fields")
+        s = spoke.serializer().deserialize(spoke, fields)
         if slug == "":
             n = node
         else:

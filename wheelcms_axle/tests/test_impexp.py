@@ -119,12 +119,12 @@ class TestImporter(object):
      <field name="meta_type">type1</field>
      <field name="title">I'm c1</field>
      <field name="modified">2013-02-11T15:58:46.006642+00:00</field>
-     <field name="state">private</field>
+     <field name="state">published</field>
      <field name="expire">2033-02-14T15:58:46.006600+00:00</field>
      <field name="t1field">None</field>
      <field name="template" />
      <field name="owner" />
-     <field name="navigation">False</field>
+     <field name="navigation">True</field>
     </fields>
     <children>
      <content slug="c1_1" type="tests.type2">
@@ -155,16 +155,31 @@ class TestImporter(object):
         res = importer.run(Node.root(), tree)
 
         root = Node.root()
-        assert root.content().meta_type == Type1.__name__.lower()
+        root_content = root.content()
+        assert root_content.meta_type == Type1.__name__.lower()
         assert len(root.children()) == 1
         assert root.children()[0].path == "/c1"
+        assert root_content.title == "Export Test"
 
-        child = root.children()[0]
 
-        assert len(child.children()) == 1
-        assert child.children()[0].path == "/c1/c1_1"
+        child0 = root.children()[0]
+        child0_content = child0.content()
 
-        ## XXX test title, etc. More children?
+        assert len(child0.children()) == 1
+        assert child0.path == "/c1"
+        assert child0_content.title == "I'm c1"
+        assert child0_content.navigation
+        assert child0_content.state == "published"
+
+        child0_0 = child0.children()[0]
+        child0_0_content = child0_0.content()
+
+        assert len(child0_0.children()) == 0
+        assert child0_0.path == "/c1/c1_1"
+        assert child0_0_content.title == "I'm c1/c1_1"
+        assert not child0_0_content.navigation
+        assert child0_0_content.state == "private"
+
 
 class TestSerializer(object):
     """
@@ -228,6 +243,7 @@ class BaseSpokeImportExportTest(object):
         s = tt.serializer()
         res = s.serialize(tt)
 
+        # import pytest; pytest.set_trace()
         ## step 2: deserialize it
         tt = self.spoke.serializer().deserialize(self.spoke, res)
         assert isinstance(tt, self.spoke)
