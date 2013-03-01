@@ -1,3 +1,6 @@
+{% extends "wheelcms_axle/base.html" %}
+
+{% block base_main %}
 <p>
 <b>type info</b><br>
 {% for name, value in spoke.fields %}
@@ -8,3 +11,4 @@
 {% for child in instance.children %}
 <a href="{{child.path}}">{{child.content.title}}</a><br>
 {% endfor %}
+{% endblock %}

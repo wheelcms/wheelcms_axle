@@ -271,7 +271,10 @@ class MainHandler(WheelRESTHandler):
             if ctx:
                 self.context.update(ctx(self.instance))
 
-        return self.template("wheelcms_axle/main.html")
+        # return self.template("wheelcms_axle/main.html")
+        if self.spoke():
+            return self.template(self.spoke().view_template())
+        return self.template("wheelcms_axle/nospoke.html.html")
 
     def list(self):
         self.instance = Node.root()
