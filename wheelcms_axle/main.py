@@ -249,13 +249,14 @@ class MainHandler(WheelRESTHandler):
     def view(self):
         """ frontpage / view """
         action = self.kw.get('action', '')
+        spoke = self.spoke()
 
-        if self.spoke() and not self.spoke().workflow().is_published():
+        if spoke and not spoke.workflow().is_published():
             if not self.hasaccess():
                 return self.forbidden()
 
         if action:
-            handler = getattr(self.spoke(), action, None)
+            handler = getattr(spoke, action, None)
             if handler and getattr(handler, 'action', False):
                 return handler(self, self.request, action)
             else:
@@ -263,14 +264,14 @@ class MainHandler(WheelRESTHandler):
 
         self.context['toolbar'] = Toolbar(self.instance)
         ## experimental
-        if self.spoke():
-            tpl = self.spoke().view_template()
-            ctx = template_registry.context.get((self.spoke().__class__, tpl))
+        if spoke:
+            tpl = spoke.view_template()
+            ctx = template_registry.context.get((spoke.__class__, tpl))
             if ctx:
                 self.context.update(ctx(self.instance))
 
-        if self.spoke():
-            return self.template(self.spoke().view_template())
+        if spoke:
+            return self.template(spoke.view_template())
         return self.template("wheelcms_axle/nospoke.html")
 
     def list(self):
