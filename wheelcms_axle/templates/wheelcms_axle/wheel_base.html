@@ -1,0 +1,71 @@
+{% extends "two.bootstrap/base.html" %}
+
+{% block bootstrapcss %}
+    {% if config.theme == "default" %}
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css" media="screen, projection, print"/>
+    {% else %}
+    <link rel="stylesheet" href="/static/css/{{config.theme}}-bootstrap.min.css" media="screen, projection, print"/>
+    {% endif %}
+    <link rel="stylesheet" href="/static/css/bootstrap-responsive.min.css" media="screen, projection, print"/>
+    <style type="text/css">
+        body {
+            padding-top: 60px;
+            padding-bottom: 40px;
+        }
+    </style>
+
+{% endblock %}
+
+{% block base_stylesheets %}
+    <link rel="stylesheet" href="/static/css/wheel.css" media="screen, projection, print"/>
+    <link rel="stylesheet" href="/static/css/wheel_content.css" media="screen, projection, print"/>
+{% endblock %}
+
+{% block topbar %}
+{% block logo %}
+<a class="brand" href="/">Sample</a>
+{% endblock %}
+
+<div class="nav-collapse">
+  <ul class="nav">
+    {% for item in toplevel %}
+      <li {% if item.active %}class="active"{% endif %}>
+        <a href="{{item.node.path}}">{{item.node.content.title}}</a></li>
+    {% endfor %}
+  </ul>
+  <div class="pull-right">
+    {% if user.is_anonymous %}
+    <ul class="nav">
+      <li><a href="{% url userena_signup %}">Register</a></li>
+      <li><a href="{% url userena_signin %}?next={{request.path}}">Signin</a></li>
+    </ul>
+    {% else %}
+    <ul class="nav">
+      <li class="dropdown">
+          <a href="/" data-target="#" class="dropdown-toggle" data-toggle="dropdown">{{user.email}} <b class="caret"></b></a>
+          <ul class="dropdown-menu" role="menu">
+            <li><a href="/"><i class="icon-cog"></i> Preferences</a></li>
+
+            <li><a href="{% url userena_profile_detail user.username %}"><i class="icon-user"></i> Profile</a></li>
+            <li class="divider"></li>
+            <li><a href="{% url userena_signout %}"><i class="icon-off"></i> Logout</a></li>
+          </ul>
+      </li>
+    </ul>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block base_javascript %}
+    <script src="/static/js/jquery-ui-1.9.2.custom.min.js"></script>
+    <script src="/static/js/wheel.js"></script>
+    <script type="text/javascript" src="{{ STATIC_URL }}/tiny_mce/tiny_mce.js"></script>
+
+{% endblock %}
+
+{% block bodytop %}
+{% if user.is_authenticated %}
+{% include "wheelcms_axle/toolbar.html" %}
+{% endif %}
+{% endblock %}
