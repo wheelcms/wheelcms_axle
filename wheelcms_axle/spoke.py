@@ -52,9 +52,9 @@ class Spoke(object):
     def name(cls):
         """ This needs namespacing. But a model determines its name based
             on the classname and doesn't know about namespaces or packages """
-        return cls.model.get_name()  ## app_label
+        return cls.model.get_name()
 
-    @classmethod
+    @classproperty
     def title(cls):
         """ a default title """
         return cls.model._meta.object_name + " content"

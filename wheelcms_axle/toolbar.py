@@ -30,7 +30,7 @@ class Toolbar(object):
         else:
             ch = type.addable_children()
 
-        return [dict(name=c.name()) for c in ch]
+        return [dict(name=c.name(), title=c.title) for c in ch]
 
     def show_create(self):
         if self.status == 'special':  ## special page
