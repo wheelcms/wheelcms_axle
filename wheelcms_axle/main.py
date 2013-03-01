@@ -271,7 +271,7 @@ class MainHandler(WheelRESTHandler):
 
         if self.spoke():
             return self.template(self.spoke().view_template())
-        return self.template("wheelcms_axle/nospoke.html.html")
+        return self.template("wheelcms_axle/nospoke.html")
 
     def list(self):
         self.instance = Node.root()
