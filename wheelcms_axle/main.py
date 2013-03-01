@@ -264,14 +264,11 @@ class MainHandler(WheelRESTHandler):
         self.context['toolbar'] = Toolbar(self.instance)
         ## experimental
         if self.spoke():
-            # import pdb; pdb.set_trace()
-            
             tpl = self.spoke().view_template()
             ctx = template_registry.context.get((self.spoke().__class__, tpl))
             if ctx:
                 self.context.update(ctx(self.instance))
 
-        # return self.template("wheelcms_axle/main.html")
         if self.spoke():
             return self.template(self.spoke().view_template())
         return self.template("wheelcms_axle/nospoke.html.html")
@@ -291,7 +288,7 @@ class MainHandler(WheelRESTHandler):
         """ handle the /contents method. Usually this will give a listing
             of child-content, but in certain cases this makes no sense (e.g.
             childless content, or content that simply can't have children.
-            
+
             This also may behave differently depending on the user's access
         """
         if self.spoke() and self.spoke().addable_children():
