@@ -121,6 +121,8 @@ class MainHandler(WheelRESTHandler):
             Create new sub-content on a node or attach content to an
             existing node.
         """
+        # import pdb; pdb.set_trace()
+        
         if not self.hasaccess():
             return self.forbidden()
 
