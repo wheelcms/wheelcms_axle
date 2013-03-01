@@ -9,6 +9,9 @@ from wheelcms_axle import queries
 
 from wheelcms_axle.base import WheelHandlerMixin
 
+from .templates import template_registry
+
+
 class WheelRESTHandler(RESTLikeHandler, WheelHandlerMixin):
     pass
 
@@ -259,6 +262,15 @@ class MainHandler(WheelRESTHandler):
                 return self.notfound()
 
         self.context['toolbar'] = Toolbar(self.instance)
+        ## experimental
+        if self.spoke():
+            # import pdb; pdb.set_trace()
+            
+            tpl = self.spoke().view_template()
+            ctx = template_registry.context.get((self.spoke().__class__, tpl))
+            if ctx:
+                self.context.update(ctx(self.instance))
+
         return self.template("wheelcms_axle/main.html")
 
     def list(self):

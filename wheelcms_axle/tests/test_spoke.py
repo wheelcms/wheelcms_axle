@@ -212,6 +212,17 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         assert form.is_valid()
         assert form.cleaned_data['slug'] == 'foo1'
 
+    def test_context(self, client):
+        """ a context method can be stored in the registry """
+        def ctx(ins):
+            return dict(a="1")
+
+        self.reg.register(self.type, "foo/bar", "foo bar", default=False, context=ctx)
+
+        context_method = self.reg.context.get((self.type, "foo/bar"))
+        assert context_method
+        assert context_method(None) == dict(a="1")
+
 class TestType1Spoke(BaseSpokeTest):
     """
         Run base tests on test type 'type1'
