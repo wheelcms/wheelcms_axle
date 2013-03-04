@@ -12,7 +12,6 @@ class BaseForm(forms.ModelForm):
     class Meta:
         exclude = ["node", "meta_type", "owner", "classes"]
 
-
     def content_fields(self):
         return set(self.fields) - set(self.advanced_fields())
 
@@ -50,6 +49,13 @@ class BaseForm(forms.ModelForm):
                                                  required=False)
         if self.instance and self.instance.node and self.instance.node.isroot():
             self.fields.pop("slug")
+
+        for enlargable_field in self.fields.values():
+            self.enlarge_field(enlargable_field)
+
+
+    def enlarge_field(self, field):
+        field.widget.attrs['class'] = 'input-xxlarge'
 
     def workflow_choices(self):
         """
