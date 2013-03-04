@@ -27,7 +27,7 @@ Content listing for {{instance.content.title}}<br>
       <tr class="clickrow sortablerow" data-url="{{child.path}}/contents">
         <td><input name="selection" type="checkbox" value="{{child.path}}"></td>
         <td>{{child.content.title}}</td>
-        <td>Published</td>
+        <td>{{child.content.spoke.workflow.state}}</td>
         <td>
             <a href="{{child.path}}/edit"><i class="icon-edit"></i></a>
             <a href="{{child.path}}"><i class="icon-eye-open"></i></a>
