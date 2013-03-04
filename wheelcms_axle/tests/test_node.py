@@ -10,6 +10,30 @@ class TestNode(object):
         assert root1 == root2
         assert root1.isroot()
 
+    def test_root_child(self, client):
+        """ access a child on the root by its name """
+        root = Node.root()
+        child = root.add("child")
+        assert root.child('child') == child
+
+    def test_root_child_notfound(self, client):
+        """ access a nonexisting child on the root by its name """
+        root = Node.root()
+        assert root.child('child') is None
+
+    def test_nonroot_child(self, client):
+        """ access a child outside the root by its name """
+        root = Node.root()
+        child = root.add("child")
+        child2 = child.add("child")
+        assert child.child('child') == child2
+
+    def test_nonroot_child_notfound(self, client):
+        """ access a nonexisting child outside the root by its name """
+        root = Node.root()
+        child = root.add("child")
+        assert child.child('child2') is None
+
     def test_add_child_root(self, client):
         """ adding a child to the root results in a new node """
         root = Node.root()

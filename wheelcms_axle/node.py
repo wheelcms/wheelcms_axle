@@ -172,6 +172,12 @@ class NodeBase(models.Model):
     def children(self, order="position"):
         return self.childrenq(order=order)
 
+    def child(self, slug):
+        """ return a specific child by its slug """
+        childpath = self.path + '/' + slug
+
+        return self.get(childpath)
+
     def slug(self):
         """ last part of self.path """
         return self.path.rsplit("/", 1)[-1]
