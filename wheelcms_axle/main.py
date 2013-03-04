@@ -137,7 +137,7 @@ class MainHandler(WheelRESTHandler):
         else:
             parentpath = '/'
 
-        self.context['redirect_cancel'] = parentpath + "?info=Create+cancelled"
+        self.context['redirect_cancel'] = parentpath + "?info=Create+canceled"
         ## if attach: do not accept slug
         if self.post:
             self.context['form'] = \
@@ -322,7 +322,8 @@ class MainHandler(WheelRESTHandler):
                     n.delete()
                     count += 1
 
-            return self.redirect(self.instance.path + '/list', info="%d item(s) deleted" % count)
+            return self.redirect(self.instance.path + '/list',
+                                 info="%d item(s) deleted" % count)
         return self.redirect(self.instance.path + '/list')
 
     def handle_popup(self):
