@@ -21,3 +21,6 @@ class DefaultWorkflow(Workflow):
 
     def is_published(self):
         return self.spoke.instance.state == self.PUBLISHED
+
+    def is_visible(self):
+        return self.is_published() or self.spoke.instance.state == self.VISIBLE

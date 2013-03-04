@@ -19,13 +19,45 @@ class TestDefaultWorkflow(object):
 
         assert DefaultWorkflow(DummyType()).is_published()
 
-    def test_is_published_false(self):
+    def test_is_published_false_private(self):
         """ verify a spoke isn't published """
         class DummyContent(object):
             state = "private"
         class DummyType(object):
             instance = DummyContent()
         assert not DefaultWorkflow(DummyType()).is_published()
+
+    def test_is_published_false_visible(self):
+        """ verify a visible spoke isn't published """
+        class DummyContent(object):
+            state = "visible"
+        class DummyType(object):
+            instance = DummyContent()
+        assert not DefaultWorkflow(DummyType()).is_published()
+
+    def test_is_visible_false_private(self):
+        """ verify a private spoke isn't visible """
+        class DummyContent(object):
+            state = "private"
+        class DummyType(object):
+            instance = DummyContent()
+        assert not DefaultWorkflow(DummyType()).is_visible()
+
+    def test_is_visible_visible(self):
+        """ verify a visible spoke is visible """
+        class DummyContent(object):
+            state = "visible"
+        class DummyType(object):
+            instance = DummyContent()
+        assert DefaultWorkflow(DummyType()).is_visible()
+
+    def test_is_visible_published(self):
+        """ verify a published spoke is visible """
+        class DummyContent(object):
+            state = "published"
+        class DummyType(object):
+            instance = DummyContent()
+        assert DefaultWorkflow(DummyType()).is_visible()
 
     def test_content_default(self, client):
         """ default should be set if not specified """
