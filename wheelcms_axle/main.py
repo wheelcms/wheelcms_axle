@@ -224,9 +224,16 @@ class MainHandler(WheelRESTHandler):
             subpath = "/".join(parts[:i+1])
             node = Node.get(subpath)
             content = node.content()
-            ## last entry should not get path
+
+            ## If we're in "contents" mode, link to the node's
+            ## contents view.
+
+            if operation == "Contents":
+                subpath += '/contents'
 
             path = subpath or '/'
+
+            ## last entry should not get path
             if not operation:
                 if i == len(parts) - 1:
                     path = ""
