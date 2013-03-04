@@ -268,7 +268,7 @@ class MainHandler(WheelRESTHandler):
             tpl = spoke.view_template()
             ctx = template_registry.context.get((spoke.__class__, tpl))
             if ctx:
-                self.context.update(ctx(self.instance))
+                self.context.update(ctx(self, self.request, self.instance))
 
         if spoke:
             return self.template(spoke.view_template())
