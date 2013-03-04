@@ -60,7 +60,12 @@ class Spoke(object):
         return cls.model._meta.object_name + " content"
 
     def workflow(self):
+        """ the workflow, initialized to this spoke """
         return self.workflowclass(self)
+
+    def state(self):
+        """ current workflow state information for this spoke """
+        return dict(key=self.instance.state, label=self.workflow().state())
 
     def view_template(self):
         if not self.instance.template or \

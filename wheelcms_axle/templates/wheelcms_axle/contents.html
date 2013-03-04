@@ -24,10 +24,11 @@ Content listing for {{instance.content.title}}<br>
     </tr>
     {% endif %}
     {% for child in instance.children %}
+      {% with content=child.content spoke=child.content.spoke %}
       <tr class="clickrow sortablerow" data-url="{{child.path}}/contents">
         <td><input name="selection" type="checkbox" value="{{child.path}}"></td>
-        <td>{{child.content.title}}</td>
-        <td>{{child.content.spoke.workflow.state}}</td>
+        <td>{{content.title}}</td>
+        <td>{{spoke.state.label}}</td>
         <td>
             <a href="{{child.path}}/edit"><i class="icon-edit"></i></a>
             <a href="{{child.path}}"><i class="icon-eye-open"></i></a>
@@ -36,6 +37,7 @@ Content listing for {{instance.content.title}}<br>
             <a href="{{child.path}}"><i class="icon-arrow-down"></i></a>
         </td>
       </tr>
+      {% endwith %}
     {% empty %}
       <tr>
         <td colspan="4">No content</td>
