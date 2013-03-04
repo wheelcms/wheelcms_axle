@@ -22,6 +22,11 @@
         $(".contentsform").submit();
 
     });
+    $(".toggle-all").click(function(e) {
+        var boxes = $("input[type='checkbox'][name='selection']");
+        boxes.attr("checked", $(this).attr("checked")?true:false);
+
+    });
   });
 </script>
 {% endblock %}
