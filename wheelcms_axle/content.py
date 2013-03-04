@@ -25,6 +25,7 @@ class ContentBase(models.Model):
 
     node = models.OneToOneField(Node, related_name="contentbase", null=True)
     title = models.CharField(max_length=256, blank=False)
+    description = models.TextField(blank=True, default="")
     created = models.DateTimeField(blank=True, null=True)
     modified = models.DateTimeField(blank=True, null=True)
     publication = models.DateTimeField(blank=True, null=True,
@@ -142,6 +143,7 @@ class ImageContent(FileContent):
 
     objects = models.Manager()
     instances = ClassContentManager(IMAGECLASS)
+    caption = models.TextField(blank=True, default="")
 
     class Meta(FileContent.Meta):
         abstract = True
