@@ -258,7 +258,7 @@ class MainHandler(WheelRESTHandler):
         action = self.kw.get('action', '')
         spoke = self.spoke()
 
-        if spoke and not spoke.workflow().is_published():
+        if spoke and not spoke.workflow().is_visible():
             if not self.hasaccess():
                 return self.forbidden()
 
