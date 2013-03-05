@@ -243,7 +243,6 @@ class BaseSpokeImportExportTest(object):
         s = tt.serializer()
         res = s.serialize(tt)
 
-        # import pytest; pytest.set_trace()
         ## step 2: deserialize it
         tt = self.spoke.serializer().deserialize(self.spoke, res)
         assert isinstance(tt, self.spoke)

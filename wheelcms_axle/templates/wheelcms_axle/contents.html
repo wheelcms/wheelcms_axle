@@ -3,6 +3,9 @@
 {% block javascript %}
 <script type="text/javascript" charset="utf-8">
   function delete_dialog(deletes) {
+    /*
+     * 'deletes' contains jquery objects with valid path, title and type data attributes
+     */
       $("#delete_modal").modal();
       $("#delete_modal_list").empty();
       for(var i = 0; i < deletes.length; i++) {
@@ -14,6 +17,10 @@
 
   $(document).ready(function() {
     $("#contents_action_delete").click(function() {
+        /*
+         * The "delete" action button. Zero or more items may have been
+         * selected
+         */
         var deletes = $("input[type='checkbox'][name='selection']:checked");
 
         if(deletes.size()) {
@@ -22,14 +29,15 @@
         return false;
     });
     $(".contents_item_remove").click(function() {
+        /*
+         * The small 'x' icon on a single entry.
+         */
         delete_dialog([$(this)]);
         return false;
     });
 
-    //$("#delete_modal_confirm").click(function() {
-    //    $(".contentsform").submit();
-    //});
     $(".toggle-all").click(function(e) {
+        /* select/deselect all entries */
         var boxes = $("input[type='checkbox'][name='selection']");
         boxes.attr("checked", $(this).attr("checked")?true:false);
     });
