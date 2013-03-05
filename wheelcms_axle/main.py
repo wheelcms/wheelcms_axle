@@ -303,7 +303,7 @@ class MainHandler(WheelRESTHandler):
             return self.redirect(self.instance.path + '/list')
         return self.redirect(self.instance.path)
 
-    def handle_contents_actions(self):
+    def handle_contents_actions_delete(self):
         """
             Handle the action buttons from the contents listing:
             paste, delete (cut/copy can be done async)
@@ -311,20 +311,16 @@ class MainHandler(WheelRESTHandler):
         if not self.hasaccess() or not self.post:
             return self.forbidden()
 
-        action = self.request.POST.get('action')
+        count = 0
+        for p in self.request.POST.getlist('selection'):
+            n = Node.get(p)
+            ## XXX recursively delete, or not, or detach...
+            if n:
+                n.delete()
+                count += 1
 
-        if action == 'delete':
-            count = 0
-            for p in self.request.POST.getlist('selection'):
-                n = Node.get(p)
-                ## XXX recursively delete, or not, or detach...
-                if n:
-                    n.delete()
-                    count += 1
-
-            return self.redirect(self.instance.path + '/list',
-                                 info="%d item(s) deleted" % count)
-        return self.redirect(self.instance.path + '/list')
+        return self.redirect(self.instance.path + '/list',
+                             info="%d item(s) deleted" % count)
 
     def handle_popup(self):
         """ popup experiments - #524 """

@@ -2,36 +2,45 @@
 
 {% block javascript %}
 <script type="text/javascript" charset="utf-8">
+  function delete_dialog(deletes) {
+      $("#delete_modal").modal();
+      $("#delete_modal_list").empty();
+      for(var i = 0; i < deletes.length; i++) {
+          var $v = $(deletes[i]);
+          $("#delete_modal_list").append("<tr><td>" + $v.data('title') + "</td><td>" + $v.data('type') + "</td></tr>");
+          $("#delete_modal_list").append("<input type='hidden' name='selection' value='" + $v.data('path') + "'>");
+      };
+  }
+
   $(document).ready(function() {
     $("#contents_action_delete").click(function() {
         var deletes = $("input[type='checkbox'][name='selection']:checked");
 
         if(deletes.size()) {
-          $("#delete_modal").modal();
-          deletes.each(function(i, v) {
-              var $v = $(v);
-              $("#delete_modal_list").append("<tr><td>" + $v.data('title') + "</td><td>" + $v.data('type') + "</td></tr>");
-          });
+          delete_dialog(deletes);
         }
-        // set action type on form (can also be paste which requires update
+        return false;
+    });
+    $(".contents_item_remove").click(function() {
+        delete_dialog([$(this)]);
         return false;
     });
 
-    $("#delete_modal_confirm").click(function() {
-        $("#contentsform_action").val("delete");
-        $(".contentsform").submit();
-
-    });
+    //$("#delete_modal_confirm").click(function() {
+    //    $(".contentsform").submit();
+    //});
     $(".toggle-all").click(function(e) {
         var boxes = $("input[type='checkbox'][name='selection']");
         boxes.attr("checked", $(this).attr("checked")?true:false);
-
     });
   });
 </script>
 {% endblock %}
 
 {% block base_main %}
+<form class="contentsform" method="post" action="contents_actions_delete">
+{% csrf_token %}
+
 <div id="delete_modal" class="modal hide fade" tabindex="-1" role="dialog">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -52,68 +61,67 @@
   </div>
   <div class="modal-footer">
     <a href="#" class="btn" data-dismiss="modal">Cancel</a>
-    <a href="#" id="delete_modal_confirm" class="btn btn-primary">Delete</a>
+    <button id="delete_modal_confirm" class="btn btn-primary">Delete</button>
   </div>
-
 </div>
+</form>
+
 {% if not spoke %}
 <h3>This node has no content attached.</h3>
 {% endif %}
 <h3>Content listing for "{{instance.content.title}}"</h3>
 <br>
-<form class="contentsform" method="post" action="contents_actions">
-  {% csrf_token %}
-  <input id="contentsform_action" type="hidden" name="action" value="">
-
-  <table class="table table-condensed table-hover wheel-contentlist">
-    <thead>
-      <th><input class="toggle-all" type="checkbox"></th>
-      <th>Title</th>
-      <th>State</th>
-      <th></th>
-    </thead>
-    <tbody class="sortable">
-      {% if not instance.isroot %}
-      <tr class="clickrow" data-url="{{instance.parent.path}}/list">
-        <td><i class="icon-circle-arrow-left"></i></td>
-        <td colspan="3">.. (parent)</td>
-      </tr>
-      {% endif %}
-      {% for child in instance.children %}
-        {% with content=child.content spoke=child.content.spoke %}
-        <tr class="sortablerow">
-          <td><input name="selection" type="checkbox" value="{{child.path}}"
-               data-title="{{content.title}}"
-               data-type="{{spoke.title}}"></td>
-          <td class="clickrow" data-url="{{child.path}}/contents">{{content.title}}</td>
-          <td class="clickrow" data-url="{{child.path}}/contents">{{spoke.state.label}}</td>
-          <td>
-              <a href="{{child.path}}/edit"><i class="icon-edit"></i></a>
-              <a href="{{child.path}}"><i class="icon-eye-open"></i></a>
-              <a href="{{child.path}}"><i class="icon-remove"></i></a>
-              <a href="{{child.path}}"><i class="icon-arrow-up"></i></a>
-              <a href="{{child.path}}"><i class="icon-arrow-down"></i></a>
-          </td>
-        </tr>
-        {% endwith %}
-      {% empty %}
-        <tr>
-          <td colspan="4">No content</td>
-        </tr>
-      {% endfor %}
-      <tr>
-        <td colspan="4">
-          <div class="btn-toolbar">
-            <div class="btn-group">
-              <button class="btn btn-small">Cut</button>
-              <button class="btn btn-small">Copy</button>
-              <button class="btn btn-small">Paste</button>
-              <button id="contents_action_delete" class="btn btn-small">Delete</button>
-            </div>
-          </div>
+<table class="table table-condensed table-hover wheel-contentlist">
+  <thead>
+    <th><input class="toggle-all" type="checkbox"></th>
+    <th>Title</th>
+    <th>State</th>
+    <th></th>
+  </thead>
+  <tbody class="sortable">
+    {% if not instance.isroot %}
+    <tr class="clickrow" data-url="{{instance.parent.path}}/list">
+      <td><i class="icon-circle-arrow-left"></i></td>
+      <td colspan="3">.. (parent)</td>
+    </tr>
+    {% endif %}
+    {% for child in instance.children %}
+      {% with content=child.content spoke=child.content.spoke %}
+      <tr class="sortablerow">
+        <td><input name="selection" type="checkbox" value="{{child.path}}"
+             data-path="{{child.path}}"
+             data-title="{{content.title}}"
+             data-type="{{spoke.title}}"></td>
+        <td class="clickrow" data-url="{{child.path}}/contents">{{content.title}}</td>
+        <td class="clickrow" data-url="{{child.path}}/contents">{{spoke.state.label}}</td>
+        <td>
+            <a href="{{child.path}}/edit"><i class="icon-edit"></i></a>
+            <a href="{{child.path}}"><i class="icon-eye-open"></i></a>
+            <a href="#" data-title="{{content.title}}"
+                        data-type="{{spoke.title}}"
+                        data-path="{{child.path}}" class="contents_item_remove"><i class="icon-remove"></i></a>
+            <a href="{{child.path}}"><i class="icon-arrow-up"></i></a>
+            <a href="{{child.path}}"><i class="icon-arrow-down"></i></a>
         </td>
       </tr>
-    </tbody>
-  </table>
-</form>
+      {% endwith %}
+    {% empty %}
+      <tr>
+        <td colspan="4">No content</td>
+      </tr>
+    {% endfor %}
+    <tr>
+      <td colspan="4">
+        <div class="btn-toolbar">
+          <div class="btn-group">
+            <button class="btn btn-small">Cut</button>
+            <button class="btn btn-small">Copy</button>
+            <button class="btn btn-small">Paste</button>
+            <button id="contents_action_delete" class="btn btn-small">Delete</button>
+          </div>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
 {% endblock %}
