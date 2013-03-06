@@ -10,6 +10,9 @@ from ..impexp import WheelSerializer, Exporter, Importer
 from ..node import Node
 
 from .models import Type1, Type1Type, Type2, Type2Type
+from .models import TestFile, TestImage, TestFileType, TestImageType
+
+from .test_spoke import filedata
 
 def p(n):
     print ElementTree.tostring(n, 'utf-8')
@@ -253,7 +256,28 @@ class BaseSpokeImportExportTest(object):
 
     ## how about Image/File base types?
 
-class TestType1BaseImportExport(BaseSpokeImportExportTest):
+class TestType1ImportExport(BaseSpokeImportExportTest):
     type = Type1
     spoke = Type1Type
 
+class TestFileImportExport(BaseSpokeImportExportTest):
+    type = TestFile
+    spoke = TestFileType
+
+    def test_file_serialize(self, client):
+        tt = self.create(state="published", title="Hello", storage=filedata)
+        s = tt.serializer()
+        res, files = s.serialize(tt)
+        assert files
+        assert "files/foo.png" in files
+
+class TestImageImportExport(BaseSpokeImportExportTest):
+    type = TestImage
+    spoke = TestImageType
+
+    def test_image_serialize(self, client):
+        tt = self.create(state="published", title="Hello", storage=filedata)
+        s = tt.serializer()
+        res, files = s.serialize(tt)
+        assert files
+        assert "images/foo.png" in files
