@@ -26,7 +26,7 @@ class NodeBase(models.Model):
 
     validpathre = re.compile("^[%s]{1,%d}$" % (ALLOWED_CHARS, MAX_PATHLEN))
 
-    path = models.CharField(max_length=MAX_PATHLEN, blank=False, unique=True)
+    path = models.CharField(max_length=1024, blank=False, unique=True)
     position = models.IntegerField(default=0)
 
 
