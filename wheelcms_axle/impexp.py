@@ -42,10 +42,12 @@
     Should a field be serialized to <title> or <field name="title">? The
     former will not allow for a schema definition
 """
+import os
 
 from xml.etree.ElementTree import Element, SubElement, tostring
 from django.utils.encoding import smart_unicode
 from django.contrib.auth.models import User
+from django.db.models import FileField
 
 from .content import type_registry
 
@@ -77,6 +79,13 @@ class WheelSerializer(object):
     def serialize(self, spoke):
         # import pytest; pytest.set_trace()
         o = spoke.instance
+
+        files = []
+
+        #if 'Django Based' in o.title:
+        #    import pdb; pdb.set_trace()
+            
+
         fields = {}
         for field in o._meta.concrete_model._meta.fields:
             handler = getattr(self, "serialize_%s" % field.name, None)
@@ -93,12 +102,15 @@ class WheelSerializer(object):
                     value = smart_unicode(value)
 
                 fields[field.name] = value
+                if isinstance(field, FileField):
+                    files.append(value)
+
         xmlfields = Element("fields")
         for k, v in fields.iteritems():
             e = SubElement(xmlfields, "field")
             e.attrib['name'] = k
             e.text = v
-        return xmlfields
+        return xmlfields, files
 
 
     def deserialize(self, spoke, tree):
@@ -140,6 +152,7 @@ class Exporter(object):
 
     def export_node(self, parent, node):
         # import pdb; pdb.set_trace()
+        files = []
 
         try:
             spoke = node.content().spoke()
@@ -150,24 +163,31 @@ class Exporter(object):
                                 dict(slug=node.slug(),
                                 type=spoke.model.get_name()))
         if spoke:
-            contentxml = spoke.serializer().serialize(spoke)
+            contentxml, files = spoke.serializer().serialize(spoke)
             xmlcontent.append(contentxml)
 
         children = SubElement(xmlcontent, "children")
         for child in node.children():
-            self.export_node(children, child)
+            files += self.export_node(children, child)
 
-    def run(self, node, base="", unattached=True, attachinline=True):
-        """ export node and all content beneath it. If unattached is True,
+        return files
+
+    def run(self, node, base="", unattached=True):
+        """ export node and all content beneath it.
+            
+            If unattached is True,
             also export unattached content.
 
-            attachments can be inline or exported to a folder
         """
+        #mediadir = os.path.join(writeto, "media")
+        #if not os.path.exists(mediadir):
+        #    os.makedirs(mediadir)
+
         root = Element("site")
         root.set('version', str(self.VERSION))
         root.set('base', base)
-        self.export_node(root, node)
-        return root
+        files = self.export_node(root, node)
+        return root, files
 
 class Importer(object):
     def __init__(self, verbose=0):
