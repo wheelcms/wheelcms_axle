@@ -27,14 +27,14 @@ class TestExporter(object):
         root = Node.root()
         content = Type1(node=root, state="published", title="Export Test").save()
         exporter = Exporter()
-        res = exporter.run(root)
-        assert res
-        assert isinstance(res, Element)
-        assert res.tag == 'site'
-        assert res.attrib.get('version', -1) == '1'
-        assert res.attrib.get('base', '--') == ''
-        assert len(res.getchildren()) == 1
-        child = res.getchildren()[0]
+        xml, files = exporter.run(root)
+        assert xml
+        assert isinstance(xml, Element)
+        assert xml.tag == 'site'
+        assert xml.attrib.get('version', -1) == '1'
+        assert xml.attrib.get('base', '--') == ''
+        assert len(xml.getchildren()) == 1
+        child = xml.getchildren()[0]
         assert child.tag == 'content'
         assert len(child.getchildren()) == 2
         children = child.find('children')
@@ -53,10 +53,10 @@ class TestExporter(object):
         c2_1 = Type1(node=c2.node.add("c2_1"), title="I'm c2/c2_1").save()
 
         exporter = Exporter()
-        res = exporter.run(root)
-        assert res
+        xml, files = exporter.run(root)
+        assert xml
 
-        content = res.findall('content') # one root node
+        content = xml.findall('content') # one root node
         assert len(content) == 1
         root = content[0]
         root_children = root.findall('children')  # one children tag holding
@@ -190,7 +190,7 @@ class TestSerializer(object):
         t = Type1(state="published", title="Test", navigation=True).save()
         tt = Type1Type(t)
         s = WheelSerializer()
-        res = s.serialize(tt)
+        res, file = s.serialize(tt)
         assert isinstance(res, Element)
         assert res.tag == "fields"
         assert len(res.getchildren())
@@ -210,7 +210,7 @@ class TestSerializer(object):
         """ owners are exported to their usernames """
         owner = User.objects.get_or_create(username="johndoe")[0]
         tt = Type1Type(Type1(owner=owner).save())
-        res = WheelSerializer().serialize(tt)
+        res, files = WheelSerializer().serialize(tt)
         assert res.find("field[@name='owner']").text == "johndoe"
 
 
@@ -231,7 +231,7 @@ class BaseSpokeImportExportTest(object):
         """ verify the spoke is able to serialize itself """
         tt = self.create(state="published", title="Test", navigation=True)
         s = tt.serializer()
-        res = s.serialize(tt)
+        res, files = s.serialize(tt)
         assert isinstance(res, Element)
 
     def test_capable_deserialize(self, client):
@@ -241,7 +241,7 @@ class BaseSpokeImportExportTest(object):
         ## step 1: build XML
         tt = self.create(state="published", title="Hello World", navigation=True, owner=owner)
         s = tt.serializer()
-        res = s.serialize(tt)
+        res, files = s.serialize(tt)
 
         ## step 2: deserialize it
         tt = self.spoke.serializer().deserialize(self.spoke, res)
