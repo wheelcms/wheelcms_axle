@@ -11,6 +11,7 @@ from wheelcms_axle.base import WheelHandlerMixin
 
 from .templates import template_registry
 
+import stracks
 
 class WheelRESTHandler(RESTLikeHandler, WheelHandlerMixin):
     pass
@@ -124,8 +125,6 @@ class MainHandler(WheelRESTHandler):
             Create new sub-content on a node or attach content to an
             existing node.
         """
-        # import pdb; pdb.set_trace()
-        
         if not self.hasaccess():
             return self.forbidden()
 
@@ -157,6 +156,10 @@ class MainHandler(WheelRESTHandler):
                     slug = self.form.cleaned_data['slug']
                     sub = parent.add(slug)
                     sub.set(p)
+
+                stracks.content(p.id, name=p.title).log("? (%s) created by ?" % p.spoke().title,
+                        stracks.user(self.user()), action=stracks.create())
+
                 return self.redirect(parent.path or '/', success="Ok")
         else:
             self.context['form'] = formclass(parent=parent, attach=attach)
@@ -177,6 +180,7 @@ class MainHandler(WheelRESTHandler):
             return self.forbidden()
 
         instance = self.instance
+        content = instance.content()
         parent = instance.parent()
 
         self.context['redirect_cancel'] = (self.instance.path or '/') + \
@@ -191,7 +195,7 @@ class MainHandler(WheelRESTHandler):
         if self.post:
             self.context['form'] = form = formclass(parent=parent,
                                                     data=self.request.POST,
-                                                    instance=instance.content())
+                                                    instance=content)
 
             if form.is_valid():
                 form.save()
@@ -200,6 +204,9 @@ class MainHandler(WheelRESTHandler):
                 if slug and slug != self.instance.slug():
                     self.instance.rename(slug)
 
+                e = stracks.content(content.id, name=content.title)
+                e.log("? (%s) updated by ?" % content.spoke().title,
+                      stracks.user(self.user()), action=stracks.edit())
                 return self.redirect(instance.path, success="Updated")
         else:
             self.context['form'] = formclass(parent=parent,
@@ -278,6 +285,11 @@ class MainHandler(WheelRESTHandler):
                 self.context.update(ctx(self, self.request, self.instance))
 
         if spoke:
+            stracks.content(spoke.instance.id,
+                            name=spoke.instance.title
+                           ).log("? (%s) viewed by ?" % spoke.title,
+                                 stracks.user(self.user()),
+                                 action=stracks.view())
             return self.template(spoke.view_template())
         return self.template("wheelcms_axle/nospoke.html")
 
@@ -316,6 +328,12 @@ class MainHandler(WheelRESTHandler):
             n = Node.get(p)
             ## XXX recursively delete, or not, or detach...
             if n:
+                content = n.content()
+                stracks.content(content.id,
+                                name=content.title
+                               ).log("? (%s) removed by ?" % content.spoke().title,
+                                     stracks.user(self.user()),
+                                     action=stracks.delete())
                 n.delete()
                 count += 1
 
