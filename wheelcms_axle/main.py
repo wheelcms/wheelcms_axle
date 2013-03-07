@@ -276,7 +276,8 @@ class MainHandler(WheelRESTHandler):
             else:
                 return self.notfound()
 
-        self.context['toolbar'] = Toolbar(self.instance)
+        if self.hasaccess():
+            self.context['toolbar'] = Toolbar(self.instance)
         ## experimental
         if spoke:
             tpl = spoke.view_template()
