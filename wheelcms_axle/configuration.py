@@ -31,6 +31,9 @@ class ConfigurationHandler(FormHandler, WheelHandlerMixin):
         self.context['toolbar'] = Toolbar(instance=None, status="special")
 
     def index(self):
+        if not self.hasaccess():
+            return self.forbidden()
+
         instance = Configuration.config()
         self.context['form'] = ConfigurationForm(instance=instance)
         ## set redirect_to

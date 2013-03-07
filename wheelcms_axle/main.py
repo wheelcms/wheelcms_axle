@@ -114,11 +114,6 @@ class MainHandler(WheelRESTHandler):
                 return cls.notfound()
         return d
 
-    def hasaccess(self):
-        user = self.user()
-        return user.is_active and (user.is_superuser or
-                                   user.groups.filter(name="managers").exists())
-
     @applyrequest
     def create(self, type, attach=False, *a, **b):
         """
