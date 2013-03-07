@@ -11,6 +11,14 @@
     margin: -250px 0 0 -450px;
 }
 
+/*
+ * The cerulean theme specifies a top of 10% which hides the toppart of
+ * the dialog. Not sure how/why, but just undo this style.
+ */
+.modal.fade.in {
+    top: 50%;
+}
+
 /*#browseModal .nav-tabs {
     margin-bottom: 0px;
 }*/
