@@ -52,4 +52,43 @@ class Configuration(models.Model):
             instance.save()
         return instance
 
+## signals for login/logout logging
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from userena.signals import signup_complete
+from django.contrib.auth.signals import user_logged_in, user_logged_out
+
+import stracks
+## django 1.5
+## from django.contrib.auth.signals import user_login_failed
+## 
+## @receiver(user_login_failed)
+## def log_failure(sender, credentials, **kwargs):
+##     """ Log the user logging out """
+##     stracksclient.warning("Authentication failed", data=credentials)
+##
+
+@receiver(post_save, sender=User)
+def log_create(sender, instance, created, **kwargs):
+    """ Log the creation of a new user """
+    if created:
+        stracks.user(instance).log("? has been created")
+
+
+@receiver(signup_complete, dispatch_uid='stracks.log_signup')
+def log_signup(sender, signal, user, **kwargs):
+    """ Log the creation of a new user """
+    stracks.user(user).log("? has completed (userena) signup")
+
+
+@receiver(user_logged_in, dispatch_uid='stracks.log_signin')
+def log_login(sender, request, user, **kwargs):
+    """ Log the user logging in """
+    stracks.user(user).log("? has logged in", action=stracks.login())
+
+@receiver(user_logged_out, dispatch_uid='stracks.log_signout')
+def log_logout(sender, request, user, **kwargs):
+    """ Log the user logging out """
+    stracks.user(user).log("? has logged out", action=stracks.logout())
 
