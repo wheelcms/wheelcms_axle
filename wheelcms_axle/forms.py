@@ -53,6 +53,8 @@ class BaseForm(forms.ModelForm):
         for enlargable_field in self.fields.values():
             self.enlarge_field(enlargable_field)
 
+        ## make the description textarea a bit smaller
+        self.fields['description'].widget.attrs['rows'] = 4
 
     def enlarge_field(self, field):
         field.widget.attrs['class'] = 'input-xxlarge'
