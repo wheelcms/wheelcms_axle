@@ -68,7 +68,7 @@ class TestNode(object):
         py.test.raises(DuplicatePathException, root.add, "CHILD")
         py.test.raises(DuplicatePathException, root.add, "Child")
 
-    def test_invalid(self, client):
+    def test_addvalid(self, client):
         """ only letters, numbers, _- are allowed """
         root = Node.root()
 
@@ -80,6 +80,9 @@ class TestNode(object):
         assert root.add("aB1_-2")
         assert root.add("x" * Node.MAX_PATHLEN)
 
+    def test_addinvalid(self, client):
+        """ only letters, numbers, _- are allowed """
+        root = Node.root()
         py.test.raises(InvalidPathException, root.add, "")
         py.test.raises(InvalidPathException, root.add, "c hild")
         py.test.raises(InvalidPathException, root.add, "child$")
