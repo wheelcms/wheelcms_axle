@@ -25,23 +25,11 @@
         {% if attach %}
         <input type="hidden" name="attach" value="1">
         {% endif %}
-        {% if 0 %}
-        <ul class="nav nav-pills">
-          <li>
-              <a class="accordion-toggle" data-toggle="collapse" data-parent="#edit-accordion" href="#collapsebase">Content Properties</a>
-          </li>
-          <li>
-              <a class="accordion-toggle" data-toggle="collapse" data-parent="#edit-accordion" href="#collapseadvanced">Advanced Properties</a>
-          </li>
-        </ul>
-        {% endif %}
         <div class="accordion" id="edit-accordion">
           <div class="accordion-group">
-            {% if 1 %}
             <div class="accordion-heading">
               <a class="accordion-toggle" data-toggle="collapse" data-parent="#edit-accordion" href="#collapsebase">Content Properties</a>
             </div>
-            {% endif %}
             <div id="collapsebase" class="accordion-body collapse in">
               <div class="accordion-inner">
                 {% include "two.bootstrap/bootstrap-form.html" with fields=form.content_fields %}
@@ -49,11 +37,9 @@
             </div>
           </div>
           <div class="accordion-group">
-            {% if 1 %}
             <div class="accordion-heading">
               <a class="accordion-toggle" data-toggle="collapse" data-parent="#edit-accordion" href="#collapseadvanced">Advanced Properties</a>
             </div>
-            {% endif %}
             <div id="collapseadvanced" class="accordion-body collapse">
               <div class="accordion-inner">
                  {% include "two.bootstrap/bootstrap-form.html" with fields=form.advanced_fields %}
