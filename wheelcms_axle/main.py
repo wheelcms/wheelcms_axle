@@ -1,5 +1,5 @@
 from two.ol.base import RESTLikeHandler, applyrequest, context, json
-from wheelcms_axle.node import Node
+from wheelcms_axle.node import Node, NodeNotFound
 from wheelcms_axle.content import type_registry, Content, ImageContent
 
 from wheelcms_axle.spoke import FileSpoke
@@ -155,7 +155,7 @@ class MainHandler(WheelRESTHandler):
                 stracks.content(p.id, name=p.title).log("? (%s) created by ?" % p.spoke().title,
                         stracks.user(self.user()), action=stracks.create())
 
-                return self.redirect(parent.path or '/', success="Ok")
+                return self.redirect(parent.path or '/', success='"%s" created' % p.title)
         else:
             self.context['form'] = formclass(parent=parent, attach=attach)
         ## Get spoke model
@@ -330,6 +330,12 @@ class MainHandler(WheelRESTHandler):
                                ).log("? (%s) removed by ?" % content.spoke().title,
                                      stracks.user(self.user()),
                                      action=stracks.delete())
+                try:
+                    n.parent().remove(n.slug())
+                except NodeNotFound:
+                    ## should not happen but if it does, bag it and tag it
+                    stracks.content(content.id, name=content.title).exception()
+
                 n.delete()
                 count += 1
 
