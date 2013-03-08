@@ -1,5 +1,7 @@
-from wheelcms_axle.models import Node, DuplicatePathException
-from wheelcms_axle.models import InvalidPathException, CantRenameRoot
+from wheelcms_axle.node import Node, DuplicatePathException
+from wheelcms_axle.node import InvalidPathException, CantRenameRoot
+from wheelcms_axle.node import NodeNotFound
+
 import py.test
 
 class TestNode(object):
@@ -268,3 +270,64 @@ class TestNode(object):
         aaa.rename("ccc")
         assert Node.objects.get(pk=bbb.pk).path == "/aaaa/bbb"
         assert Node.objects.get(pk=bb.pk).path == "/aa/bb"
+
+    def test_remove_single_root(self, client):
+        """ single, non-recursive removal """
+        root = Node.root()
+        root.add("aaa")
+        assert Node.get("/aaa")
+
+        root.remove("aaa")
+        assert not Node.get("/aaa")
+
+    def test_remove_single_child(self, client):
+        """ single, non-recursive removal """
+        root = Node.root()
+        child = root.add("aaa")
+        child.add("bbb")
+
+        assert Node.get("/aaa/bbb")
+
+        child.remove("bbb")
+        assert not Node.get("/aaa/bbb")
+
+    def test_remove_notfound(self, client):
+        """ verify exception when removing non-existing child """
+        py.test.raises(NodeNotFound, Node.root().remove, "aaa")
+
+    def test_remove_recursive(self, client):
+        """ recursive removal """
+        root = Node.root()
+        child = root.add("aaa")
+        child.add("b1")
+        child.add("b2")
+        assert Node.get("/aaa/b1")
+
+        root.remove("aaa")
+        assert not Node.get("/aaa/b1")
+        assert not Node.get("/aaa/b2")
+
+    def test_remove_recursive_child(self, client):
+        """ recursive removal """
+        root = Node.root()
+        c1 = root.add("aaa")
+        c2 = c1.add("bbb")
+        c2.add("b1")
+        c2.add("b2")
+        assert Node.get("/aaa/bbb/b1")
+
+        # import pytest; pytest.set_trace()
+        c1.remove("bbb")
+        assert Node.get("/aaa")
+        assert not Node.get("/aaa/bbb/b1")
+        assert not Node.get("/aaa/bbb/b2")
+
+    def test_remove_ignore_similar(self, client):
+        """ removing /aaa shouldn't affect /aaaa """
+        root = Node.root()
+        root.add("aaa")
+        root.add("aaaa")
+
+        root.remove("aaa")
+        assert Node.get("/aaaa")
+

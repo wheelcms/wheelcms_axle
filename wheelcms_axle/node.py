@@ -18,6 +18,9 @@ class NodeInUse(NodeException):
 class CantRenameRoot(NodeException):
     """ the root's path is "" which cannot be changed """
 
+class NodeNotFound(NodeException):
+    """ raised if a node is not found """
+
 class NodeBase(models.Model):
     ROOT_PATH = ""
     ALLOWED_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789_-"
@@ -153,6 +156,15 @@ class NodeBase(models.Model):
         except IntegrityError:
             raise DuplicatePathException(path)
         return child
+
+    def remove(self, childslug):
+        """ remove a child, recursively """
+        child = self.child(childslug)
+        if child is None:
+            raise NodeNotFound(self.path + '/' + childslug)
+        child.delete()
+        recursive = Node.objects.filter(path__startswith=self.path + '/' + childslug + '/')
+        recursive.delete()
 
     def parent(self):
         """ return the parent for this node """
