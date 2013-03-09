@@ -98,7 +98,7 @@ class NodeBase(models.Model):
         if after:
             try:
                 afterafter_all = self.childrenq(position__gt=after.position,
-                                            order="position")
+                                            order="position")[:1]
                 afterafter = afterafter_all.get()
                 position = (after.position + afterafter.position) / 2
                 if position == after.position:

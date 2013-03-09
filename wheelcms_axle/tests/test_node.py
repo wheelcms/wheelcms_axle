@@ -388,3 +388,43 @@ class TestNode(object):
         root.move(c3, before=c2)
 
         assert list(root.children()) == [c4, c1, c3, c2]
+
+    def test_reorder_oddcase1_after(self, client):
+        """ move after a node where multiple follow """
+        root = Node.root()
+        c1 = root.add("c1", position=0)
+        c2 = root.add("c2", position=100)
+        c3 = root.add("c3", position=200)
+        c4 = root.add("c4", position=300)
+
+        root.move(c1, after=c2)
+
+        assert list(root.children()) == [c2, c1, c3, c4]
+
+    def test_reorder_oddcase1_before(self, client):
+        """ move before a node where multiple follow
+            Works because of latest()
+        """
+        root = Node.root()
+        c1 = root.add("c1", position=0)
+        c2 = root.add("c2", position=100)
+        c3 = root.add("c3", position=200)
+        c4 = root.add("c4", position=300)
+
+        root.move(c1, before=c4)
+
+        assert list(root.children()) == [c2, c3, c1, c4]
+
+    def test_reorder_oddcase2(self, client):
+        """ move after a node where none follow, Works because
+            DoesNotExist is caught
+        """
+        root = Node.root()
+        c1 = root.add("c1", position=0)
+        c2 = root.add("c2", position=100)
+        c3 = root.add("c3", position=200)
+        c4 = root.add("c4", position=300)
+
+        root.move(c1, after=c4)
+
+        assert list(root.children()) == [c2, c3, c4, c1]

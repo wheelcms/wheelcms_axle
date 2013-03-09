@@ -41,6 +41,24 @@
         var boxes = $("input[type='checkbox'][name='selection']");
         boxes.attr("checked", $(this).attr("checked")?true:false);
     });
+    $(".sortable").sortable({
+        items: "tr.sortablerow",
+        stop: function(event, ui) {
+            var target = ui.item;
+            var target_path = target.data('url');
+            var before = target.prev("tr");
+            var after = target.next("tr");
+
+            if(before.hasClass("sortablerow") && before.data('url')) {
+                //console.log("Move " + target_path + " after " + before.data('url'));
+                $.post("reorder", {rel: "after", target: target_path, ref: before.data('url')})
+            }
+            else {
+                //console.log("Move " + target_path + " before " + after.data('url'));
+                $.post("reorder", {rel: "before", target: target_path, ref: after.data('url')})
+            }
+        }
+    });
   });
 </script>
 {% endblock %}
@@ -98,7 +116,7 @@
     {% endif %}
     {% for child in instance.children %}
       {% with content=child.content spoke=child.content.spoke %}
-      <tr class="sortablerow">
+      <tr class="sortablerow" data-url="{{child.path}}">
         <td><input name="selection" type="checkbox" value="{{child.path}}"
              data-path="{{child.path}}"
              data-title="{{content.title}}"
