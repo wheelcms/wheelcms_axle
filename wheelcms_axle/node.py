@@ -91,14 +91,7 @@ class NodeBase(models.Model):
     def isroot(self):
         return self.path == self.ROOT_PATH
 
-    def add(self, path, position=-1, after=None, before=None):
-        """ handle invalid paths (invalid characters, empty, too long) """
-        ## lowercasing is the only normalization we do
-        path = path.lower()
-
-        if not self.validpathre.match(path):
-            raise InvalidPathException(path)
-
+    def find_position(self, position=-1, after=None, before=None):
         children = self.children()
         positions = (c.position for c in self.children())
 
@@ -147,15 +140,33 @@ class NodeBase(models.Model):
                 position = max(positions) + self.POSITION_INTERVAL
             else:
                 position = 0
+        return position
+
+    def add(self, path, position=-1, after=None, before=None):
+        """ handle invalid paths (invalid characters, empty, too long) """
+        ## lowercasing is the only normalization we do
+        path = path.lower()
+
+        if not self.validpathre.match(path):
+            raise InvalidPathException(path)
+
+        position = self.find_position(position, after, before)
 
         child = self.__class__(path=self.path + "/" + path,
                                position=position)
         try:
             child.save()
-            # XXX child.info(action=create)
         except IntegrityError:
             raise DuplicatePathException(path)
         return child
+
+    def move(self, child, position=-1, after=None, before=None):
+        """ move an existing child. This does not take into acount that the
+            child already has a position in the child-order, but that shouldn't
+            make a significant difference """
+        position = self.find_position(position, after, before)
+        child.position = position
+        child.save()
 
     def remove(self, childslug):
         """ remove a child, recursively """
@@ -163,7 +174,8 @@ class NodeBase(models.Model):
         if child is None:
             raise NodeNotFound(self.path + '/' + childslug)
         child.delete()
-        recursive = Node.objects.filter(path__startswith=self.path + '/' + childslug + '/')
+        recursive = Node.objects.filter(path__startswith=self.path + '/' +
+                                                         childslug + '/')
         recursive.delete()
 
     def parent(self):

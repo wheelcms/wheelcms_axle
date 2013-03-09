@@ -331,3 +331,60 @@ class TestNode(object):
         root.remove("aaa")
         assert Node.get("/aaaa")
 
+    def test_reorder_position_before(self, client):
+        """ childs are returned in order they were added """
+        root = Node.root()
+        c1 = root.add("c1")
+        c2 = root.add("c2")
+        c3 = root.add("c3")
+
+        root.move(c1, after=c2)
+
+        assert list(root.children()) == [c2, c1, c3]
+
+    def test_reorder_position_after(self, client):
+        """ childs are returned in order they were added """
+        root = Node.root()
+        c1 = root.add("c1")
+        c2 = root.add("c2")
+        c3 = root.add("c3")
+
+        root.move(c1, before=c3)
+
+        assert list(root.children()) == [c2, c1, c3]
+
+    def test_reorder_position_end(self, client):
+        """ childs are returned in order they were added """
+        root = Node.root()
+        c1 = root.add("c1")
+        c2 = root.add("c2")
+        c3 = root.add("c3")
+
+        root.move(c1, after=c3)
+
+        assert list(root.children()) == [c2, c3, c1]
+
+    def test_reorder_position_start(self, client):
+        """ childs are returned in order they were added """
+        root = Node.root()
+        c1 = root.add("c1")
+        c2 = root.add("c2")
+        c3 = root.add("c3")
+
+        root.move(c3, before=c1)
+
+        assert list(root.children()) == [c3, c1, c2]
+
+    def test_reorder_tight(self, client):
+        """ heavy reordering without any spare space """
+        root = Node.root()
+        c1 = root.add("c1", position=0)
+        c2 = root.add("c2", position=1)
+        c3 = root.add("c3", position=2)
+        c4 = root.add("c4", position=3)
+
+        root.move(c4, before=c1)
+        root.move(c2, after=c3)
+        root.move(c3, before=c2)
+
+        assert list(root.children()) == [c4, c1, c3, c2]
