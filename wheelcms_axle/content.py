@@ -148,10 +148,34 @@ class ImageContent(FileContent):
     class Meta(FileContent.Meta):
         abstract = True
 
+from haystack import indexes, site
+
+
+class WheelDocumentField(indexes.CharField):
+    def __init__(self, spoke, *args, **kw):
+        super(WheelDocumentField, self).__init__(*args, **kw)
+        self.spoke = spoke
+
+    def prepare(self, obj):
+        res = self.spoke(obj).searchable_text()
+        if res is None:
+            return super(WheelDocumentField, self).prepare(obj)
+
+        return self.convert(res)
 
 class TypeRegistry(dict):
     def register(self, t):
+
         self[t.name()] = t
 
+        class WheelIndex(indexes.SearchIndex):
+            text = WheelDocumentField(spoke=t, document=True, model_attr='body')
+
+            def index_queryset(self):
+                ## published / visible, attached (!), not expired
+                return t.model.objects.all() # filter(pub_date__lte=datetime.datetime.now())
+
+
+        site.register(t.model, WheelIndex)
 
 type_registry = Registry(TypeRegistry())

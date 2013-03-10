@@ -35,6 +35,8 @@ class Spoke(object):
 
     serializer = WheelSerializer
 
+    document_fields = ('title', 'description')
+
     def __init__(self, o):
         self.o = o
         self.instance = o  ## keep self.o for backward compat
@@ -107,6 +109,20 @@ class Spoke(object):
             ch = cls.children
 
         return ch
+
+    def searchable_text(self):
+        """ collect, if possible, the value of all fields in 'document_fields'
+            and return their values combined. This is to be used as the main
+            document index value """
+        res = u""
+        for f in self.document_fields:
+            if hasattr(self.instance, f):
+                ff = getattr(self.instance, f)
+                if callable(ff):
+                    res += " " + ff()
+                else:
+                    res += " " + ff
+        return res
 
 
 class FileSpoke(Spoke):
