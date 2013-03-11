@@ -80,17 +80,20 @@
              * The uploadable types should be much more dynamic - we may/will
              * eventually support different types of files and images from
              * which you can chose.
+             * Additionally, 'image' and 'file' no longer match the actual spokes
+             * (wheelcms_spokes.image, etc)
              */
+
             if(mode == "any") {
                 header.text("Upload content");
                 types.html('<select class="select_type"> ' +
-                           '<option value="image">an Image</option> ' +
-                           '<option value="file">a File</option> ' +
+                           '<option value="wheelcms_spokes.image">an Image</option> ' +
+                           '<option value="wheelcms_spokes.file">a File</option> ' +
                            '</select>');
             } else {
                 header.text("Upload an image");
                 types.html('<select class="select_type"> ' +
-                           '<option value="image">an Image</option> ' +
+                           '<option value="wheelcms_spokes.image">an Image</option> ' +
                            '</select>');
             }
             $("#uploadModal").modal();

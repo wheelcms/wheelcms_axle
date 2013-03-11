@@ -23,7 +23,7 @@ class BaseForm(forms.ModelForm):
     # just an experiment, to have a required field in the advanced section
     # important = forms.Field(required=True)
 
-    def __init__(self, parent, attach=False, *args, **kwargs):
+    def __init__(self, parent, attach=False, enlarge=True, *args, **kwargs):
         """
             Django will put the extra slug field at the bottom, below
             all model fields. I want it just after the title field
@@ -50,11 +50,13 @@ class BaseForm(forms.ModelForm):
         if self.instance and self.instance.node and self.instance.node.isroot():
             self.fields.pop("slug")
 
-        for enlargable_field in self.fields.values():
-            self.enlarge_field(enlargable_field)
+        if enlarge:
+            for enlargable_field in self.fields.values():
+                self.enlarge_field(enlargable_field)
 
         ## make the description textarea a bit smaller
-        self.fields['description'].widget.attrs['rows'] = 4
+        if 'description' in self.fields:
+            self.fields['description'].widget.attrs['rows'] = 4
 
     def enlarge_field(self, field):
         field.widget.attrs['class'] = 'input-xxlarge'
@@ -150,7 +152,7 @@ def FileFormfactory(type, light=False):
 
         def __init__(self, *args, **kw):
             """ make the title field not required """
-            super(Form, self).__init__(*args, **kw)
+            super(Form, self).__init__(enlarge=False, *args, **kw)
             self.fields['title'].required = False
             if light:
                 self.fields['slug'].widget = forms.HiddenInput()
