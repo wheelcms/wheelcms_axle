@@ -453,6 +453,16 @@
                 $("#image_tab").show()
                 $("#link_tab").hide()
             }
+            // reset the external tab(s)
+
+            $("#external_title").val("");
+            $("#external_url").val("");
+            $("#external_target").val("");
+            $("#external_iframe").attr("src", "")
+            $("#external_image_title").val("");
+            $("#external_image_url").val("");
+            $("input[name='external_image_size']").attr('checked', false);
+            $("#external_image").attr("src", "{{STATIC_URL}}/img/preview.png")
             if(path.indexOf('http') == 0) {
                 if(mode == "link") {
                     load_link(path, options);
