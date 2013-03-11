@@ -312,17 +312,20 @@
                         args.title = $("#local_image_title").val();
                         args.target = $("#local_image_target").val();
                         args.size = $("input[type='radio'][name='local_image_size']:checked").val();
+                        args.local = true;
                     }
                     else if(current_tab == "browse_external_link") {
                         link = get_external_link();
                         args.title = $("#external_title").val();
                         args.target = $("#external_target").val();
+                        args.local = false;
                     }
                     else if(current_tab == "browse_external_image") {
                         link = get_external_image();
                         args.title = $("#external_image_title").val();
                         args.size = $("input[type='radio'][name='external_image_size']:checked").val();
-                        console.log(args);
+                        args.local = false;
+                        //console.log(args);
                     }
                     callback(link, args);
                 }
