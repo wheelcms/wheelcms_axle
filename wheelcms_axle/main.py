@@ -122,7 +122,7 @@ class MainHandler(WheelRESTHandler):
 
     @handler
     @applyrequest
-    def create(self, type, attach=False, *a, **b):
+    def create(self, type=None, attach=False, *a, **b):
         """
             Create new sub-content on a node or attach content to an
             existing node.
@@ -143,9 +143,8 @@ class MainHandler(WheelRESTHandler):
               /..parent../create
             where ..parent.. is available as self.instance
         """
-        ## if type is None: badrequest XXX
-
-        # import pdb; pdb.set_trace()
+        if type is None:
+            return self.badrequest()
 
         if not self.hasaccess():
             return self.forbidden()
