@@ -455,18 +455,23 @@ class MainHandler(WheelRESTHandler):
             for child in node.children():
                 selectable = False
 
+                content = child.content()
+                spoke = content.spoke()
+
                 if mode == "link":
                     selectable = True
-                elif isinstance(child.content(), ImageContent):
+                elif isinstance(content, ImageContent):
                     selectable = True
 
                 selected = path == child.path or \
                            path.startswith(child.path + '/')
                 instance['children'].append(
-                                      dict(title=child.content().title,
+                                      dict(title=content.title,
                                            path=child.path,
+                                           icon=spoke.icon_base() + '/' +
+                                                spoke.icon,
                                            selectable=selectable,
-                                           meta_type=child.content().meta_type,
+                                           meta_type=content.meta_type,
                                            selected=selected))
 
             panels.insert(0,

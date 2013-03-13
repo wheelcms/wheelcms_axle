@@ -7,7 +7,7 @@
     {% for child in instance.children %}
       <tr class="entry {% if child.selected %}info{%endif%} {% if not child.selectable %}disabled-content{% endif %}"
           data-url="{{child.path}}" data-selectable="{{child.selectable|yesno}}">
-        <td>{{child.title}}
+        <td><img src="{{child.icon}}"> {{child.title}}
             {% if child.selected %}
               <i class="pull-right icon-chevron-right"></i>
             {% endif %}
