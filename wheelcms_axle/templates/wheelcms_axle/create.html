@@ -3,9 +3,9 @@
 {% block form_header %}
 <p>
 {% if attach %}
-Attach "{{typeinfo.title}}" to {{instance.path}}
+Attach "{{typeinfo.title}}" to {{parent.path}}
 {% else %}
-Create "{{typeinfo.title}}" under <a href="{{instance.path|default:'/'}}">"{{instance.content.title}}"</a>
+Create "{{typeinfo.title}}" under <a href="{{parent.path|default:'/'}}">"{{parent.content.title}}"</a>
 {% endif %}
 </p>
 

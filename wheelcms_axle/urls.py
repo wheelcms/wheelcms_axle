@@ -4,17 +4,17 @@ from wheelcms_axle.main import MainHandler
 from wheelcms_axle.configuration import ConfigurationHandler
 
 urlpatterns = patterns('',
-    ## handle /@/create for creation under root
-    twpatterns("@", MainHandler, name="wheel_main", parent=""),
-    ## handle direct root access
+    ## Special url for configuration; issue #553
     twpatterns("/@/configuration", ConfigurationHandler, name="wheel_config"),
+
+    ## operations on the root (no explicit instance, so pass it explicitly)
     twpatterns("/", MainHandler, name="wheel_main", instance=""),
+    ## actions on the root, again pass instance explicitly
     twpatterns("/\+(?P<action>.+)", MainHandler, name="wheel_main", instance=""),
-    ## handle /path/@/create for creation somewhere deeped
-    twpatterns("(?P<parent>.+)/@", MainHandler, name="wheel_main"),
-    ## don't really need this? /<instance>/op works fine...
-    twpatterns("(?P<parent>.*)/@/(?P<instance>[^/]*)", MainHandler, name="wheel_main"),
-    ## for basic node access:
-    twpatterns(r"(?P<instance>.*)/\+(?P<action>.*)", MainHandler, name="wheel_main"),
+
+    ## operations on an instance. Instance can be resolved from path
+    twpatterns(r"(?P<instance>.*)/\+(?P<action>.*)",
+               MainHandler, name="wheel_main"),
+    ## actions on an instance. Instance can be resolved from path
     twpatterns("(?P<instance>.+)", MainHandler, name="wheel_main"),
 )

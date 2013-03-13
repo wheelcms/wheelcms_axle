@@ -95,11 +95,11 @@ class TestMainHandler(object):
 
     def test_create_attach_post(self, client):
         """ post the form for attaching content """
-        request = superuser_request("/@/create", method="POST",
+        request = superuser_request("/create", method="POST",
                                       title="Test")
         root = Node.root()
         handler = MainHandler(request=request, post=True,
-                              instance=dict(parent=root))
+                              instance=dict(instance=root))
         pytest.raises(Redirect, handler.create, type=Type1.get_name(), attach=True)
 
         root = Node.root()
@@ -118,12 +118,12 @@ class TestMainHandler(object):
         assert 'slug' not in form.fields
 
     def test_create_post(self, client):
-        request = superuser_request("/@/create", method="POST",
+        request = superuser_request("/create", method="POST",
                                       title="Test",
                                       slug="test")
         root = Node.root()
         handler = MainHandler(request=request, post=True,
-                              instance=dict(parent=root))
+                              instance=dict(instance=root))
         pytest.raises(Redirect, handler.create, type=Type1.get_name())
 
         node = Node.get("/test")

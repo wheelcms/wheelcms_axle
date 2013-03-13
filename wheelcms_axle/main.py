@@ -114,24 +114,53 @@ class MainHandler(WheelRESTHandler):
                 return cls.notfound()
         return d
 
+    ## vervalt als we @handler maken?
+
+    @applyrequest
+    def handle_create(self, type, attach=False):
+        return self.create(type=type, attach=attach)
+
     @applyrequest
     def create(self, type, attach=False, *a, **b):
         """
             Create new sub-content on a node or attach content to an
             existing node.
+
+            WheelCMS's structure doesn't map to two.ol's REST-like Resource
+            structure. In two.ol's setup, you have a resource name and
+            an optional id, e.g. /person/123
+
+            GETting /person/create would give the create form and POSTing
+            to /person would create a new person. POSTing to /person/123
+            would update person 123
+
+            But in WheelCMS's case, there's no explicit resource; the resource
+            under which a new object is to be created ("the parent") can be
+            any existing object.
+
+            This is solved by explicitly posting a create to
+              /..parent../create
+            where ..parent.. is available as self.instance
         """
+        ## if type is None: badrequest XXX
+
+        # import pdb; pdb.set_trace()
+        
         if not self.hasaccess():
             return self.forbidden()
 
         formclass = type_registry.get(type).form
 
-        parent = self.parent
+        parent = self.parent or self.instance
         if parent and parent.path:
             parentpath = parent.path
         else:
             parentpath = '/'
 
         self.context['redirect_cancel'] = parentpath + "?info=Create+canceled"
+        self.context['form_action'] = 'create'  ## make it absolute?
+        self.context['parent'] = parent
+
         ## if attach: do not accept slug
         if self.post:
             self.context['form'] = \
@@ -152,10 +181,12 @@ class MainHandler(WheelRESTHandler):
                     sub = parent.add(slug)
                     sub.set(p)
 
-                stracks.content(p.id, name=p.title).log("? (%s) created by ?" % p.spoke().title,
+                ent = stracks.content(p.id, name=p.title)
+                ent.log("? (%s) created by ?" % p.spoke().title,
                         stracks.user(self.user()), action=stracks.create())
 
-                return self.redirect(parent.path or '/', success='"%s" created' % p.title)
+                return self.redirect(parent.path or '/',
+                                     success='"%s" created' % p.title)
         else:
             self.context['form'] = formclass(parent=parent, attach=attach)
         ## Get spoke model
