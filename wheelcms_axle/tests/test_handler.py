@@ -2,7 +2,7 @@ from wheelcms_axle.main import MainHandler
 from wheelcms_axle.models import Node
 from wheelcms_axle.tests.models import Type1
 
-from two.ol.base import NotFound, Redirect
+from two.ol.base import NotFound, Redirect, handler
 import pytest
 
 from twotest.util import create_request
@@ -15,6 +15,17 @@ class MainHandlerTestable(MainHandler):
 
     def template(self, path):
         return dict(path=path, context=self.context)
+
+    def handle_reserved(self):
+        """ should result in 'reserved' being a reserved kw """
+
+    def foobar(self):
+        """ should not result in a reserved keyworkd """
+
+    @handler
+    def decorated(self):
+        pass
+
 
 def superuser_request(path, method="GET", **data):
     superuser, _ = User.objects.get_or_create(username="superuser",
@@ -141,6 +152,22 @@ class TestMainHandler(object):
 
         root = Node.root()
         assert root.contentbase.title == "Test"
+
+    def test_reserved_default(self, client):
+        reserved = MainHandlerTestable.reserved()
+        assert 'create' in reserved
+        assert 'list' in reserved
+        assert 'update' in reserved
+
+    def test_reserved_handle_explicit(self, client):
+        reserved = MainHandlerTestable.reserved()
+        assert 'reserved' in reserved
+        assert 'foobar' not in reserved
+
+    def test_reserved_decorator(self, client):
+        reserved = MainHandlerTestable.reserved()
+        assert 'decorated' in reserved
+
 
 class TestBreadcrumb(object):
     """ test breadcrumb generation by handler """

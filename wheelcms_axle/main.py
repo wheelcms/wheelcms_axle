@@ -1,4 +1,4 @@
-from two.ol.base import RESTLikeHandler, applyrequest, context, json
+from two.ol.base import RESTLikeHandler, applyrequest, context, json, handler
 from wheelcms_axle.node import Node, NodeNotFound
 from wheelcms_axle.content import type_registry, Content, ImageContent
 
@@ -114,12 +114,13 @@ class MainHandler(WheelRESTHandler):
                 return cls.notfound()
         return d
 
-    ## vervalt als we @handler maken?
+    @classmethod
+    def reserved(cls):
+        return set(["create", "update", "list"] + \
+               [x[7:] for x in dir(cls) if x.startswith("handle_")] + \
+               [x for x in dir(cls) if getattr(getattr(cls, x), "ishandler", False)])
 
-    @applyrequest
-    def handle_create(self, type, attach=False):
-        return self.create(type=type, attach=attach)
-
+    @handler
     @applyrequest
     def create(self, type, attach=False, *a, **b):
         """
@@ -145,7 +146,7 @@ class MainHandler(WheelRESTHandler):
         ## if type is None: badrequest XXX
 
         # import pdb; pdb.set_trace()
-        
+
         if not self.hasaccess():
             return self.forbidden()
 
@@ -167,6 +168,7 @@ class MainHandler(WheelRESTHandler):
             self.form = formclass(data=self.request.POST,
                                   parent=parent,
                                   attach=attach,
+                                  reserved=self.reserved(),
                                   files=self.request.FILES)
             if self.form.is_valid():
                 ## form validation should handle slug uniqueness (?)
@@ -221,6 +223,7 @@ class MainHandler(WheelRESTHandler):
         if self.post:
             self.context['form'] = form = formclass(parent=parent,
                                                     data=self.request.POST,
+                                                    reserved=self.reserved(),
                                                     instance=content)
 
             if form.is_valid():
@@ -511,6 +514,7 @@ class MainHandler(WheelRESTHandler):
         self.form = formclass(data=self.request.POST,
                               parent=parent,
                               attach=False,
+                              reserved=self.reserved(),
                               files=self.request.FILES,
                               )
 

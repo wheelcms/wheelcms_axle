@@ -212,12 +212,77 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         assert form.is_valid()
         assert form.cleaned_data['slug'] == 'foo1'
 
+    def test_slug_reserved(self, client):
+        """
+            An explicitly specified slug that matches a reserved word
+            should result in a validation error
+        """
+        p = Node.root()
+        data = self.valid_data()
+        data['slug'] = 'foobar'
+        data['title'] = 'foo'
+        data['template'] = 'foo/bar'
+        form = self.type.form(parent=p, data=data, files=self.valid_files(),
+            reserved=["foobar"])
+
+        assert not form.is_valid()
+        assert 'slug' in form.errors
+        assert form.errors['slug'].pop() == 'This is a reserved name'  ## fragile
+
+    def test_slug_notreserved(self, client):
+        """
+            An explicitly specified slug that doesn't match a reserved keyword
+            should be accepted.
+        """
+        p = Node.root()
+        data = self.valid_data()
+        data['slug'] = 'foobar1'
+        data['title'] = 'foo'
+        data['template'] = 'foo/bar'
+        form = self.type.form(parent=p, data=data, files=self.valid_files(),
+            reserved=["foobar"])
+
+        assert form.is_valid()
+
+    def test_slug_generate_reserved(self, client):
+        """ slug generation should not create reserved names """
+        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        p = Node.root()
+        data = self.valid_data()
+        data['slug'] = ''
+        data['title'] = 'foo'
+        data['template'] = 'foo/bar'
+
+        form = self.type.form(parent=p, data=data, files=self.valid_files(),
+                              reserved=["foo"])
+
+        assert form.is_valid()
+        assert form.cleaned_data['slug'] == 'foo1'
+
+    def test_slug_generate_reserved_existing(self, client):
+        """ slug generation should not create reserved names or existing
+            names, combined """
+        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        p = Node.root()
+        p.add('foo')
+        data = self.valid_data()
+        data['slug'] = ''
+        data['title'] = 'foo'
+        data['template'] = 'foo/bar'
+
+        form = self.type.form(parent=p, data=data, files=self.valid_files(),
+                              reserved=["foo1"])
+
+        assert form.is_valid()
+        assert form.cleaned_data['slug'] == 'foo2'
+
     def test_context(self, client):
         """ a context method can be stored in the registry """
         def ctx(ins):
             return dict(a="1")
 
-        self.reg.register(self.type, "foo/bar", "foo bar", default=False, context=ctx)
+        self.reg.register(self.type, "foo/bar", "foo bar",
+                          default=False, context=ctx)
 
         context_method = self.reg.context.get((self.type, "foo/bar"))
         assert context_method

@@ -23,7 +23,8 @@ class BaseForm(forms.ModelForm):
     # just an experiment, to have a required field in the advanced section
     # important = forms.Field(required=True)
 
-    def __init__(self, parent, attach=False, enlarge=True, *args, **kwargs):
+    def __init__(self, parent, attach=False, enlarge=True, reserved=(),
+                 *args, **kwargs):
         """
             Django will put the extra slug field at the bottom, below
             all model fields. I want it just after the title field
@@ -34,6 +35,7 @@ class BaseForm(forms.ModelForm):
         self.fields.insert(titlepos+1, 'slug', slug)
         self.parent = parent
         self.attach = attach
+        self.reserved = reserved
         if attach:
             self.fields.pop('slug')
 
@@ -84,6 +86,7 @@ class BaseForm(forms.ModelForm):
 
         parent_path = self.parent.path
 
+        # import pytest; pytest.set_trace()
         if not slug:
             slug = re.sub("[^%s]+" % Node.ALLOWED_CHARS, "-",
                           self.cleaned_data.get('title', '').lower()
@@ -91,16 +94,24 @@ class BaseForm(forms.ModelForm):
             try:
                 existing = Node.objects.filter(path=parent_path
                                                + "/" + slug).get()
-                base_slug = slug[:Node.MAX_PATHLEN-6] ## some space for counter
-                count = 1
-                while existing and existing != self.instance.node:
-                    slug = base_slug + str(count)
+            except Node.DoesNotExist:
+                existing = None
+
+            base_slug = slug[:Node.MAX_PATHLEN-6] ## some space for counter
+            count = 1
+            while (existing and existing != self.instance.node) or \
+                  (slug in self.reserved):
+                slug = base_slug + str(count)
+                try:
                     existing = Node.objects.filter(path=self.parent.path
                                                    + "/" + slug).get()
-                    count += 1
+                except Node.DoesNotExist:
+                    existing = None
 
-            except Node.DoesNotExist:
-                pass
+                count += 1
+
+        if slug in self.reserved:
+            raise forms.ValidationError("This is a reserved name")
 
         if not Node.validpathre.match(slug):
             raise forms.ValidationError("Only numbers, letters, _-")
