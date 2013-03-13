@@ -44,7 +44,13 @@
     {% if user.is_anonymous %}
     <ul class="nav">
       <li><a href="{% url userena_signup %}">Register</a></li>
+      {# issue 576 - do not redirect to logout page #}
+      {% if request.path != settings.LOGOUT_URL %}
       <li><a href="{% url userena_signin %}?next={{request.path}}">Signin</a></li>
+      {% else %}
+      <li><a href="{% url userena_signin %}?next=/">Signin</a></li>
+      {% endif %}
+
     </ul>
     {% else %}
     <ul class="nav">
