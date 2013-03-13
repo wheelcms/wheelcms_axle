@@ -466,6 +466,10 @@
             $("#external_image_url").val("");
             $("input[name='external_image_size']").attr('checked', false);
             $("#external_image").attr("src", "{{STATIC_URL}}/img/preview.png")
+
+            // strip possible actions from the end of the url, e.g. /+download
+            path = path.replace(/\/\+[\w_-]+$/, '');
+
             if(path.indexOf('http') == 0) {
                 if(mode == "link") {
                     load_link(path, options);

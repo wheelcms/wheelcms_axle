@@ -56,7 +56,7 @@
                     src = ed.dom.getAttrib(node, 'src');
                     options.title = ed.dom.getAttrib(node, 'alt') || ed.dom.getAttrib(node, 'title');
                     options.size = ed.dom.getAttrib(node, 'class') || 'original';
-                    console.log("Selection : " + src);
+                    //console.log("Selection : " + src);
                 }
 
                 ed.getWin().parent.wheel_browser(src, "image", options,
