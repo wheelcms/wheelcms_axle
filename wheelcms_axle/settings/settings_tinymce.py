@@ -1,6 +1,17 @@
 TINYMCE_DEFAULT_CONFIG = {
     'theme': "advanced", 
     'content_css': '/static/css/wheel_content.css',
+    'style_formats': [
+        { 'title': 'Images'},
+        { 'title': 'Original Size Image', 'selector': 'img', 'attributes': {'class': 'img_content_original' }},
+        { 'title': 'Thumbnail Image', 'selector': 'img', 'attributes': {'class': 'img_content_thumb' }},
+        { 'title': 'Small Image', 'selector': 'img', 'attributes': {'class': 'img_content_small' }},
+        { 'title': 'Medium Image', 'selector': 'img', 'attributes': {'class': 'img_content_medium'} },
+        { 'title': 'Large Image', 'selector': 'img', 'attributes': {'class': 'img_content_large' }},
+        #{ 'title': 'Test'},
+        #{ 'title': "Boohoold", 'inline': 'b' },
+        ],
+
     'relative_urls': False, 
     'theme_advanced_toolbar_location':'top', 
     'theme_advanced_resizing':True, 
