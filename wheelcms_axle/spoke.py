@@ -1,5 +1,6 @@
-
 from django.http import HttpResponse
+from django.conf import settings
+
 from wheelcms_axle.content import Content
 from wheelcms_axle.forms import formfactory, FileFormfactory
 from wheelcms_axle.workflows.default import DefaultWorkflow
@@ -37,9 +38,14 @@ class Spoke(object):
 
     document_fields = ('title', 'description')
 
+    icon = "page.png"
+
     def __init__(self, o):
         self.o = o
         self.instance = o  ## keep self.o for backward compat
+
+    def icon_base(self):
+        return settings.STATIC_URL + "img/icons"
 
     @classproperty
     def form(cls):
