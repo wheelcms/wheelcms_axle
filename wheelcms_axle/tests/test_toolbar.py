@@ -4,16 +4,17 @@
 from wheelcms_axle.node import Node
 from wheelcms_axle.content import type_registry, TypeRegistry
 from wheelcms_axle.toolbar import Toolbar
-from wheelcms_axle.tests.models import Type1, Type1Type, Type2Type
+from wheelcms_axle.tests.models import Type1, Type1Type, Type2Type, TestTypeRegistry
 
 from wheelcms_axle.spoke import Spoke
+
 
 class TestToolbar(object):
     """
         Test toolbar child restrictions, context buttons
     """
     def setup(self):
-        self.registry = TypeRegistry()
+        self.registry = TestTypeRegistry()
         type_registry.set(self.registry)
         self.registry.register(Type1Type)
         self.registry.register(Type2Type)

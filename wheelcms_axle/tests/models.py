@@ -63,3 +63,13 @@ type_registry.register(TestFileType)
 type_registry.register(TestImageType)
 type_registry.register(OtherTestFileType)
 type_registry.register(OtherTestImageType)
+
+from wheelcms_axle.content import TypeRegistry
+
+class TestTypeRegistry(TypeRegistry):
+    """
+        A type registry without HayStack registration
+    """
+    def register(self, t):
+        self[t.name()] = t
+

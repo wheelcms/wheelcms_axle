@@ -148,7 +148,7 @@ class ImageContent(FileContent):
     class Meta(FileContent.Meta):
         abstract = True
 
-from haystack import indexes, site
+from haystack import indexes, site, exceptions
 
 
 class WheelDocumentField(indexes.CharField):
@@ -176,6 +176,9 @@ class TypeRegistry(dict):
                 return t.model.objects.all() # filter(pub_date__lte=datetime.datetime.now())
 
 
-        site.register(t.model, WheelIndex)
+        try:
+            site.register(t.model, WheelIndex)
+        except exceptions.AlreadyRegistered:
+            pass
 
 type_registry = Registry(TypeRegistry())
