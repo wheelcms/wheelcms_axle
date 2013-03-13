@@ -170,7 +170,7 @@ class MainHandler(WheelRESTHandler):
                                   reserved=self.reserved(),
                                   files=self.request.FILES)
             if self.form.is_valid():
-                ## form validation should handle slug uniqueness (?)
+                target = parent  ## where to redirect to
                 p = self.form.save(commit=False)
                 if self.user().is_authenticated():
                     p.owner = self.user()
@@ -181,12 +181,13 @@ class MainHandler(WheelRESTHandler):
                     slug = self.form.cleaned_data['slug']
                     sub = parent.add(slug)
                     sub.set(p)
+                    target = sub
 
                 ent = stracks.content(p.id, name=p.title)
                 ent.log("? (%s) created by ?" % p.spoke().title,
                         stracks.user(self.user()), action=stracks.create())
 
-                return self.redirect(parent.path or '/',
+                return self.redirect(target.path,
                                      success='"%s" created' % p.title)
         else:
             self.context['form'] = formclass(parent=parent, attach=attach)
