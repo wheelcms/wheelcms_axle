@@ -1,5 +1,21 @@
 {% extends 'wheelcms_axle/base.html' %}
 
+{% block breadcrumb %}
+<div class="row">
+  <div class="span12">
+    <ul class="breadcrumb">
+        <li>
+            <a href="/">Home</a>
+        <span class="divider">/</span>
+        </li>
+        <li>
+          {{query}}
+        </li>
+    </ul>
+  </div>
+</div>
+{% endblock %}
+
 {% block base_main %}
 <div class="row">
   <div class="span12">
