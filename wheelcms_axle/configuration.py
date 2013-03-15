@@ -26,10 +26,6 @@ class ConfigurationForm(forms.ModelForm):
         ('united', 'United')))
 
 class ConfigurationHandler(FormHandler, WheelHandlerMixin):
-    def update_context(self, request):
-        super(ConfigurationHandler, self).update_context(request)
-        self.context['toolbar'] = Toolbar(instance=None, status="special")
-
     def index(self):
         if not self.hasaccess():
             return self.forbidden()
