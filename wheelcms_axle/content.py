@@ -170,11 +170,20 @@ class TypeRegistry(dict):
 
         class WheelIndex(indexes.SearchIndex):
             text = WheelDocumentField(spoke=t, document=True, model_attr='body')
+            state = indexes.CharField(stored=True, indexed=True,
+                                      model_attr='state')
+            path = indexes.CharField(stored=True, indexed=True,
+                                      model_attr='node__path')
+            created = indexes.DateField(stored=True, indexed=True)
+            modified = indexes.DateField(stored=True, indexed=True)
+            publication = indexes.DateField(stored=True, indexed=True)
+            expire = indexes.DateField(stored=True, indexed=True)
 
             def index_queryset(self):
-                ## published / visible, attached (!), not expired
-                return t.model.objects.all() # filter(pub_date__lte=datetime.datetime.now())
-
+                """ Should the content to be indexed restricted here?
+                    Or index everything and apply filters depending on
+                    context? """
+                return t.model.objects.all()
 
         try:
             site.register(t.model, WheelIndex)
