@@ -19,10 +19,17 @@ class Command(BaseCommand):
         contentxml = os.path.join(readfrom, "content.xml")
         mediadir = os.path.join(readfrom, "media")
 
+        if not os.access(settings.MEDIA_ROOT, os.W_OK):
+            print "%s may not be writable. Continue (y/n)?" % settings.MEDIA_ROOT
+            if raw_input().lower().strip() != "y":
+                print "Exiting"
+                return
+
         data = open(contentxml).read()
         tree = ElementTree.fromstring(data)
         root = Node.root() ## allow relative base XXX
         Importer().run(root, tree)
 
+        ## check writability
         copy_tree(mediadir, settings.MEDIA_ROOT)
 
