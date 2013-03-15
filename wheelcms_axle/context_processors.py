@@ -13,5 +13,5 @@ def configuration(request):
 
 def toolbar(request):
     if request.user.is_authenticated():
-        return dict(toolbar=Toolbar(Node.root(), status="generic"))
+        return dict(toolbar=Toolbar(Node.root(), status="special"))
 
