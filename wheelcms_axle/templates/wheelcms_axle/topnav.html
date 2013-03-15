@@ -1,7 +1,24 @@
 <ul class="nav">
   {% for item in toplevel %}
+    {% if item.sub %}
+    <li class="{% if item.active %}active{% endif %} dropdown">
+      <a href="{{item.node.path}}" data-target="#"
+         data-toggle="dropdown" class="dropdown-toggle">
+         {{item.node.content.title}}
+         <b class="caret"></b>
+      </a>
+      <ul class="dropdown-menu" role="menu">
+        {# repeat toplevel item here since the navbar link will toggle the dropdown #}
+        <li><a href="{{item.node.path}}">{{item.node.content.title}}</a></li>
+        {% for s in item.sub %}
+          <li><a href="{{s.path}}">{{s.content.title}}</a></li>
+        {% endfor %}
+      </ul>
+    </li>
+    {% else %}
     <li {% if item.active %}class="active"{% endif %}>
       <a href="{{item.node.path}}">{{item.node.content.title}}</a>
     </li>
+    {% endif %}
   {% endfor %}
 </ul>

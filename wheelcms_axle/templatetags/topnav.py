@@ -8,14 +8,21 @@ register = template.Library()
 def topnav(context):
     context = context.get('instance')
 
-    toplevel = []
+    nav = []
 
-    for child in queries.toplevel_visible_children():
+    ## Find top/secondlevel published nodes in one query XXX
+    for toplevel in queries.toplevel_visible_children():
         ## make sure /foo/bar does not match in /football by adding the /
-        if context is None:
-            toplevel.append(dict(active=False, node=child))
-        elif child == context or context.path.startswith(child.path + '/'):
-            toplevel.append(dict(active=True, node=child))
-        else:
-            toplevel.append(dict(active=False, node=child))
-    return dict(toplevel=toplevel)
+        item = dict(active=False, node=toplevel)
+
+        if toplevel == context or \
+           (context and context.path.startswith(toplevel.path + '/')):
+            item = dict(active=True, node=toplevel)
+
+        sub = []
+        for secondlevel in queries.get_visible_children(toplevel):
+            sub.append(secondlevel)
+
+        item['sub'] = sub
+        nav.append(item)
+    return dict(toplevel=nav)
