@@ -2,6 +2,8 @@ import mimetypes
 import os
 import datetime
 
+from two.ol.util import classproperty
+
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.db import models
@@ -53,7 +55,6 @@ class ContentBase(models.Model):
         abstract = True
 
     def save(self, *a, **b):
-        ## XXX can this be replaced by a default on meta_type?
         mytype = self.__class__.__name__.lower()
         self.meta_type = mytype
         self.modified = timezone.now()
@@ -76,6 +77,10 @@ class ContentBase(models.Model):
     def spoke(self):
         """ return the spoke for this model """
         return type_registry.get(self.get_name())(self)
+
+    @classproperty
+    def classname(cls):
+        return cls._meta.object_name.lower()
 
     @classmethod
     def get_name(cls):
@@ -172,8 +177,12 @@ class TypeRegistry(dict):
             text = WheelDocumentField(spoke=t, document=True, model_attr='body')
             state = indexes.CharField(stored=True, indexed=True,
                                       model_attr='state')
+            meta_type = indexes.CharField(stored=True, indexed=True,
+                                          model_attr='meta_type')
             path = indexes.CharField(stored=True, indexed=True,
                                       model_attr='node__path')
+            slug = indexes.CharField(stored=True, indexed=True,
+                                      model_attr='node__slug')
             created = indexes.DateField(stored=True, indexed=True)
             modified = indexes.DateField(stored=True, indexed=True)
             publication = indexes.DateField(stored=True, indexed=True)
