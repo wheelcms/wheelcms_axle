@@ -179,7 +179,7 @@ class MainHandler(WheelRESTHandler):
         self.context['typeinfo'] = dict(name=typeinfo.name, title=typeinfo.title)
 
         self.context['attach'] = attach
-        self.context['instance'] = self.parent or '/'
+        self.context['instance'] = self.parent or None # ?? '/' or Node.root()?
         self.context['breadcrumb'] = self.breadcrumb(operation="Create")
         self.context['toolbar'] = Toolbar(self.instance, status="create")
         return self.template("wheelcms_axle/create.html")
