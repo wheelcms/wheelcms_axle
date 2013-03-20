@@ -2,8 +2,11 @@ from django.conf.urls.defaults import patterns
 from two.ol.base import twpatterns
 from wheelcms_axle.main import MainHandler
 from wheelcms_axle.configuration import ConfigurationHandler
+from wheelcms_axle.search import SearchHandler
 
 urlpatterns = patterns('',
+    twpatterns("/@/search", SearchHandler, name="haystack_search"),
+
     ## Special url for configuration; issue #553
     twpatterns("/@/configuration", ConfigurationHandler, name="wheel_config"),
 
