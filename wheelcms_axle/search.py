@@ -1,3 +1,5 @@
+import urllib
+
 from django.core.paginator import Paginator, InvalidPage
 
 from two.ol.base import FormHandler, applyrequest
@@ -35,7 +37,9 @@ class SearchHandler(FormHandler, WheelHandlerMixin):
             except InvalidPage:
                 return self.notfound()
 
-            self.context['GET_string'] = "&q=" + self.request.REQUEST.get('q', "")
+            self.context['GET_string'] = urllib.urlencode([(k, v)
+                    for (k, v) in self.request.REQUEST.iteritems()
+                    if k != 'page'])
             np = paginator.num_pages
 
             windowsize = 6
@@ -55,7 +59,6 @@ class SearchHandler(FormHandler, WheelHandlerMixin):
                     end = np - 1
                     start = end - windowsize - 1
 
-                print "** np, page, start, end", np, page, start, end
                 if page < 4:
                     self.context['begin'] = range(1, windowsize)
                     self.context['end'] = [np]

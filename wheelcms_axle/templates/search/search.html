@@ -61,7 +61,7 @@
 
   {% if page.has_previous %}
   <li class="page previous">
-    <a href="?page={{ page.previous_page_number }}{{ GET_string }}"
+    <a href="?page={{ page.previous_page_number }}&{{ GET_string }}"
        >&lsaquo;&lsaquo;
     </a>
   </li>
@@ -76,7 +76,7 @@
     {% ifequal page.number page_number %}
     <a href="">{{ page_number }}</a>
     {% else %}
-    <a href="?page={{ page_number }}{{ GET_string }}"
+    <a href="?page={{ page_number }}&{{ GET_string }}"
        >{{ page_number }}</a>
     {% endifequal%}
   </li>
@@ -89,7 +89,7 @@
     {% ifequal page.number page_number %}
     <a href="">{{ page_number }}</a>
     {% else %}
-    <a href="?page={{ page_number }}{{ GET_string }}"
+    <a href="?page={{ page_number }}&{{ GET_string }}"
        >{{ page_number }}</a>
     {% endifequal%}
   </li>
@@ -103,7 +103,7 @@
     {% ifequal page.number page_number %}
     <a href="">{{ page_number }}</a>
     {% else %}
-    <a href="?page={{ page_number }}{{ GET_string }}"
+    <a href="?page={{ page_number }}&{{ GET_string }}"
        >{{ page_number }}</a>
     {% endifequal%}
   </li>
@@ -112,7 +112,7 @@
 
   {% if page.has_next %}
   <li class="page next">
-    <a href="?page={{ page.next_page_number }}{{ GET_string }}"
+    <a href="?page={{ page.next_page_number }}&{{ GET_string }}"
        >&rsaquo;&rsaquo;</a>
   </li>
   {% else %}
