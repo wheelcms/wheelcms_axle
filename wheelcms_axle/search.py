@@ -13,7 +13,7 @@ class SearchForm(BaseForm):
 
 
 class SearchHandler(FormHandler, WheelHandlerMixin):
-    results_per_page = 1
+    results_per_page = 10
 
     @applyrequest(page=int)
     def index(self, page=1):
