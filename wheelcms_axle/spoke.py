@@ -1,7 +1,11 @@
+from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.conf import settings
 
+from haystack import indexes
+
 from wheelcms_axle.content import Content
+from wheelcms_axle.node import Node
 from wheelcms_axle.forms import formfactory, FileFormfactory
 from wheelcms_axle.workflows.default import DefaultWorkflow
 
@@ -20,6 +24,61 @@ def action(f):
     f.action = True
     return f
 
+
+class SpokeCharField(indexes.CharField):
+    def __init__(self, spoke, *args, **kw):
+        super(SpokeCharField, self).__init__(*args, **kw)
+        self.spoke = spoke
+
+    def prepare(self, obj):
+        instance = self.spoke(obj)
+        ma = getattr(instance, self.model_attr, None)
+        if ma:
+            if callable(ma):
+                res = ma()
+            else:
+                res = ma
+        if res is None:
+            return super(SpokeCharField, self).prepare(obj)
+
+        return self.convert(res)
+
+def indexfactory(spoke):
+    """ return a generic index definition bound to 'spoke' """
+    class WheelIndex(indexes.SearchIndex):
+        text = SpokeCharField(spoke=spoke, document=True,
+                              model_attr='searchable_text')
+        title = indexes.CharField(stored=True, indexed=False,
+                                  model_attr="title")
+        description = indexes.CharField(stored=True, indexed=False,
+                              model_attr='description')
+        state = indexes.CharField(stored=True, indexed=True,
+                                  model_attr='state')
+        meta_type = indexes.CharField(stored=True, indexed=True,
+                                      model_attr='meta_type')
+        path = SpokeCharField(spoke=spoke, stored=True, indexed=True,
+                              model_attr='path')
+        slug = indexes.CharField(stored=True, indexed=True,
+                                  model_attr='node__slug')
+        created = indexes.DateField(stored=True, indexed=True,
+                                    model_attr="created")
+        modified = indexes.DateField(stored=True, indexed=True,
+                                     model_attr="modified")
+        publication = indexes.DateField(stored=True, indexed=True,
+                                        model_attr="publication")
+        expire = indexes.DateField(stored=True, indexed=True,
+                                   model_attr="expire")
+        icon = SpokeCharField(spoke=spoke, stored=True, indexed=False,
+                              model_attr="full_icon_path")
+        owner = SpokeCharField(spoke=spoke, stored=True, indexed=True,
+                               model_attr="owner_name")
+        def index_queryset(self):
+            """ Should the content to be indexed restricted here?
+                Or index everything and apply filters depending on
+                context? """
+            ## only index content that's attached.
+            return spoke.model.objects.filter(node__isnull=False)
+    return WheelIndex
 
 class Spoke(object):
     model = Content  ## is it smart to set this to Content? A nonsensible default..
@@ -46,6 +105,27 @@ class Spoke(object):
 
     def icon_base(self):
         return settings.STATIC_URL + "img/icons"
+
+    def full_icon_path(self):
+        """ return the full icon path. Used for storing the icon in the
+            search index """
+        return self.icon_base() + '/' + self.icon
+
+    def owner_name(self):
+        """ return the owner's name, as good as possible """
+        try:
+            owner = self.instance.owner
+        except User.DoesNotExist:
+            return "Anonymous"
+
+        name = owner.get_full_name()
+
+        return name.strip() or owner.username
+
+    @classmethod
+    def index(cls):
+        """ generate the search index definition """
+        return indexfactory(cls)
 
     @classproperty
     def form(cls):
@@ -130,6 +210,11 @@ class Spoke(object):
                     res += " " + ff
         return res
 
+    def path(self):
+        try:
+            return self.instance.node.path or '/'
+        except Node.DoesNotExist:
+            return None
 
 class FileSpoke(Spoke):
     @classproperty

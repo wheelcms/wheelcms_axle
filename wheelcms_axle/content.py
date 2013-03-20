@@ -153,50 +153,15 @@ class ImageContent(FileContent):
     class Meta(FileContent.Meta):
         abstract = True
 
-from haystack import indexes, site, exceptions
-
-
-class WheelDocumentField(indexes.CharField):
-    def __init__(self, spoke, *args, **kw):
-        super(WheelDocumentField, self).__init__(*args, **kw)
-        self.spoke = spoke
-
-    def prepare(self, obj):
-        res = self.spoke(obj).searchable_text()
-        if res is None:
-            return super(WheelDocumentField, self).prepare(obj)
-
-        return self.convert(res)
+from haystack import exceptions, site
 
 class TypeRegistry(dict):
     def register(self, t):
 
         self[t.name()] = t
 
-        class WheelIndex(indexes.SearchIndex):
-            text = WheelDocumentField(spoke=t, document=True, model_attr='body')
-            state = indexes.CharField(stored=True, indexed=True,
-                                      model_attr='state')
-            meta_type = indexes.CharField(stored=True, indexed=True,
-                                          model_attr='meta_type')
-            path = indexes.CharField(stored=True, indexed=True,
-                                      model_attr='node__path')
-            slug = indexes.CharField(stored=True, indexed=True,
-                                      model_attr='node__slug')
-            created = indexes.DateField(stored=True, indexed=True)
-            modified = indexes.DateField(stored=True, indexed=True)
-            publication = indexes.DateField(stored=True, indexed=True)
-            expire = indexes.DateField(stored=True, indexed=True)
-
-            def index_queryset(self):
-                """ Should the content to be indexed restricted here?
-                    Or index everything and apply filters depending on
-                    context? """
-                ## only index content that's attached.
-                return t.model.objects.filter(node__isnull=False)
-
         try:
-            site.register(t.model, WheelIndex)
+            site.register(t.model, t.index())
         except exceptions.AlreadyRegistered:
             pass
 

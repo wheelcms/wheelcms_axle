@@ -15,10 +15,10 @@ class SearchHandler(FormHandler, WheelHandlerMixin):
 
     @applyrequest(page=int)
     def index(self, page=1):
-        #if not self.hasaccess():
-        #    return self.forbidden()
-
         sqs = SearchQuerySet()
+        if not self.hasaccess():
+            sqs = sqs.filter(state__in=("visible", "published"))
+
         form = self.context['form'] = SearchForm(self.request.REQUEST,
                                           searchqueryset=sqs)
 
@@ -38,6 +38,5 @@ class SearchHandler(FormHandler, WheelHandlerMixin):
         ## move to wheecms_axle folder?
         return self.template("search/search.html")
 
-    def process(self):
-        ## always GET?
-        return self.template("search/search.html")
+    ## POST == GET
+    process = index

@@ -32,28 +32,29 @@
 {% if query %}
 <div class="row">
   <div class="span12">
-    <h3>Results</h3>
-  </div>
-</div>
-{% for result in page.object_list %}
-<div class="row">
-  <div class="span12">
-    <h4><a href="{{ result.object.node.path }}">{{ result.object.title }}</a></h4>
-  </div>
-</div>
-<div class="row">
-  <div class="span12">
-    <p>{{result.object.description}}</p>
-  </div>
-</div>
+    <table id="search_result_table" class="table table-hover">
+    <tr>
+      <th>Results</th>
+    </tr>
 
-{% empty %}
-<div class="row">
-  <div class="span12">
-    <p>No results found.</p>
+    {% for result in page.object_list %}
+    <tr class="state-{{result.state}}">
+      <td>
+        <span class="title"><img class="icon" src="{{result.icon}}"><a href="{{ result.path }}">{{ result.title }}</a></span>
+        <span class="byline">{% if result.state == "private" %}<span class="badge badge-important">private</span>{%endif%} by {{result.owner}} &mdash; published {{result.publication}} &mdash; last modified {{result.modified}} {# &mdash; filed under foo, bar #}</span>
+        <p>{{result.description|safe}}</p>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td>
+        <p>No results found.</p>
+      </td>
+    </tr>
+    {% endfor %}
+    </table>
   </div>
 </div>
-{% endfor %}
 
 {% if page.has_previous or page.has_next %}
     <div>
