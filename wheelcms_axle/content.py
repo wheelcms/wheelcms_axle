@@ -192,7 +192,8 @@ class TypeRegistry(dict):
                 """ Should the content to be indexed restricted here?
                     Or index everything and apply filters depending on
                     context? """
-                return t.model.objects.all()
+                ## only index content that's attached.
+                return t.model.objects.filter(node__isnull=False)
 
         try:
             site.register(t.model, WheelIndex)
