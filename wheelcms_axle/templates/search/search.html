@@ -56,12 +56,68 @@
   </div>
 </div>
 
+<div class="pagination pagination-centered">
+<ul>
+
+  <li class="page previous {% if not page.has_previous %}disabled{% endif %}">
+    <a href="?page={{ page.previous_page_number }}{{ GET_string }}"
+       >&lsaquo;&lsaquo;</a>
+  </li>
+
+  {% for page_number in begin %}
+  <li class="page {% ifequal page.number page_number %}active{% endifequal %}">
+    {% ifequal page.number page_number %}
+    <a href="">{{ page_number }}</a>
+    {% else %}
+    <a href="?page={{ page_number }}{{ GET_string }}"
+       >{{ page_number }}</a>
+    {% endifequal%}
+  </li>
+  {% endfor %}
+
+  {% if middle %}
+  <li class="ellipsis"><a>&hellip;</a></li>
+  {% for page_number in middle %}
+  <li class="page {% ifequal page.number page_number %}active{% endifequal %}">
+    {% ifequal page.number page_number %}
+    <a href="">{{ page_number }}</a>
+    {% else %}
+    <a href="?page={{ page_number }}{{ GET_string }}"
+       >{{ page_number }}</a>
+    {% endifequal%}
+  </li>
+  {% endfor %}
+  {% endif %}
+
+  {% if end %}
+  <li class="ellipsis"><a>&hellip;</a></li>
+  {% for page_number in end %}
+  <li class="page {% ifequal page.number page_number %}active{% endifequal %}">
+    {% ifequal page.number page_number %}
+    <a href="">{{ page_number }}</a>
+    {% else %}
+    <a href="?page={{ page_number }}{{ GET_string }}"
+       >{{ page_number }}</a>
+    {% endifequal%}
+  </li>
+  {% endfor %}
+  {% endif %}
+
+  <li class="page next {% if not page.has_next %}disabled{% endif %}">
+    <a href="?page={{ page.next_page_number }}{{ GET_string }}"
+       >&rsaquo;&rsaquo;</a>
+  </li>
+</ul>
+</div>
+
+{% if 0 %}
 {% if page.has_previous or page.has_next %}
     <div>
         {% if page.has_previous %}<a href="?q={{ query }}&amp;page={{ page.previous_page_number }}">{% endif %}&laquo; Previous{% if page.has_previous %}</a>{% endif %}
         |
         {% if page.has_next %}<a href="?q={{ query }}&amp;page={{ page.next_page_number }}">{% endif %}Next &raquo;{% if page.has_next %}</a>{% endif %}
     </div>
+{% endif %}
 {% endif %}
 {% endif %}
 </div>

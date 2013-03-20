@@ -11,7 +11,7 @@ class SearchForm(BaseForm):
 
 
 class SearchHandler(FormHandler, WheelHandlerMixin):
-    results_per_page = 10
+    results_per_page = 1
 
     @applyrequest(page=int)
     def index(self, page=1):
@@ -34,6 +34,38 @@ class SearchHandler(FormHandler, WheelHandlerMixin):
                 self.context['page'] = paginator.page(page)
             except InvalidPage:
                 return self.notfound()
+
+            self.context['GET_string'] = "&q=" + self.request.REQUEST.get('q', "")
+            np = paginator.num_pages
+
+            windowsize = 6
+
+            ##
+            ## provide sort of a sliding window over the available
+            ## pages with the current page in the center.
+            ## windowsize is the size of this window
+            if np > windowsize*2:
+                # import pdb; pdb.set_trace()
+                
+                self.context['begin'] = [1]
+                self.context['end'] = [np]
+                start = max(3, page - windowsize/2)
+                end = start + windowsize+1
+                if end > np-2:
+                    end = np - 1
+                    start = end - windowsize - 1
+
+                print "** np, page, start, end", np, page, start, end
+                if page < 4:
+                    self.context['begin'] = range(1, windowsize)
+                    self.context['end'] = [np]
+                elif page > (np - 3):
+                    self.context['begin'] = [1]
+                    self.context['end'] = range(np+1-windowsize, np+1)
+                else:
+                    self.context['middle'] = range(start, end)
+            else:
+                self.context['begin'] = range(1, paginator.num_pages + 1)
 
         ## move to wheecms_axle folder?
         return self.template("search/search.html")
