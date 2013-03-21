@@ -130,7 +130,8 @@ class MainHandler(WheelRESTHandler):
         if not self.hasaccess():
             return self.forbidden()
 
-        formclass = type_registry.get(type).form
+        typeinfo = type_registry.get(type)
+        formclass = typeinfo.form
 
         parent = self.parent or self.instance
         if parent and parent.path:
@@ -165,7 +166,7 @@ class MainHandler(WheelRESTHandler):
                     target = sub
 
                 ent = stracks.content(p.id, name=p.title)
-                ent.log("? (%s) created by ?" % p.spoke().title,
+                ent.log("? (%s) created by ?" % p.typeinfo().title,
                         stracks.user(self.user()), action=stracks.create())
 
                 return self.redirect(target.path,
@@ -180,7 +181,10 @@ class MainHandler(WheelRESTHandler):
 
         self.context['attach'] = attach
         self.context['instance'] = self.parent or None # ?? '/' or Node.root()?
-        self.context['breadcrumb'] = self.breadcrumb(operation="Create")
+        if attach:
+            self.context['breadcrumb'] = self.breadcrumb(operation="Attach", details=' "%s"' % typeinfo.title)
+        else:
+            self.context['breadcrumb'] = self.breadcrumb(operation="Create", details=' "%s"' % typeinfo.title)
         self.context['toolbar'] = Toolbar(self.instance, status="create")
         return self.template("wheelcms_axle/create.html")
 
@@ -223,12 +227,12 @@ class MainHandler(WheelRESTHandler):
                              initial=dict(slug=slug), instance=instance.content())
 
         self.context['toolbar'].status = 'update'
-        self.context['breadcrumb'] = self.breadcrumb(operation="Edit")
+        self.context['breadcrumb'] = self.breadcrumb(operation="Edit", details=' "%s" (%s)' % (content.title, typeinfo.title))
         return self.template("wheelcms_axle/update.html")
 
 
     @context
-    def breadcrumb(self, operation=""):
+    def breadcrumb(self, operation="", details=""):
         """ generate breadcrumb path. """
         base = self.instance or self.parent
         if not base:
@@ -266,7 +270,7 @@ class MainHandler(WheelRESTHandler):
             res.append((title, path))
 
         if operation:
-            res.append((operation, ""))
+            res.append((operation + details, ""))
 
         return res
 

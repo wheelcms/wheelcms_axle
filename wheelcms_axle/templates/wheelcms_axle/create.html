@@ -1,16 +1,5 @@
 {% extends "wheelcms_axle/base_form.html" %}
 
-{% block form_header %}
-<p>
-{% if attach %}
-Attach "{{typeinfo.title}}" to {{parent.path}}
-{% else %}
-Create "{{typeinfo.title}}" under <a href="{{parent.path|default:'/'}}">"{{parent.content.title}}"</a>
-{% endif %}
-</p>
-
-{% endblock %}
-
 {% block form_tabs %} {% endblock %}
 
 {% block form_actions %}
