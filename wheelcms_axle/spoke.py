@@ -97,7 +97,7 @@ class Spoke(object):
 
     document_fields = ('title', 'description')
 
-    icon = "page.png"
+    type_icon = icon = "page.png"
 
     def __init__(self, o):
         self.o = o
@@ -110,6 +110,18 @@ class Spoke(object):
         """ return the full icon path. Used for storing the icon in the
             search index """
         return self.icon_base() + '/' + self.icon
+
+    @classmethod
+    def full_type_icon_path(cls):
+        """
+            Icons are instance specific, this allows an spoke to change its
+            content depending on the content it holds. E.g. turn a generic
+            file icon into a pdf file icon.
+
+            But in certain cases we want a generic type icon without an
+            instance, e.g. in the create popup
+        """
+        return settings.STATIC_URL + "img/icons/" + cls.type_icon
 
     def owner_name(self):
         """ return the owner's name, as good as possible """
