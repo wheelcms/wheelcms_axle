@@ -30,7 +30,8 @@ class SearchHandler(FormHandler, WheelHandlerMixin):
         if form.is_valid():
             self.context['query'] = form.cleaned_data['q']
 
-            paginator = Paginator(form.search(), self.results_per_page)
+            self.context['paginator'] = paginator = \
+                      Paginator(form.search(), self.results_per_page)
 
             try:
                 self.context['page'] = paginator.page(page)

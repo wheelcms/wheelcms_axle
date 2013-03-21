@@ -9,7 +9,10 @@
         <span class="divider">/</span>
         </li>
         <li>
-          {{query}}
+          Search
+        {% if query %}
+          &rsaquo;&rsaquo; {{query}}
+        {% endif %}
         </li>
     </ul>
   </div>
@@ -19,13 +22,17 @@
 {% block base_main %}
 <div class="row">
   <div class="span12">
-    <h2>Search</h2>
+    <h3>Search</h3>
   </div>
 </div>
 <div class="row">
   <div class="span12">
-    <form method="get" action=".">
-        {% include "two.bootstrap/bootstrap-form.html" with fields=form.advanced_fields %}
+    <form method="get" action="." class="input-append">
+        {{form.q}}
+        <button type="submit" class="btn btn-primary">
+        <i class="icon-search icon-white"></i>
+        Search
+        </button>
     </form>
   </div>
 </div>
@@ -34,7 +41,7 @@
   <div class="span12">
     <table id="search_result_table" class="table table-hover">
     <tr>
-      <th>Results</th>
+      <th>Results ({{paginator.count}})</th>
     </tr>
 
     {% for result in page.object_list %}
