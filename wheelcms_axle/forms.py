@@ -19,7 +19,7 @@ class BaseForm(forms.ModelForm):
         return ["created", "modified", "publication", "expire", "state",
                 "template", "navigation", "important"]
 
-    slug = forms.Field(required=False)
+    slug = forms.Field(required=False, help_text="A slug determines the url of the content. You can leave this empty to auto-generate a slug.")
     # just an experiment, to have a required field in the advanced section
     # important = forms.Field(required=True)
 
