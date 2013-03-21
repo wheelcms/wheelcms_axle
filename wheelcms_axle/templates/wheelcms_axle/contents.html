@@ -116,21 +116,36 @@
     {% endif %}
     {% for child in instance.children %}
       {% with content=child.content spoke=child.content.spoke %}
-      <tr class="sortablerow" data-url="{{child.path}}">
-        <td><input name="selection" type="checkbox" value="{{child.path}}"
-             data-path="{{child.path}}"
-             data-title="{{content.title}}"
-             data-type="{{spoke.title}}"></td>
-        <td class="clickrow" data-url="{{child.path}}/contents"><img src="{{spoke.icon_base}}/{{spoke.icon}}"> {{content.title}}</td>
-        <td class="clickrow" data-url="{{child.path}}/contents">{{spoke.state.label}}</td>
-        <td>
-            <a href="{{child.path}}/edit"><i class="icon-edit"></i></a>
-            <a href="{{child.path}}"><i class="icon-eye-open"></i></a>
-            <a href="#" data-title="{{content.title}}"
-                        data-type="{{spoke.title}}"
-                        data-path="{{child.path}}" class="contents_item_remove"><i class="icon-remove"></i></a>
-        </td>
-      </tr>
+        {% if content %}
+          <tr class="sortablerow" data-url="{{child.path}}">
+            <td><input name="selection" type="checkbox" value="{{child.path}}"
+                 data-path="{{child.path}}"
+                 data-title="{{content.title}}"
+                 data-type="{{spoke.title}}"></td>
+            <td class="clickrow" data-url="{{child.path}}/contents"><img src="{{spoke.icon_base}}/{{spoke.icon}}"> {{content.title}}</td>
+            <td class="clickrow" data-url="{{child.path}}/contents">{{spoke.state.label}}</td>
+            <td>
+                <a href="{{child.path}}/edit"><i class="icon-edit"></i></a>
+                <a href="{{child.path}}"><i class="icon-eye-open"></i></a>
+                <a href="#" data-title="{{content.title}}"
+                            data-type="{{spoke.title}}"
+                            data-path="{{child.path}}" class="contents_item_remove"><i class="icon-remove"></i></a>
+            </td>
+          </tr>
+        {% else %}
+          {# unattached node #}
+          <tr>
+            <td></td>
+            <td data-url="{{child.path}}" class="clickrow"><i class="icon-magnet"></i>Unattached node {{child.path}}</td>
+            <td data-url="{{child.path}}" class="clickrow">unattached</td>
+            <td>
+                <a href="{{child.path}}"><i class="icon-eye-open"></i></a>
+                <a href="#" data-title="Unattached node {{child.path}}"
+                            data-type="Node"
+                            data-path="{{child.path}}" class="contents_item_remove"><i class="icon-remove"></i></a>
+            </td>
+          </tr>
+        {% endif %}
       {% endwith %}
     {% empty %}
       <tr>

@@ -363,11 +363,15 @@ class MainHandler(WheelRESTHandler):
             ## XXX recursively delete, or not, or detach...
             if n:
                 content = n.content()
-                stracks.content(content.id,
+                if content:
+                    stracks.content(content.id,
                                 name=content.title
                                ).log("? (%s) removed by ?" % content.spoke().title,
                                      stracks.user(self.user()),
                                      action=stracks.delete())
+                else:
+                    stracks.user(self.user()).log("Unattached node removed: " + n.path, action=stracks.delete());
+
                 try:
                     n.parent().remove(n.slug())
                 except NodeNotFound:
@@ -437,6 +441,9 @@ class MainHandler(WheelRESTHandler):
                 selectable = False
 
                 content = child.content()
+
+                if not content:
+                    continue  ## ignore unattached nodes
                 spoke = content.spoke()
 
                 if mode == "link":
