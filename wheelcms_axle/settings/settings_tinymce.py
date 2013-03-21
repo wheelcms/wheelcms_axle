@@ -24,9 +24,8 @@ TINYMCE_DEFAULT_CONFIG = {
     'table_col_limit' : 5,
     'width':800,
     'height':600,
-    'theme_advanced_buttons1' : "bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,styleselect,formatselect",
-    'theme_advanced_buttons2' : "bullist,numlist,|,outdent,indent,|,undo,redo,|,link,unlink,anchor,image,cleanup,help,code,hr,removeformat,visualaid,|,sub,sup,|,charmap",
-    'theme_advanced_buttons3': "tablecontrols,|,pastetext,pasteword,selectall",
+    'theme_advanced_buttons1' : "|,undo,redo,|,styleselect,formatselect,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,bullist,numlist,|,outdent,indent,|,sub,sup,|,charmap",
+    'theme_advanced_buttons2' : "link,unlink,anchor,image,cleanup,code,hr,removeformat,visualaid,|,tablecontrols,|,pastetext,pasteword,selectall",
     'paste_auto_cleanup_on_paste' : True
 
 }
