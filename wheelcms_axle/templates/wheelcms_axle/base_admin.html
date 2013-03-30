@@ -501,15 +501,16 @@
            var $v = $(v);
            var name = $v.attr("name");
            $v.attr("name", name + "-taginput");
-           var vals = $v.val().split(",");
+           var vals = $v.val().split(/[\s,]+/);
            $v.val("");
            $v.tagsManager(
                 {prefilled:vals,
                  preventSubmitOnEnter:true,
                  typeahead:true,
-                 typeaheadAjaxSource:null,
-                 typeaheadSource: ["Drop", "Worst", "Spek"],
-                 hiddenTagListName:name});
+                 typeaheadSource:{{typeahead_tags|safe}},
+                 hiddenTagListName:name,
+                 blinkBGColor_1: '#FFFF9C',
+                 blinkBGColor_2: '#CDE69C'});
         });
     });
 </script>

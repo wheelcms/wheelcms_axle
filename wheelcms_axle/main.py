@@ -34,6 +34,14 @@ class MainHandler(WheelRESTHandler):
         return None
 
     @context
+    def typeahead_tags(self):
+        import json
+        from taggit.models import Tag
+
+        tags = list(Tag.objects.values_list("name", flat=True).all())
+        return json.dumps(tags)
+
+    @context
     def content(self):
         """ return the actual content for the node / spoke """
         modelinstance = self.instance.content()
