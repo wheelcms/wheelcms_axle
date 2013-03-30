@@ -76,6 +76,7 @@ class WheelSerializer(object):
             return None
         return User.objects.get(username=username)
 
+
     def serialize(self, spoke):
         # import pytest; pytest.set_trace()
         o = spoke.instance
@@ -105,7 +106,15 @@ class WheelSerializer(object):
                 if isinstance(field, FileField):
                     files.append(value)
 
+        ## tags arent fields but a manager, handle
+        ## separately
         xmlfields = Element("fields")
+        tags = list(o.tags.values_list("name", flat=True))
+        if tags:
+            e = SubElement(xmlfields, "tags")
+            for t in tags:
+                SubElement(e, "tag").text = t
+
         for k, v in fields.iteritems():
             e = SubElement(xmlfields, "field")
             e.attrib['name'] = k
@@ -121,6 +130,7 @@ class WheelSerializer(object):
             field_name = field_node.attrib.get("name")
             if not field_name:
                 raise SerializationException("Missing name attribute")
+
             field = model._meta.get_field(field_name)
 
             handler = getattr(self, "deserialize_%s" % field.name, None)
@@ -139,8 +149,13 @@ class WheelSerializer(object):
                 ## the value
                 if value is not None or field.null:
                     fields[field_name] = value
+        tags = []
+        for tag in tree.findall("tags/tag"):
+            tags.append(tag.text)
+
         # print model, fields
         m = model(**fields).save()
+        m.tags.add(*tags)
         return spoke(m)
 
 
