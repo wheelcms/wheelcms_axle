@@ -29,6 +29,9 @@ class TestExporter(object):
     def test_xml(self, client):
         root = Node.root()
         content = Type1(node=root, state="published", title="Export Test").save()
+        content.tags.add("xml")
+        content.tags.add("export")
+
         exporter = Exporter()
         xml, files = exporter.run(root)
         assert xml
@@ -45,6 +48,10 @@ class TestExporter(object):
         fields = child.find('fields')
         title = fields.find('field[@name="title"]')
         assert title.text == 'Export Test'
+
+        tags = fields.findall("tags/tag")
+        assert len(tags) == 2
+        assert set((tags[0].text, tags[1].text)) == set(("xml", "export"))
 
     def test_children(self, client):
         """ verify content is exported recursively """
@@ -113,6 +120,10 @@ class TestImporter(object):
    <field name="template" />
    <field name="owner" />
    <field name="navigation">False</field>
+   <tags>
+     <tag>hello</tag>
+     <tag>world</tag>
+   </tags>
   </fields>
   <children>
    <content slug="c1" type="tests.type1">
@@ -163,6 +174,8 @@ class TestImporter(object):
         assert len(root.children()) == 1
         assert root.children()[0].path == "/c1"
         assert root_content.title == "Export Test"
+
+        assert set(root_content.tags.values_list("name", flat=True)) == set(("hello", "world"))
 
 
         child0 = root.children()[0]

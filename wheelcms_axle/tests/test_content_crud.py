@@ -42,3 +42,14 @@ class TestContentCreate(object):
         assert not form.is_valid()
         assert 'slug' in form.errors
 
+    def test_tags(self, client):
+        """ test tag suport on content """
+        root = Node.root()
+        form = formfactory(Type1)(parent=root,
+                                  data=dict(title="hello", slug="world", tags="hello, world"))
+        assert form.is_valid()
+        assert form.cleaned_data['slug'] == "world"
+        tp1 = form.save()
+        assert tp1.title == "hello"
+        assert "hello" in tp1.tags.values_list("name", flat=True)
+        assert "world" in tp1.tags.values_list("name", flat=True)
