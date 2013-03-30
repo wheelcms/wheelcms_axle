@@ -61,6 +61,7 @@ class BaseForm(forms.ModelForm):
             self.fields['description'].widget.attrs['rows'] = 4
         if 'tags' in self.fields:
             self.fields['tags'].widget.attrs['class'] = "tagManager"
+            self.fields['tags'].required = False
 
     def enlarge_field(self, field):
         field.widget.attrs['class'] = 'input-xxlarge'
