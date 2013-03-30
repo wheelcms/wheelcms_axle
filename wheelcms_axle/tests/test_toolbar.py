@@ -69,7 +69,11 @@ class TestToolbar(object):
                 return DummyContent()
 
         toolbar = Toolbar(DummyNode(), "view")
-        assert toolbar.children() == [dict(name=Type1Type.name(), title=Type1Type.title)]
+        children = toolbar.children()
+        assert len(children) == 1
+        assert children[0]['name'] == Type1Type.name()
+        assert children[0]['title'] == Type1Type.title
+        assert children[0]['icon_path'] == Type1Type.full_type_icon_path()
 
     def test_restriction_none(self, client):
         """

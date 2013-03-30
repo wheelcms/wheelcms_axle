@@ -1,6 +1,6 @@
 from wheelcms_axle.main import MainHandler
 from wheelcms_axle.models import Node
-from wheelcms_axle.tests.models import Type1
+from wheelcms_axle.tests.models import Type1, Type1Type
 
 from two.ol.base import NotFound, Redirect, handler
 import pytest
@@ -271,7 +271,7 @@ class TestBreadcrumb(object):
         context = handler.create(type=Type1.get_name())['context']
         assert 'breadcrumb' in context
         assert context['breadcrumb'] == [('Home', '/'), ('Child', '/child'),
-                                         ('Create', '')]
+                                         ('Create "%s"' % Type1Type.title, '')]
 
     def test_update(self, client):
         """ update should override and add Update operation crumb """
@@ -284,8 +284,10 @@ class TestBreadcrumb(object):
         handler = MainHandlerTestable(request=request, instance=child)
         context = handler.update()['context']
         assert 'breadcrumb' in context
-        assert context['breadcrumb'] == [('Home', '/'), ('Child', '/child'),
-                                         ('Edit', '')]
+        assert context['breadcrumb'] == [
+                   ('Home', '/'), ('Child', '/child'),
+                   ('Edit "%s" (%s)' % (child.content().title,
+                                        Type1Type.title), '')]
 
 class TestAction(object):
     def test_action_root(self, client):

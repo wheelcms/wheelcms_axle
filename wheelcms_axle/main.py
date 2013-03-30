@@ -174,7 +174,7 @@ class MainHandler(WheelRESTHandler):
                     target = sub
 
                 ent = stracks.content(p.id, name=p.title)
-                ent.log("? (%s) created by ?" % p.typeinfo().title,
+                ent.log("? (%s) created by ?" % typeinfo.title,
                         stracks.user(self.user()), action=stracks.create())
 
                 return self.redirect(target.path,
