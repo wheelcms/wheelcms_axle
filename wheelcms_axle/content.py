@@ -8,6 +8,8 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.db import models
 
+from taggit.managers import TaggableManager
+
 from .registry import Registry
 
 from .node import Node
@@ -50,6 +52,8 @@ class ContentBase(models.Model):
 
     ## class..
     classes = models.ManyToManyField(ContentClass, related_name="content")
+
+    tags = TaggableManager()
 
     class Meta:
         abstract = True

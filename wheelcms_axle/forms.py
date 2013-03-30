@@ -59,6 +59,8 @@ class BaseForm(forms.ModelForm):
         ## make the description textarea a bit smaller
         if 'description' in self.fields:
             self.fields['description'].widget.attrs['rows'] = 4
+        if 'tags' in self.fields:
+            self.fields['tags'].widget.attrs['class'] = "tagManager"
 
     def enlarge_field(self, field):
         field.widget.attrs['class'] = 'input-xxlarge'

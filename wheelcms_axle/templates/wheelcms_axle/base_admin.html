@@ -1,6 +1,12 @@
 {# base template that includes editing controls #}
 {% extends "wheelcms_axle/base.html" %}
 
+{% block base_stylesheets  %}
+{{ block.super }}
+
+<link rel="stylesheet" href="/static/tagmanager/bootstrap-tagmanager.css" media="screen, projection, print"/>
+{% endblock %}
+
 {% block javascript %}
 
 {{ block.super }}
@@ -8,6 +14,7 @@
 <script src="/static/js/upload/jquery.ui.widget.js"></script>
 <script src="/static/js/upload/jquery.iframe-transport.js"></script>
 <script src="/static/js/upload/jquery.fileupload.js"></script>
+<script src="/static/tagmanager/bootstrap-tagmanager.js"></script>
 
 <script type="text/javascript" charset="utf-8">
     function bt_stack_fix() {
@@ -483,6 +490,28 @@
         }
     })();
 
+    $(document).ready(function() {
+        /*
+         * enable the tagmanager. We fiddle a bit with the
+         * original/generated (hidden) field. We want to preserve the
+         * original fieldname for the created hidden field that
+         * will get the actual tags
+         */
+        $(".tagManager").each(function(i, v) {
+           var $v = $(v);
+           var name = $v.attr("name");
+           $v.attr("name", name + "-taginput");
+           var vals = $v.val().split(",");
+           $v.val("");
+           $v.tagsManager(
+                {prefilled:vals,
+                 preventSubmitOnEnter:true,
+                 typeahead:true,
+                 typeaheadAjaxSource:null,
+                 typeaheadSource: ["Drop", "Worst", "Spek"],
+                 hiddenTagListName:name});
+        });
+    });
 </script>
 
 {% endblock %}
