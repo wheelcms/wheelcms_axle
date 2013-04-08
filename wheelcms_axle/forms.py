@@ -17,9 +17,10 @@ class BaseForm(forms.ModelForm):
 
     def advanced_fields(self):
         return ["created", "modified", "publication", "expire", "state",
-                "template", "navigation", "important"]
+                "template", "navigation", "important", "categories"]
 
     slug = forms.Field(required=False, help_text="A slug determines the url of the content. You can leave this empty to auto-generate a slug.")
+
     # just an experiment, to have a required field in the advanced section
     # important = forms.Field(required=True)
 
@@ -63,6 +64,10 @@ class BaseForm(forms.ModelForm):
             self.fields['tags'].widget.attrs['class'] = "tagManager"
             self.fields['tags'].required = False
 
+        from wheelcms_categories.models import fix_form
+        fix_form(self, *args, **kwargs)
+
+        
     def enlarge_field(self, field):
         field.widget.attrs['class'] = 'input-xxlarge'
 
@@ -137,7 +142,20 @@ class BaseForm(forms.ModelForm):
             raise forms.ValidationError("Invalid template")
         return template
 
+    def save(self, commit=True):
+        from wheelcms_categories.models import save_form
 
+        i = super(BaseForm, self).save(commit=False)
+
+        save_form(self, i, commit)
+
+        if commit:
+            i.save()
+            self.save_m2m()
+
+        return i
+
+        
 def formfactory(type):
     class Form(BaseForm):
         class Meta(BaseForm.Meta):
