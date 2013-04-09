@@ -160,13 +160,31 @@ class ImageContent(FileContent):
 from haystack import exceptions, site
 
 class TypeRegistry(dict):
-    def register(self, t):
+    def __init__(self, *a, **b):
+        super(TypeRegistry, self).__init__(*a, **b)
+        self._extenders = {}
 
+    def register(self, t, extends=None):
+        """ register a type and the models it extends """
         self[t.name()] = t
+        if extends:
+            try:
+                for e in extends:
+                    self._extenders.setdefault(e, []).append(t)
+            except TypeError: # not iterable
+                self._extenders.setdefault(extends, []).append(t)
 
         try:
             site.register(t.model, t.index())
         except exceptions.AlreadyRegistered:
             pass
+
+    def extenders(self, model):
+        """ find extenders for a given model """
+        e = []
+        e.extend(self._extenders.get(model, []))
+        for m in model.__bases__:
+            e.extend(self.extenders(m))
+        return e
 
 type_registry = Registry(TypeRegistry())

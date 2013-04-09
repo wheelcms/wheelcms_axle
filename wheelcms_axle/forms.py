@@ -12,12 +12,12 @@ class BaseForm(forms.ModelForm):
     class Meta:
         exclude = ["node", "meta_type", "owner", "classes"]
 
-    def content_fields(self):
-        return set(self.fields) - set(self.advanced_fields())
+    initial_advanced_fields =  ["created", "modified", "publication",
+                                "expire", "state", "template", "navigation",
+                                "important"]
 
-    def advanced_fields(self):
-        return ["created", "modified", "publication", "expire", "state",
-                "template", "navigation", "important", "categories"]
+    def content_fields(self):
+        return set(self.fields) - set(self.advanced_fields)
 
     slug = forms.Field(required=False, help_text="A slug determines the url of the content. You can leave this empty to auto-generate a slug.")
 
@@ -37,6 +37,8 @@ class BaseForm(forms.ModelForm):
         self.parent = parent
         self.attach = attach
         self.reserved = reserved
+        self.advanced_fields = self.initial_advanced_fields
+
         if attach:
             self.fields.pop('slug')
 
@@ -64,8 +66,12 @@ class BaseForm(forms.ModelForm):
             self.fields['tags'].widget.attrs['class'] = "tagManager"
             self.fields['tags'].required = False
 
-        from wheelcms_categories.models import fix_form
-        fix_form(self, *args, **kwargs)
+        for e in type_registry.extenders(self.Meta.model):
+            e.extend_form(self, *args, **kwargs)
+
+        #from wheelcms_categories.models import fix_form
+        # 
+        #fix_form(self, *args, **kwargs)
 
         
     def enlarge_field(self, field):
@@ -143,11 +149,10 @@ class BaseForm(forms.ModelForm):
         return template
 
     def save(self, commit=True):
-        from wheelcms_categories.models import save_form
-
         i = super(BaseForm, self).save(commit=False)
 
-        save_form(self, i, commit)
+        for e in type_registry.extenders(self.Meta.model):
+            e.extend_save(self, i, commit)
 
         if commit:
             i.save()
@@ -155,7 +160,7 @@ class BaseForm(forms.ModelForm):
 
         return i
 
-        
+
 def formfactory(type):
     class Form(BaseForm):
         class Meta(BaseForm.Meta):
