@@ -3,6 +3,7 @@ from wheelcms_axle.content import TypeRegistry, type_registry
 from wheelcms_axle.node import Node
 
 from haystack.query import SearchQuerySet, EmptySearchQuerySet
+from haystack import site
 
 class BaseTestSearch(object):
     type = None
@@ -17,6 +18,8 @@ class BaseTestSearch(object):
         return self.other.model(**kw).save()
 
     def setup(self):
+        site._registry = {}
+
         self.registry = TypeRegistry()
         type_registry.set(self.registry)
         self.registry.register(self.type)
@@ -86,7 +89,7 @@ class BaseTestSearch(object):
         assert len(res) == 1
         assert res[0].object == t1
 
-    def test_searchable(self):
+    def test_searchable(self, client):
         t1 = self.construct_type(title="hello world")
         t2 = self.construct_type(description="hello world")
 
