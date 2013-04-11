@@ -196,6 +196,22 @@ class TestImporter(object):
         assert not child0_0_content.navigation
         assert child0_0_content.state == "private"
 
+class TestDelay(object):
+    class DelaySerializer(WheelSerializer):
+        extra = ('test', )
+
+        def deserialize_extra_test(self, extra, tree, model):
+            def delay():
+                return 42
+            return delay
+
+    def test_delay(self, client):
+        # import pytest; pytest.set_trace()
+        tree = ElementTree.fromstring('<content type="tests.type1" slug="/a1"></content>')
+        t, delay = TestDelay.DelaySerializer().deserialize(Type1Type, tree)
+        assert len(delay)
+        assert delay[0]() == 42
+
 
 class TestSerializer(object):
     """
