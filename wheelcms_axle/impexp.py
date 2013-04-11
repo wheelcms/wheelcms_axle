@@ -58,6 +58,7 @@ class SerializationException(Exception):
 class WheelSerializer(object):
     """ (de) serialize wheel content """
     skip = ('node', )
+    extra = ('tags', )
 
     def __init__(self):
         pass
@@ -76,16 +77,24 @@ class WheelSerializer(object):
             return None
         return User.objects.get(username=username)
 
+    def serialize_extra_tags(self, field, o):
+        tags = list(o.tags.values_list("name", flat=True))
+        res = []
+        for t in tags:
+            res.append(dict(name="tag", value=t))
+        return dict(name="tags", value=res)
+
+    def deserialize_extra_tags(self, extra, tree, model):
+        tags = []
+        for tag in tree.findall("tags/tag"):
+            tags.append(tag.text)
+        model.tags.add(*tags)
 
     def serialize(self, spoke):
         # import pytest; pytest.set_trace()
         o = spoke.instance
 
         files = []
-
-        #if 'Django Based' in o.title:
-        #    import pdb; pdb.set_trace()
-            
 
         fields = {}
         for field in o._meta.concrete_model._meta.fields:
@@ -106,19 +115,31 @@ class WheelSerializer(object):
                 if isinstance(field, FileField):
                     files.append(value)
 
+        #if 'rogramming' in o.title:
+        #    import pdb; pdb.set_trace()
+        for e in self.extra:
+            handler = getattr(self, "serialize_extra_%s" % e, None)
+            if handler:
+                fields[e] = handler(e, o)
+
         ## tags arent fields but a manager, handle
         ## separately
         xmlfields = Element("fields")
-        tags = list(o.tags.values_list("name", flat=True))
-        if tags:
-            e = SubElement(xmlfields, "tags")
-            for t in tags:
-                SubElement(e, "tag").text = t
 
         for k, v in fields.iteritems():
-            e = SubElement(xmlfields, "field")
-            e.attrib['name'] = k
-            e.text = v
+            if isinstance(v, dict):
+                tag = v['name']
+                value = v['value']
+                e = SubElement(xmlfields, tag)
+                try:
+                    for vv in value:
+                        SubElement(e, vv['name']).text = vv['value']
+                except TypeError: # not a sequence
+                    e.text = value
+            else:
+                e = SubElement(xmlfields, "field")
+                e.attrib['name'] = k
+                e.text = v
         return xmlfields, files
 
 
@@ -149,14 +170,18 @@ class WheelSerializer(object):
                 ## the value
                 if value is not None or field.null:
                     fields[field_name] = value
-        tags = []
-        for tag in tree.findall("tags/tag"):
-            tags.append(tag.text)
 
-        # print model, fields
         m = model(**fields).save()
-        m.tags.add(*tags)
-        return spoke(m)
+        delays = []
+
+        for e in self.extra:
+            handler = getattr(self, "deserialize_extra_%s" % e, None)
+            if handler:
+                delay = handler(e, tree, m)
+                if delay:
+                    delays.append(delay)
+
+        return spoke(m), delays
 
 
 class Exporter(object):
@@ -213,7 +238,8 @@ class Importer(object):
         slug = tree.attrib['slug']
         spoke = type_registry.get(typename)
         fields = tree.find("fields")
-        s = spoke.serializer().deserialize(spoke, fields)
+            
+        s, delays = spoke.serializer().deserialize(spoke, fields)
         if slug == "":
             n = node
         else:
@@ -221,12 +247,21 @@ class Importer(object):
         n.set(s.instance)
 
         for child in tree.find("children"):
-            self.import_node(n, child)
+            sub_delays = self.import_node(n, child)
+            delays.extend(sub_delays)
+
+        return delays
 
     def run(self, node, tree, base=""):
         version = tree.attrib['version']
         xmlbase = tree.attrib['base']
         # import pytest; pytest.set_trace()
+        delays = []
+
         for content in tree.findall("content"):
-            self.import_node(node, content)
+            subdelays = self.import_node(node, content)
+            delays.extend(subdelays)
+
+        for delay in delays:
+            delay()
 

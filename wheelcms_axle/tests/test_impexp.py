@@ -260,7 +260,7 @@ class BaseSpokeImportExportTest(object):
         res, files = s.serialize(tt)
 
         ## step 2: deserialize it
-        tt = self.spoke.serializer().deserialize(self.spoke, res)
+        tt, delay = self.spoke.serializer().deserialize(self.spoke, res)
         assert isinstance(tt, self.spoke)
         assert tt.instance.title == "Hello World"
         assert tt.instance.state == "published"
