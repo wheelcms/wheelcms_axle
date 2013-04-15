@@ -50,6 +50,7 @@ from django.contrib.auth.models import User
 from django.db.models import FileField
 
 from .content import type_registry
+from .node import Node
 
 class SerializationException(Exception):
     pass
@@ -60,8 +61,8 @@ class WheelSerializer(object):
     skip = ('node', )
     extra = ('tags', )
 
-    def __init__(self):
-        pass
+    def __init__(self, basenode=None):
+        self.basenode = basenode or Node.root()
 
     def serialize_owner(self, field, o):
         # import pytest; pytest.set_trace()
@@ -230,36 +231,38 @@ class Exporter(object):
         return root, files
 
 class Importer(object):
-    def __init__(self, verbose=0):
+    def __init__(self, basenode=None, verbose=0):
         self.verbose = verbose
+        self.basenode = basenode or Node.root()
 
     def import_node(self, node, tree):
         typename = tree.attrib['type']
         slug = tree.attrib['slug']
         spoke = type_registry.get(typename)
         fields = tree.find("fields")
-            
-        s, delays = spoke.serializer().deserialize(spoke, fields)
+
+        s, delays = spoke.serializer(self.basenode).deserialize(spoke, fields)
         if slug == "":
             n = node
         else:
             n = node.add(slug)
         n.set(s.instance)
 
-        for child in tree.find("children"):
-            sub_delays = self.import_node(n, child)
-            delays.extend(sub_delays)
+        if tree.find("children") is not None:
+            for child in tree.find("children"):
+                sub_delays = self.import_node(n, child)
+                delays.extend(sub_delays)
 
         return delays
 
-    def run(self, node, tree, base=""):
+    def run(self, tree, base=""):
         version = tree.attrib['version']
         xmlbase = tree.attrib['base']
         # import pytest; pytest.set_trace()
         delays = []
 
         for content in tree.findall("content"):
-            subdelays = self.import_node(node, content)
+            subdelays = self.import_node(self.basenode, content)
             delays.extend(subdelays)
 
         for delay in delays:

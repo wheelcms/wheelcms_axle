@@ -166,7 +166,7 @@ class TestImporter(object):
         importer = Importer()
         # import pytest; pytest.set_trace()
         tree = ElementTree.fromstring(self.xml)
-        res = importer.run(Node.root(), tree)
+        res = importer.run(tree)
 
         root = Node.root()
         root_content = root.content()
@@ -195,6 +195,21 @@ class TestImporter(object):
         assert child0_0_content.title == "I'm c1/c1_1"
         assert not child0_0_content.navigation
         assert child0_0_content.state == "private"
+
+    def test_base(self, client):
+        """ import a recursive structure with different types """
+        subsub = Node.root().add("sub1").add("sub2")
+
+        importer = Importer(subsub)
+        tree = ElementTree.fromstring(self.xml)
+        res = importer.run(tree)
+
+        assert len(Node.root().children()) == 1
+        assert subsub.content().meta_type == Type1.__name__.lower()
+        assert len(subsub.children()) == 1
+        assert subsub.children()[0].path == "/sub1/sub2/c1"
+        assert subsub.content().title == "Export Test"
+
 
 class TestDelay(object):
     class DelaySerializer(WheelSerializer):

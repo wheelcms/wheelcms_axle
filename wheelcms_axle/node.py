@@ -24,7 +24,7 @@ class NodeNotFound(NodeException):
 class NodeBase(models.Model):
     ROOT_PATH = ""
     ALLOWED_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789_-"
-    MAX_PATHLEN = 40
+    MAX_PATHLEN = 100
     POSITION_INTERVAL = 100
 
     validpathre = re.compile("^[%s]{1,%d}$" % (ALLOWED_CHARS, MAX_PATHLEN))

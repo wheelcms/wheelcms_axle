@@ -1,5 +1,6 @@
 import os
 from distutils.dir_util import copy_tree
+from optparse import make_option
 
 from xml.etree import ElementTree
 from django.core.management.base import BaseCommand
@@ -11,11 +12,25 @@ from wheelcms_axle.impexp import Importer
 
 
 class Command(BaseCommand):
-    """ Import xml """
-    args = 'readfrom [path]'
-    help = 'Import an xml dump'
+    """ Import XML content into WheelCMS """
+    help = "Import content into WheelCMS"
+    args = "file-or-directory"
 
-    def handle(self, readfrom, path="", *args, **options):
+    base_options = (
+        make_option("-q", "--quiet", action="store_false", dest="verbose",
+                    default=True, help="Be quiet"),
+        make_option("--base", action="store", dest="base",
+                    default="", help="Import into (sub) node. "
+                                     "Create nodes if necessary"),
+        make_option("--owner", action="store", dest="base",
+                    default="", help="Default owner if owner is "
+                                     "undefined or does not exist")
+
+    )
+    option_list = BaseCommand.option_list + base_options
+
+
+    def handle(self, readfrom, base="", owner="", **options):
         contentxml = os.path.join(readfrom, "content.xml")
         mediadir = os.path.join(readfrom, "media")
 
@@ -27,9 +42,18 @@ class Command(BaseCommand):
 
         data = open(contentxml).read()
         tree = ElementTree.fromstring(data)
-        root = Node.root() ## allow relative base XXX
-        Importer().run(root, tree)
+        basenode = Node.get(base)
+        if basenode is None:
+            basenode = Node.root()
+            for part in base.strip("/").split("/"):
+                sub = basenode.child(part)
+                if sub is None:
+                    sub = basenode.add(part)
+                basenode = sub
+
+        Importer(basenode).run(tree)
 
         ## check writability
-        copy_tree(mediadir, settings.MEDIA_ROOT)
+        if os.path.exists(mediadir):
+            copy_tree(mediadir, settings.MEDIA_ROOT)
 
