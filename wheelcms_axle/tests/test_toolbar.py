@@ -56,13 +56,17 @@ class TestToolbar(object):
                 class DummyContent(object):
                     meta_type = 'dummycontent'
 
+                    @classmethod
+                    def get_name(cls):
+                        return "test." + cls.meta_type
+
                 class DummyType(Spoke):
                     model = DummyContent
                     children = (Type1Type,)
 
                     @classmethod
                     def name(self):
-                        return DummyContent.meta_type
+                        return DummyContent.get_name()
 
                 registry.register(DummyType)
 
@@ -86,13 +90,17 @@ class TestToolbar(object):
                 class DummyContent(object):
                     meta_type = 'dummycontent'
 
+                    @classmethod
+                    def get_name(cls):
+                        return "test." + cls.meta_type
+
                 class DummyType(Spoke):
                     model = DummyContent
                     children = ()
 
                     @classmethod
                     def name(self):
-                        return DummyContent.meta_type
+                        return DummyContent.get_name()
 
                 registry.register(DummyType)
 
@@ -107,3 +115,31 @@ class TestToolbar(object):
         toolbar = Toolbar(node, "create")
         assert not toolbar.show_create()
 
+    def test_no_implicit_unattached(self, client):
+        """ An unattached node cannot restrict its children but
+            should still not allow creation of non-implicit_add
+            types """
+
+        class DummyContent(object):
+            meta_type = 'dummycontent'
+
+            @classmethod
+            def get_name(cls):
+                return "test." + cls.meta_type
+
+        class DummyType(Spoke):
+            model = DummyContent
+            children = ()
+            implicit_add = False
+
+            @classmethod
+            def title(cls):
+                return ''
+
+        self.registry.register(DummyType)
+
+
+        node = Node.root()
+        toolbar = Toolbar(node, "view")
+        for c in toolbar.children():
+            assert c['name'] != DummyType.name()

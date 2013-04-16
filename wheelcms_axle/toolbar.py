@@ -19,14 +19,14 @@ class Toolbar(object):
         if not (self.instance and self.instance.content()):
             return None
 
-        return type_registry.get(self.instance.content().meta_type)
+        return type_registry.get(self.instance.content().get_name())
 
     def children(self):
         type = self.type()
         ## order?
         ## unconnected, or no restrictions
         if type is None:
-            ch = type_registry.values()
+            ch = [t for t in type_registry.values() if t.implicit_add]
         else:
             ch = type.addable_children()
 
