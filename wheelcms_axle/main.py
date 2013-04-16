@@ -336,7 +336,7 @@ class MainHandler(WheelRESTHandler):
         """
         if self.spoke() and self.spoke().addable_children():
             return self.redirect(self.instance.path + '/list')
-        return self.redirect(self.instance.path)
+        return self.redirect(self.instance.path or '/')
 
     @json
     @applyrequest
