@@ -228,6 +228,10 @@ class Spoke(object):
         except Node.DoesNotExist:
             return None
 
+    def context(self, handler, request, node):
+        """ hook to add additional data to the context """
+        return {}
+
 class FileSpoke(Spoke):
     @classproperty
     def form(cls):

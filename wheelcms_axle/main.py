@@ -302,6 +302,8 @@ class MainHandler(WheelRESTHandler):
             self.context['toolbar'] = Toolbar(self.instance)
         ## experimental
         if spoke:
+            ## update the context with addtional data from the spoke
+            self.context.update(spoke.context(self, self.request, self.instance))
             tpl = spoke.view_template()
             ctx = template_registry.context.get((spoke.__class__, tpl))
             if ctx:
