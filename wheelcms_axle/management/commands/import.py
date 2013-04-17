@@ -24,13 +24,16 @@ class Command(BaseCommand):
                                      "Create nodes if necessary"),
         make_option("--owner", action="store", dest="base",
                     default="", help="Default owner if owner is "
-                                     "undefined or does not exist")
+                                     "undefined or does not exist"),
+        make_option("--no-update-lm", action="store_false", dest="update_lm",
+                    default=True, help="Do not update the last modified date "
+                                       "for imported content")
 
     )
     option_list = BaseCommand.option_list + base_options
 
 
-    def handle(self, readfrom, base="", owner="", **options):
+    def handle(self, readfrom, update_lm=True, base="", owner="", **options):
         contentxml = os.path.join(readfrom, "content.xml")
         mediadir = os.path.join(readfrom, "media")
 
@@ -51,7 +54,7 @@ class Command(BaseCommand):
                     sub = basenode.add(part)
                 basenode = sub
 
-        Importer(basenode).run(tree)
+        Importer(basenode, update_lm=update_lm).run(tree)
 
         ## check writability
         if os.path.exists(mediadir):

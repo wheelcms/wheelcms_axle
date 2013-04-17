@@ -61,8 +61,10 @@ class WheelSerializer(object):
     skip = ('node', )
     extra = ('tags', )
 
-    def __init__(self, basenode=None):
+    def __init__(self, basenode=None, update_lm=True):
         self.basenode = basenode or Node.root()
+        self.update_lm = update_lm
+
 
     def serialize_owner(self, field, o):
         # import pytest; pytest.set_trace()
@@ -172,7 +174,7 @@ class WheelSerializer(object):
                 if value is not None or field.null:
                     fields[field_name] = value
 
-        m = model(**fields).save()
+        m = model(**fields).save(update_lm=self.update_lm)
         delays = []
 
         for e in self.extra:
@@ -231,9 +233,10 @@ class Exporter(object):
         return root, files
 
 class Importer(object):
-    def __init__(self, basenode=None, verbose=0):
+    def __init__(self, basenode=None, verbose=0, update_lm=True):
         self.verbose = verbose
         self.basenode = basenode or Node.root()
+        self.update_lm = update_lm
 
     def import_node(self, node, tree):
         typename = tree.attrib['type']
@@ -241,7 +244,8 @@ class Importer(object):
         spoke = type_registry.get(typename)
         fields = tree.find("fields")
 
-        s, delays = spoke.serializer(self.basenode).deserialize(spoke, fields)
+        s, delays = spoke.serializer(self.basenode, update_lm=self.update_lm
+                                    ).deserialize(spoke, fields)
         if slug == "":
             n = node
         else:

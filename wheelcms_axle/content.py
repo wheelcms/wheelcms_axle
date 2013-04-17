@@ -58,10 +58,11 @@ class ContentBase(models.Model):
     class Meta:
         abstract = True
 
-    def save(self, *a, **b):
+    def save(self, update_lm=True, *a, **b):
         mytype = self.__class__.__name__.lower()
         self.meta_type = mytype
-        self.modified = timezone.now()
+        if update_lm:
+            self.modified = timezone.now()
         if self.created is None:
             self.created = timezone.now()
         ## find associated spoke to find workflow default?

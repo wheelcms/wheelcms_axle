@@ -79,7 +79,8 @@ class NodeBase(models.Model):
 
         self.contentbase = content #.content_ptr  # XXX is _ptr documented?
         #content.node = self
-        content.save()
+        ## avoid updating last_modified
+        content.save(update_lm=False)
         self.save()
 
         return old
