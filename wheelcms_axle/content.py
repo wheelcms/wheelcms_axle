@@ -61,7 +61,7 @@ class ContentBase(models.Model):
     def save(self, update_lm=True, *a, **b):
         mytype = self.__class__.__name__.lower()
         self.meta_type = mytype
-        if update_lm:
+        if update_lm or self.modified is None:
             self.modified = timezone.now()
         if self.created is None:
             self.created = timezone.now()

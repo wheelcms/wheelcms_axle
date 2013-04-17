@@ -67,7 +67,7 @@ def indexfactory(spoke):
         publication = indexes.DateField(stored=True, indexed=True,
                                         model_attr="publication")
         expire = indexes.DateField(stored=True, indexed=True,
-                                   model_attr="expire")
+                                   model_attr="expire", null=True)
         icon = SpokeCharField(spoke=spoke, stored=True, indexed=False,
                               model_attr="full_icon_path")
         owner = SpokeCharField(spoke=spoke, stored=True, indexed=True,
@@ -128,6 +128,9 @@ class Spoke(object):
         try:
             owner = self.instance.owner
         except User.DoesNotExist:
+            return "Anonymous"
+
+        if owner is None:
             return "Anonymous"
 
         name = owner.get_full_name()
