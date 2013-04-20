@@ -189,7 +189,7 @@ class MainHandler(WheelRESTHandler):
                 ent.log("? (%s) created by ?" % typeinfo.title,
                         stracks.user(self.user()), action=stracks.create())
 
-                return self.redirect(target.path,
+                return self.redirect(target.path or '/',
                                      success='"%s" created' % p.title)
         else:
             self.context['form'] = formclass(parent=parent, attach=attach)
