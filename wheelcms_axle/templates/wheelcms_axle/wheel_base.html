@@ -74,6 +74,7 @@
 
 {% endblock %}
 
+{% block body_class %}{{body_class}}{%endblock %}
 {% block bodytop %}
 {% if user.is_authenticated %}
 {% include "wheelcms_axle/toolbar.html" %}
