@@ -42,6 +42,9 @@ class Configuration(models.Model):
     description = models.TextField(blank=True)
     theme = models.CharField(max_length=256, blank=True, default="default")
 
+    analytics = models.CharField(max_length=50, blank=True, default="")
+    head = models.TextField(blank=True, default="")
+    
     @classmethod
     def config(cls):
         """ singleton-ish pattern """
