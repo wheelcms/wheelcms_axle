@@ -52,6 +52,7 @@ from django.db.models import FileField
 from .content import type_registry
 from .node import Node
 
+
 class SerializationException(Exception):
     pass
 
@@ -230,6 +231,16 @@ class Exporter(object):
         root.set('version', str(self.VERSION))
         root.set('base', base)
         files = self.export_node(root, node)
+
+        configxml = SubElement(root, "config")
+        from .models import Configuration
+        config = Configuration.config()
+
+        for field in config._meta.concrete_model._meta.fields:
+            fieldxml = SubElement(configxml, "item", dict(name=field.name))
+
+            fieldxml.text = field.value_to_string(config)
+
         return root, files
 
 class Importer(object):
@@ -257,6 +268,7 @@ class Importer(object):
                 sub_delays = self.import_node(n, child)
                 delays.extend(sub_delays)
 
+                
         return delays
 
     def run(self, tree, base=""):
@@ -272,3 +284,16 @@ class Importer(object):
         for delay in delays:
             delay()
 
+        # import pdb; pdb.set_trace()
+        
+        if tree.find("config") is not None:
+            from .models import Configuration
+            config = Configuration.config()
+            configxml = tree.find("config")
+            
+            for field in configxml.findall("item"):
+                field_name = field.attrib.get("name")
+                field_value = field.text or ""
+                setattr(config, field_name, field_value)
+
+            config.save()

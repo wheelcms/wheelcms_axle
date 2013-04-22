@@ -38,12 +38,12 @@ from .content import FileContent, ImageContent
 from .content import type_registry
 
 class Configuration(models.Model):
-    title = models.CharField(max_length=256, blank=False)
-    description = models.TextField(blank=True)
-    theme = models.CharField(max_length=256, blank=True, default="default")
+    title = models.CharField(max_length=256, blank=True, null=False, default="")
+    description = models.TextField(blank=True, null=False, default="")
+    theme = models.CharField(max_length=256, blank=True, null=False, default="default")
 
-    analytics = models.CharField(max_length=50, blank=True, default="")
-    head = models.TextField(blank=True, default="")
+    analytics = models.CharField(max_length=50, blank=True, null=False, default="")
+    head = models.TextField(blank=True, null=False, default="")
     
     @classmethod
     def config(cls):
