@@ -26,6 +26,17 @@ class MainHandler(WheelRESTHandler):
         super(MainHandler, self).update_context(request)
 
     @context
+    def body_class(self):
+        model = self.instance.content()
+
+        if model:
+            typename = model.get_name()
+            parts = typename.split(".")
+            return " ".join("_".join(parts[:i+1]) for i in range(len(parts)))
+
+        return ""
+
+    @context
     def spoke(self):
         """ return type info for the current content, if any """
         model = self.instance.content()
@@ -35,6 +46,7 @@ class MainHandler(WheelRESTHandler):
 
     @context
     def typeahead_tags(self):
+        """ make this a +action? XXX """
         import json
         from taggit.models import Tag
 
@@ -177,7 +189,7 @@ class MainHandler(WheelRESTHandler):
                 ent.log("? (%s) created by ?" % typeinfo.title,
                         stracks.user(self.user()), action=stracks.create())
 
-                return self.redirect(target.path,
+                return self.redirect(target.path or '/',
                                      success='"%s" created' % p.title)
         else:
             self.context['form'] = formclass(parent=parent, attach=attach)
