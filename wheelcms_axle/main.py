@@ -37,6 +37,14 @@ class MainHandler(WheelRESTHandler):
         return ""
 
     @context
+    def page_title(self):
+        """ return the content title, if any """
+        content = self.instance.content()
+        if content:
+            return content.title
+        return "Unattached node"
+        
+    @context
     def spoke(self):
         """ return type info for the current content, if any """
         model = self.instance.content()
