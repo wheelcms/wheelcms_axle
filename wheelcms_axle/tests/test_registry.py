@@ -18,6 +18,7 @@ class M3(M1):
 class A(object):
     """ mocked type """
     model = M1
+    add_to_index = False
 
     @classmethod
     def name(cls):
@@ -30,6 +31,7 @@ class A(object):
 class B(A):
     """ mocked type """
     model = M3
+    add_to_index = False
 
     @classmethod
     def name(cls):

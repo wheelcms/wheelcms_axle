@@ -27,21 +27,23 @@ class MainHandler(WheelRESTHandler):
 
     @context
     def body_class(self):
-        model = self.instance.content()
+        if self.instance:
+            model = self.instance.content()
 
-        if model:
-            typename = model.get_name()
-            parts = typename.split(".")
-            return " ".join("_".join(parts[:i+1]) for i in range(len(parts)))
+            if model:
+                typename = model.get_name()
+                parts = typename.split(".")
+                return " ".join("_".join(parts[:i+1]) for i in range(len(parts)))
 
         return ""
 
     @context
     def page_title(self):
         """ return the content title, if any """
-        content = self.instance.content()
-        if content:
-            return content.title
+        if self.instance:
+            content = self.instance.content()
+            if content:
+                return content.title
         return "Unattached node"
         
     @context
