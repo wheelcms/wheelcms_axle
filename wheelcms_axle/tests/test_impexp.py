@@ -39,8 +39,8 @@ class TestExporter(object):
         assert xml.tag == 'site'
         assert xml.attrib.get('version', -1) == '1'
         assert xml.attrib.get('base', '--') == ''
-        assert len(xml.getchildren()) == 1
-        child = xml.getchildren()[0]
+        child = xml.find("content")
+        assert child
         assert child.tag == 'content'
         assert len(child.getchildren()) == 2
         children = child.find('children')

@@ -45,7 +45,7 @@ class MainHandler(WheelRESTHandler):
             if content:
                 return content.title
         return "Unattached node"
-        
+
     @context
     def spoke(self):
         """ return type info for the current content, if any """
