@@ -72,6 +72,7 @@ def indexfactory(spoke):
                               model_attr="full_icon_path")
         owner = SpokeCharField(spoke=spoke, stored=True, indexed=True,
                                model_attr="owner_name")
+
         def index_queryset(self):
             """ Should the content to be indexed restricted here?
                 Or index everything and apply filters depending on

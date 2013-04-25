@@ -49,7 +49,7 @@
       <td>
         <span class="title"><img class="icon" src="{{result.icon}}"><a href="{{ result.path }}">{{ result.title }}</a></span>
         <span class="byline">{% if result.state == "private" %}<span class="badge badge-important">private</span>{%endif%} by {{result.owner}} &mdash; published {{result.publication}} &mdash; last modified {{result.modified}} {# &mdash; filed under foo, bar #}</span>
-        <p>{{result.description|safe}}</p>
+        <p>{{result.description|default:''|safe}}</p>
       </td>
     </tr>
     {% empty %}
