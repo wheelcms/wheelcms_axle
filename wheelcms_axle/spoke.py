@@ -224,6 +224,9 @@ class Spoke(object):
                     res += " " + ff()
                 else:
                     res += " " + ff
+
+        res += " ".join(t.name for t in self.instance.tags.all())
+
         return res
 
     def path(self):
