@@ -97,6 +97,9 @@ class Spoke(object):
 
     document_fields = ('title', 'description')
 
+    ## index this type of content?
+    add_to_index = True
+
     type_icon = icon = "page.png"
 
     def __init__(self, o):
