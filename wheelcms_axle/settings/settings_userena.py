@@ -21,3 +21,4 @@ USERENA_FORBIDDEN_USERNAMES = ('signup', 'signout', 'signin', 'activate', 'me', 
 
 GUARDIAN_RAISE_403 = True
 
+ALLOW_SIGNUP = True
