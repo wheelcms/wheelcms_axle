@@ -175,10 +175,11 @@ class TypeRegistry(dict):
             except TypeError: # not iterable
                 self._extenders.setdefault(extends, []).append(t)
 
-        try:
-            site.register(t.model, t.index())
-        except exceptions.AlreadyRegistered:
-            pass
+        if t.add_to_index:
+            try:
+                site.register(t.model, t.index())
+            except exceptions.AlreadyRegistered:
+                pass
 
     def extenders(self, model):
         """ find extenders for a given model """

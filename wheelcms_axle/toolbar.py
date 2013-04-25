@@ -11,8 +11,9 @@ class Toolbar(object):
         create - creating content
         special - not in a content-context
     """
-    def __init__(self, instance, status="view"):
+    def __init__(self, instance, request, status="view"):
         self.instance = instance
+        self.request = request
         self.status = status
 
     def type(self):
@@ -83,3 +84,6 @@ class Toolbar(object):
             return False
         return bool(self.instance)
 
+    def show_settings(self):
+        ## XXX decent permissions
+        return self.request.user.is_superuser

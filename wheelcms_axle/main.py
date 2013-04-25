@@ -213,7 +213,7 @@ class MainHandler(WheelRESTHandler):
             self.context['breadcrumb'] = self.breadcrumb(operation="Attach", details=' "%s"' % typeinfo.title)
         else:
             self.context['breadcrumb'] = self.breadcrumb(operation="Create", details=' "%s"' % typeinfo.title)
-        self.context['toolbar'] = Toolbar(self.instance, status="create")
+        self.context['toolbar'] = Toolbar(self.instance, self.request, status="create")
         return self.template("wheelcms_axle/create.html")
 
     def update(self):
@@ -226,7 +226,7 @@ class MainHandler(WheelRESTHandler):
 
         self.context['redirect_cancel'] = (self.instance.path or '/') + \
                                           "?info=Update+cancelled"
-        self.context['toolbar'] = Toolbar(self.instance, status="edit")
+        self.context['toolbar'] = Toolbar(self.instance, self.request, status="edit")
 
         typename = instance.content().get_name()
         typeinfo = type_registry.get(typename)
@@ -319,7 +319,7 @@ class MainHandler(WheelRESTHandler):
                 return self.notfound()
 
         if self.hasaccess():
-            self.context['toolbar'] = Toolbar(self.instance)
+            self.context['toolbar'] = Toolbar(self.instance, self.request)
         ## experimental
         if spoke:
             ## update the context with addtional data from the spoke
@@ -345,7 +345,7 @@ class MainHandler(WheelRESTHandler):
     def handle_list(self):
         if not self.hasaccess():
             return self.forbidden()
-        self.context['toolbar'] = Toolbar(self.instance, status="list")
+        self.context['toolbar'] = Toolbar(self.instance, self.request, status="list")
         self.context['breadcrumb'] = self.breadcrumb(operation="Contents")
         return self.template("wheelcms_axle/contents.html")
 

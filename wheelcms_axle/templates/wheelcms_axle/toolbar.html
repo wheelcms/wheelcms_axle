@@ -54,12 +54,13 @@
           </li>
         </ul>
       </div>
+      {% if toolbar.show_settings %}
       <div class="pull-right">
         <ul class="nav">
           <li><div><a class="btn btn-mini" href="{% url wheel_config %}"><i class="icon-wrench"></i> Settings</a></div></li>
         </ul>
       </div>
-      {# XXX show settings button. Actually requires special privileges? #}
+      {% endif %}
       <div class="pull-right">
         <ul class="nav">
           <li>

@@ -4,7 +4,6 @@ from django.core.urlresolvers import reverse
 
 from two.ol.base import FormHandler
 from wheelcms_axle.models import Configuration
-from wheelcms_axle.toolbar import Toolbar
 from wheelcms_axle.base import WheelHandlerMixin
 
 class ConfigurationForm(forms.ModelForm):

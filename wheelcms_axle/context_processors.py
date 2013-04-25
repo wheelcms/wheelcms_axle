@@ -13,6 +13,7 @@ def configuration(request):
 
 def toolbar(request):
     if request.user.is_authenticated():
-        return dict(toolbar=Toolbar(Node.root(), status="special"))
+        return dict(toolbar=Toolbar(Node.root(), request=request,
+                                    status="special"))
     return dict()
 
