@@ -13,16 +13,9 @@ from wheelcms_axle.models import type_registry
 from wheelcms_axle.templates import template_registry
 
 from .impexp import WheelSerializer
+from .actions import action
 
 from two.ol.util import classproperty
-
-
-def action(f):
-    """
-        mark a method as being an action.
-    """
-    f.action = True
-    return f
 
 
 class SpokeCharField(indexes.CharField):
@@ -163,8 +156,12 @@ class Spoke(object):
 
     @classproperty
     def title(cls):
-        """ a default title """
+        """ The title for this type, not for it's specific content """
         return cls.model._meta.object_name + " content"
+
+    def description(self):
+        """ attempt to provide some sort of description """
+        return self.instance.description
 
     def workflow(self):
         """ the workflow, initialized to this spoke """

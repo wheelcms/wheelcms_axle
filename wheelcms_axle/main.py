@@ -5,11 +5,11 @@ from wheelcms_axle.content import type_registry, Content, ImageContent
 from wheelcms_axle.spoke import FileSpoke
 
 from wheelcms_axle.toolbar import Toolbar
-from wheelcms_axle import queries
 
 from wheelcms_axle.base import WheelHandlerMixin
 
 from .templates import template_registry
+from .actions import action_registry
 
 import stracks
 
@@ -314,11 +314,12 @@ class MainHandler(WheelRESTHandler):
                 return self.forbidden()
 
         if action:
-            handler = getattr(spoke, action, None)
-            if handler and getattr(handler, 'action', False):
-                return handler(self, self.request, action)
-            else:
+            action_handler = action_registry.get(action, self.instance.path, spoke)
+            if action_handler is None:
                 return self.notfound()
+
+            return action_handler(self, self.request, action)
+
 
         if self.hasaccess():
             self.context['toolbar'] = Toolbar(self.instance, self.request)
