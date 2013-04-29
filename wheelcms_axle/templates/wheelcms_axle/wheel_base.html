@@ -59,9 +59,11 @@
   </form>
   {% endblock %}
   <div class="pull-right">
-    {% if user.is_anonymous %}
     <ul class="nav">
       <li><a href="/+contact">Contact</a></li>
+    </ul>
+    {% if user.is_anonymous %}
+    <ul class="nav">
       {% if settings.ALLOW_SIGNUP %}
       <li><a href="{% url userena_signup %}">Register</a></li>
       {% endif %}
