@@ -222,6 +222,15 @@ class MainHandler(WheelRESTHandler):
         if not self.hasaccess():
             return self.forbidden()
 
+        action = self.kw.get('action', '')
+        if action:
+            action_handler = action_registry.get(action, self.instance.path,
+                                                 self.spoke())
+            if action_handler is None:
+                return self.notfound()
+
+            return action_handler(self, self.request, action)
+
         instance = self.instance
         content = instance.content()
         parent = instance.parent()
@@ -306,13 +315,13 @@ class MainHandler(WheelRESTHandler):
 
     def view(self):
         """ frontpage / view """
-        action = self.kw.get('action', '')
         spoke = self.spoke()
 
         if spoke and not spoke.workflow().is_visible():
             if not self.hasaccess():
                 return self.forbidden()
 
+        action = self.kw.get('action', '')
         if action:
             action_handler = action_registry.get(action, self.instance.path, spoke)
             if action_handler is None:
