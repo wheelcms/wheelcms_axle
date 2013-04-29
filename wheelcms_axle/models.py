@@ -98,5 +98,3 @@ def log_login(sender, request, user, **kwargs):
 def log_logout(sender, request, user, **kwargs):
     """ Log the user logging out """
     stracks.user(user).log("? has logged out", action=stracks.logout())
-
-import contact ## XXX temp
