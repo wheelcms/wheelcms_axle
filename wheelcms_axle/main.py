@@ -219,9 +219,6 @@ class MainHandler(WheelRESTHandler):
         return self.template("wheelcms_axle/create.html")
 
     def update(self):
-        if not self.hasaccess():
-            return self.forbidden()
-
         action = self.kw.get('action', '')
         if action:
             action_handler = action_registry.get(action, self.instance.path,
@@ -230,6 +227,10 @@ class MainHandler(WheelRESTHandler):
                 return self.notfound()
 
             return action_handler(self, self.request, action)
+
+        if not self.hasaccess():
+            return self.forbidden()
+
 
         instance = self.instance
         content = instance.content()
