@@ -44,7 +44,11 @@ class Configuration(models.Model):
 
     analytics = models.CharField(max_length=50, blank=True, null=False, default="")
     head = models.TextField(blank=True, null=False, default="")
-    
+
+    sender = models.CharField(max_length=100, blank=True, null=False, default="")
+    sendermail = models.EmailField(max_length=100, blank=True, null=False, default="")
+    mailto = models.EmailField(max_length=100, blank=True, null=False, default="")
+
     @classmethod
     def config(cls):
         """ singleton-ish pattern """
@@ -95,3 +99,4 @@ def log_logout(sender, request, user, **kwargs):
     """ Log the user logging out """
     stracks.user(user).log("? has logged out", action=stracks.logout())
 
+import contact ## XXX temp
