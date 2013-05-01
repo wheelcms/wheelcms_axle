@@ -66,24 +66,24 @@
 /*
  * Search result page / table styling
  */
-#search_result_table tr.state-private {
+table.result-listing tr.state-private {
     font-style: italic;
 }
 
-#search_result_table span.title {
+table.result-listing span.title {
     font-weight: bold;
     display: block;
 }
-#search_result_table p {
+table.result-listing p {
     margin: 0 0 10px;
 }
 
-#search_result_table span.byline {
+table.result-listing span.byline {
     font-size: 0.8em;
     color: #666;
 }
 
-#search_result_table img.icon {
+table.result-listing img.icon {
     margin-right: 5px;
 }
 
