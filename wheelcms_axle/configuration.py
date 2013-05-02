@@ -6,23 +6,13 @@ from two.ol.base import FormHandler
 from wheelcms_axle.models import Configuration
 from wheelcms_axle.base import WheelHandlerMixin
 
+from .themes import theme_registry
+
 class ConfigurationForm(forms.ModelForm):
     class Meta:
         model = Configuration
 
-    theme = forms.ChoiceField(choices=(
-        ('default', 'Bootstrap'),
-        ('amelia', 'Amelia'),
-        ('cerulean', 'Cerulean'),
-        ('cosmo', 'Cosmo'),
-        ('cyborg', 'Cyborg'),
-        ('journal', 'Journal'),
-        ('readable', 'Readable'),
-        ('simplex', 'Simplex'),
-        ('slate', 'Slate'),
-        ('spruce', 'Spruce'),
-        ('superhero', 'Superhero'),
-        ('united', 'United')))
+    theme = forms.ChoiceField(choices=((x.id, x.name) for x in theme_registry))
 
 class ConfigurationHandler(FormHandler, WheelHandlerMixin):
     def index(self):
