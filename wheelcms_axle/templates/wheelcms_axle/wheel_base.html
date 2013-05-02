@@ -26,6 +26,10 @@
     <link rel="stylesheet" href="/static/css/wheel_content.css" media="screen, projection, print"/>
 {% endblock %}
 
+{% block meta_head %}
+    <!-- {{settings.BUILD}} {{ settings.BRANCH}} {{ settings.VERSION }} -->
+    <meta name="generator" content="WheelCMS {{settings.VERSION}}">
+{% endblock %}
 {% block extra_head %}
 
 {{config.head|safe}}

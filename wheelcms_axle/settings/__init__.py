@@ -1,2 +1,3 @@
-from wheelcms_axle.settings.settings_userena import *
-from wheelcms_axle.settings.settings_tinymce import *
+from .settings_versions import *
+from .settings_userena import *
+from .settings_tinymce import *
