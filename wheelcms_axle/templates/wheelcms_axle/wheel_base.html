@@ -5,11 +5,7 @@
 <title>{{page_title}}</title>
 {% endblock %}
 {% block bootstrapcss %}
-    {% if config.theme == "default" %}
-    <link rel="stylesheet" href="/static/css/bootstrap.min.css" media="screen, projection, print"/>
-    {% else %}
-    <link rel="stylesheet" href="/static/css/{{config.theme}}-bootstrap.min.css" media="screen, projection, print"/>
-    {% endif %}
+    {{config.themeinfo.css|safe}}
     <link rel="stylesheet" href="/static/css/bootstrap-responsive.min.css" media="screen, projection, print"/>
     <link rel="stylesheet" href="/static/css/twool-bootstrap.css" media="screen, projection, print"/>
     <style type="text/css">
@@ -21,13 +17,18 @@
 
 {% endblock %}
 
+{% block bootstrapjs %}
+    <script src="/static/js/jquery-1.7.min.js"></script>
+    {{config.themeinfo.js|safe}}
+{% endblock %}
+
 {% block base_stylesheets %}
     <link rel="stylesheet" href="/static/css/wheel.css" media="screen, projection, print"/>
     <link rel="stylesheet" href="/static/css/wheel_content.css" media="screen, projection, print"/>
 {% endblock %}
 
 {% block meta_head %}
-    <!-- {{settings.BUILD}} {{ settings.BRANCH}} {{ settings.VERSION }} -->
+    <!-- {{settings.BUILD}} {{settings.BRANCH}} {{settings.VERSION }} -->
     <meta name="generator" content="WheelCMS {{settings.VERSION}}">
 {% endblock %}
 {% block extra_head %}

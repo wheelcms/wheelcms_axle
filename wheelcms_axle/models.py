@@ -10,6 +10,8 @@ from django.contrib.auth.models import User
 from userena.models import UserenaLanguageBaseProfile
 
 from .impexp import WheelSerializer
+from .themes import theme_registry
+
 ## import pytz
 
 from django.utils.translation import ugettext as _
@@ -58,6 +60,10 @@ class Configuration(models.Model):
             instance = Configuration()
             instance.save()
         return instance
+
+    def themeinfo(self):
+        """ resolve self.theme into a Theme instance """
+        return theme_registry.find(self.theme)
 
 ## signals for login/logout logging
 
