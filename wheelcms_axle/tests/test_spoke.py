@@ -132,6 +132,14 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         model.save()
         assert self.type(model).view_template() == "foo/bar3"
 
+    def test_form_excluded(self, client):
+        """ verify certain fields are excluded from the form """
+        form = self.type.form(parent=self.root, data={'template':"bar/foo"})
+        assert 'node' not in form.fields
+        assert 'meta_type' not in form.fields
+        assert 'owner' not in form.fields
+        assert 'classess' not in form.fields
+
     def test_form_validation_fail(self, client):
         """ Only registered templates are allowed """
         self.reg.register(self.type, "foo/bar", "foo bar", default=False)
