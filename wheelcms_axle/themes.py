@@ -7,13 +7,17 @@ class Theme(object):
     def __init__(self, id, name, css, js=None):
         self.id = id
         self.name = name
-        self._css = css
+        ## XXX handle case when multiple css files are passed
+        self._css = ["wheel_content.css", css]
         self._js = js or self.DEFAULT_JS
 
+    def css_resources(self):
+        return ["%s/css/%s" % (settings.STATIC_URL, f) for f in self._css]
+
     def css(self):
-        return '<link rel="stylesheet" href="%s/css/%s"' \
+        return "\n".join('<link rel="stylesheet" href="%s"' \
                'media="screen, projection, print"/>' % \
-               (settings.STATIC_URL, self._css)
+               r for r in self.css_resources())
 
     def js(self):
         return '<script src="%s/js/%s"></script>' % \

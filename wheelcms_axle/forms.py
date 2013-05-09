@@ -4,9 +4,22 @@ import mimetypes
 from django import forms
 from wheelcms_axle.models import Node
 
-from wheelcms_axle.models import type_registry
+from wheelcms_axle.models import type_registry, Configuration
 from wheelcms_axle.templates import template_registry
 
+from tinymce.widgets import TinyMCE as BaseTinyMCE
+
+class TinyMCE(BaseTinyMCE):
+    def render(self, name, value, attrs=None):
+        ## this will always overwrite content_css; modifiying it will
+        ## be a problem when the theme changes.
+        self.mce_attrs['content_css'] = self.theme_css()
+        return super(TinyMCE, self).render(name, value, attrs)
+
+    def theme_css(self):
+        theme = Configuration.config().themeinfo()
+        
+        return ",".join(theme.css_resources())
 
 class BaseForm(forms.ModelForm):
     class Meta:
