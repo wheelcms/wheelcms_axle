@@ -118,6 +118,7 @@
     var wheel_browser = (function() {
         var modal;
         var current_path = '';
+        var original = ""; // the original selected path
         var mode = "link";
         var callback = null;
         var initialized = false;
@@ -158,7 +159,7 @@
                  */
                 current_path = path;
                 var data = $.ajax({
-                    url: '/panel?path='+encodeURIComponent(path) + "&mode="+mode,
+                    url: 'panel?path='+encodeURIComponent(path) + "&original=" + encodeURIComponent(original) + "&mode="+mode,
                     dataType:"json",
                     async: false
                     }).responseText;
@@ -449,6 +450,7 @@
 
         return function(path, mode, options, callback) {
             modal = $("#browseModal");
+            original = path;
             init(mode, callback);
             modal.modal();
             bt_stack_fix();
@@ -537,11 +539,11 @@
           </div>
         </div>
         <div class="row-fluid" id="panels">
-          <div class="span4 panel panel0" data-panel="0" id="panel0">
+          <div class="span3 panel panel0" data-panel="0" id="panel0">
           </div>
           <div class="span4 panel panel1" data-panel="1" id="panel1">
           </div>
-          <div class="span4 panel panel2" data-panel="2" id="panel2">
+          <div class="span5 panel panel2" data-panel="2" id="panel2">
           </div>
         </div>
       </div>

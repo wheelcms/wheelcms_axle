@@ -433,22 +433,28 @@ class MainHandler(WheelRESTHandler):
 
     def handle_popup(self):
         """ popup experiments - #524 """
-        return self.template("wheelcms_axle/popup.html")
+        return self.template("wheelcms_axle/popup.html", original="/data/powerful-editing")
 
     @json
     @applyrequest
-    def handle_panel(self, path, mode):
-        return self.panels(path, mode)
+    def handle_panel(self, path, original, mode):
+        return self.panels(path, original, mode)
 
-    def panels(self, path, mode):
+    def panels(self, path, original, mode):
         """
             Generate panels for the file selection popup
             mode can be either "link" (any content) or "image" (only image
             based content)
         """
+        # import pdb; pdb.set_trace()
+        
         if not self.hasaccess():
             return self.forbidden()
 
+        if path == "/":
+            path = ""
+        if original == "/":
+            original = ""
         ## remove optional 'action', marked by a +
         ## not sure if this is the right place to do this, or if the browser
         ## modal should have been invoked without the action in the first place
@@ -458,7 +464,35 @@ class MainHandler(WheelRESTHandler):
         node = Node.get(path)
         panels = []
 
-        for i in range(3):
+        bookmarks_paths = [""]
+        if self.instance.path not in bookmarks_paths:
+            bookmarks_paths.append(self.instance.path)
+        #if path not in bookmarks_paths:
+        #    bookmarks_paths.append(path)
+        if original not in bookmarks_paths:
+            bookmarks_paths.append(original)
+
+        bookmarks = []
+
+        for p in bookmarks_paths:
+            n = Node.get(p)
+            content = n.content()
+            spoke = content.spoke()
+            bookmarks.append(dict(children=[], path=n.path or '/',
+                            title=content.title,
+                            meta_type=content.meta_type,
+                            content=content,
+                            icon=spoke.icon_base() + '/' + spoke.icon,
+                            spoke=spoke))
+
+        panels.append(
+                      self.render_template("wheelcms_axle/popup_links.html",
+                                           instance=self.instance,
+                                           bookmarks=bookmarks
+                                           ))
+        # import pdb; pdb.set_trace()
+        
+        for i in range(2):
             content = node.content()
 
             if content:
@@ -509,7 +543,7 @@ class MainHandler(WheelRESTHandler):
                                            meta_type=content.meta_type,
                                            selected=selected))
 
-            panels.insert(0,
+            panels.insert(1,
                           self.render_template("wheelcms_axle/popup_list.html",
                                                instance=instance,
                                                path=path,

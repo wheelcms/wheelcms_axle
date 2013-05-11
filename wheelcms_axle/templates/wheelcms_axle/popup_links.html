@@ -1,0 +1,20 @@
+{% block title %}
+
+<table class="table table-condensed table-hover wheel-contentlist">
+  <thead>
+    <tr><th>Shortcuts</th></tr>
+  </thead>
+  <tbody class="sortable">
+    {% for bookmark in bookmarks %}
+      <tr class="entry {% if bookmark.selected %}info{%endif%} {% if not bookmark.selectable %}disabled-content{% endif %}"
+          data-url="{{bookmark.path}}" data-selectable="{{bookmark.selectable|yesno}}">
+        <td><img src="{{bookmark.icon}}"> {{bookmark.title}}
+            {% if bookmark.selected %}
+              <i class="pull-right icon-chevron-right"></i>
+            {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
