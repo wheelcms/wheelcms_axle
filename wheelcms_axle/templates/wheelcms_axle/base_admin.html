@@ -17,14 +17,6 @@
 <script src="/static/tagmanager/bootstrap-tagmanager.js"></script>
 
 <script type="text/javascript" charset="utf-8">
-    function bt_stack_fix() {
-        /*
-         * https://github.com/twitter/bootstrap/issues/4781
-         * http://stackoverflow.com/questions/13649459/twitter-bootstrap-multiple-modal-error
-         */
-        $(document).off('focusin.modal');
-    }
-
     var upload_modal = (function() {
         var mode = "any";
         var url = "";
@@ -46,6 +38,10 @@
             data = $.parseJSON(data);
             var form = data.form;
             $(".uploadform").html(form);
+
+            $("#uploadModal .modal_close").click(function() {
+                closecallback();
+            });
 
             $('#fileupload').fileupload({
                 dataType: 'json',
@@ -69,7 +65,7 @@
             });
         }
 
-        return function(_url, _mode, _callback) {
+        return function(_url, _mode, _callback, _closecallback) {
             /*
              * Open the upload modal. url is where the content will be uploaded
              * to, mode determines what content can be uploaded:
@@ -79,6 +75,7 @@
             mode = _mode;
             url = _url;
             callback = _callback;
+            closecallback = _closecallback;
 
             var header = $("#uploadModalLabel");
             var types = $(".upload_types");
@@ -106,7 +103,6 @@
             $("#uploadModal").modal();
             $(".upload-alert").empty();
             $(".upload-alert").removeClass("alert");
-            bt_stack_fix();
             load_form(url, $(".select_type").val());
             $(".select_type").change(function() {
                 load_form(url, $(this).val());
@@ -348,10 +344,16 @@
              */
             $(".node_upload").live('click', function() {
                 var url = $(this).data('url');
-                // hide & reopen browse dialog?
+                modal.modal('hide');
+
                 upload_modal(url, mode=="link"?"any":"image", function(path) {
                     // should scroll to selection(s)!
                     load_panels(path, 3);
+                    modal.modal('show');
+                },
+                function() {
+                    load_panels(url, 3);
+                    modal.modal('show');
                 });
             });
         }
@@ -391,7 +393,6 @@
             original = path;
             init(mode, callback);
             modal.modal();
-            bt_stack_fix();
             // move to init?
             if(mode == "link") {
                 // hide image
@@ -596,7 +597,7 @@
     </div>
   </div>
   <div class="modal-footer">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn modal_close" data-dismiss="modal" aria-hidden="true">Close</button>
     <button class="btn btn-primary modal_select">Select</button>
   </div>
 </div>
