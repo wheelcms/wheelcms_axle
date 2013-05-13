@@ -461,9 +461,13 @@ class MainHandler(WheelRESTHandler):
         # import pdb; pdb.set_trace()
         path = strip_action(path)
         
-        instance = Node.get(path).content()
-        spoke = instance.spoke()
-
+        node = Node.get(path)
+        instance = None
+        spoke = None
+        if node:
+            instance = node.content()
+            spoke = instance.spoke()
+        
         SIZE_CHOICES = (
             ("img_content_original", "Original"),
             ("img_content_thumb", "Thumb"),
@@ -499,7 +503,7 @@ class MainHandler(WheelRESTHandler):
             title = forms.CharField()
             if type == "link":
                 target = forms.CharField()
-                if isinstance(spoke, FileSpoke):
+                if spoke and isinstance(spoke, FileSpoke):
                     download = forms.BooleanField(help_text="If checked, link will point to "
                                                             "download immediately in stead of File content")
             if type == "image":
