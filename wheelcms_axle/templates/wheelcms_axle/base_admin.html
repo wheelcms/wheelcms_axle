@@ -376,18 +376,6 @@
              */
             modal.find('a[href="#browse_external_link"]').tab('show');
             $("#external_url").val(path);
-            if(options.title) {
-                $("#external_title").val(options.title);
-            }
-            else {
-                $("#external_title").val("");
-            }
-            if(options.target) {
-                $("#external_target").val(options.target);
-            }
-            else {
-                $("#external_target").val("");
-            }
             if(path) {
                 select_state(true);
             }
@@ -399,18 +387,6 @@
              */
             modal.find('a[href="#browse_external_image"]').tab('show');
             $("#external_image_url").val(path);
-            if(options.size) {
-                $("input[type='radio'][name='external_image_size'][value='" + options.size + "']").attr("checked", "checked");
-            }
-            else {
-                $("input[type='radio'][name='external_image_size'][value='original']").attr("checked", "checked");
-            }
-            if(options.title) {
-                $("#external_image_title").val(options.title);
-            }
-            else {
-                $("#external_image_title").val("");
-            }
             if(path) {
                 select_state(true);
             }
@@ -422,20 +398,6 @@
              */
             modal.find('a[href="#browse_local"]').tab('show');
             load_panels(path || '', 3);
-            // can be file or image!
-            if(options.title) {
-                $("#local_image_title").val(options.title);
-            }
-            if(options.target) {
-                $("#local_image_target").val(options.target);
-            }
-            if(options.size) {
-                $("input[type='radio'][name='local_image_size'][value='" + options.size + "']").attr("checked", "checked");
-            }
-            else {
-                $("input[type='radio'][name='local_image_size'][value='img_content_original']").attr("checked", "checked");
-            }
-            // else use default: content title
         }
 
         return function(path, mode, options, callback) {
@@ -580,8 +542,6 @@
           <div class="span6">
             <form>
               <legend>External URL</legend>
-              <label class="control-label" for="external_title">Link title</label>
-              <input id="external_title" type="text" name="title" maxlength="256" />
               <label class="control-label" for="external_url">URL</label>
               <div class="input-append">
                 <input id="external_url" type="text" name="url" maxlength="256" />
@@ -590,8 +550,6 @@
               <div class="help-block">
                 Not all sites (e.g. facebook) may support preview/embedding
               </div>
-              <label class="control-label" for="external_target">Link target</label>
-              <input id="external_target" type="text" name="target" maxlength="256" />
             </form>
           </div>
           <div class="span6">
@@ -604,8 +562,6 @@
           <div class="span6">
             <form>
               <legend>External Image</legend>
-              <label class="control-label" for="external_image_title">Image title</label>
-              <input id="external_image_title" type="text" name="title" maxlength="256" />
               <label class="control-label" for="external_image_url">URL</label>
               <div class="input-append">
                 <input id="external_image_url" type="text" name="url" maxlength="256" />
@@ -613,25 +569,6 @@
               </div>
               <div class="help-block">
                 Not all sites (e.g. facebook) may support preview/embedding
-              </div>
-              <label class="control-label" for="image_size">Size</label>
-              <div class="controls" id="image_size">
-                {# XXX make this dynamic / centrally defined #}
-                <label class="checkbox">
-                  <input type="radio" name="external_image_size" value="img_content_original"> Original
-                </label>
-                <label class="checkbox">
-                  <input type="radio" name="external_image_size" value="img_content_thumb"> Thumb
-                </label>
-                <label class="checkbox">
-                  <input type="radio" name="external_image_size" value="img_content_small"> Small
-                </label>
-                <label class="checkbox">
-                  <input type="radio" name="external_image_size" value="img_content_medium"> Medium
-                </label>
-                <label class="checkbox">
-                  <input type="radio" name="external_image_size" value="img_content_large"> Large
-                </label>
               </div>
             </form>
           </div>
