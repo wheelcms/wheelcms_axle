@@ -151,38 +151,32 @@
         }
 
         function load_panels(path, panelid) {
-                /*
-                 * How should the shifting of panels behave? Currently, if possible,
-                 * all three columns are used. This may mean that clicking in the first
-                 * colum will move the first panel to the second position. But this
-                 * doesn't have to be bad - it's a nice way to access the parent
-                 */
-                current_path = path;
-                var data = $.ajax({
-                    url: 'panel?path='+encodeURIComponent(path) + "&original=" + encodeURIComponent(original) + "&mode="+mode,
-                    dataType:"json",
-                    async: false
-                    }).responseText;
-                data = $.parseJSON(data);
-                var panels = data.panels;
-                var crumbs = data.crumbs;
+            current_path = path;
+            var data = $.ajax({
+                url: 'panel?path='+encodeURIComponent(path) + "&original=" + encodeURIComponent(original) + "&mode="+mode,
+                dataType:"json",
+                async: false
+                }).responseText;
+            data = $.parseJSON(data);
+            var panels = data.panels;
+            var crumbs = data.crumbs;
 
-                var path = data.path;
+            var path = data.path;
 
-                var idx = 0;
-                for(var i= 0; i < 3; i++) {
-                    $(".panel" + i).empty();
-                }
+            var idx = 0;
+            for(var i= 0; i < 3; i++) {
+                $(".panel" + i).empty();
+            }
 
-                for(var i=0; i < panels.length; i++) {
-                    var paneldata = panels[i];
-                    var panel = $(".panel" + i);
-                    panel.html(paneldata);
-                }
-                $(".crumbcontainer").html(crumbs);
-                setTimeout(fix_sizes, 250);
-                // find the current selection and see if it's selectable
-                select_state($("tr[data-url='" + path + "']").data("selectable") == "yes");
+            for(var i=0; i < panels.length; i++) {
+                var paneldata = panels[i];
+                var panel = $(".panel" + i);
+                panel.html(paneldata);
+            }
+            $(".crumbcontainer").html(crumbs);
+            setTimeout(fix_sizes, 250);
+            // find the current selection and see if it's selectable
+            select_state($("tr[data-url='" + path + "']").data("selectable") == "yes");
         }
 
         function select_state(enabled) {
@@ -210,15 +204,8 @@
                 load_panels(current_path, 3);
             }
             else if(tab_selected == "browse_external_link") {
-                //$("#external_title").val("");
-                //$("#external_url").val("");
-                //$("#external_target").val("");
-                //$("#external_iframe").attr("src", "")
             }
             else if(tab_selected == "browse_external_image") {
-                //$("#external_image_title").val("");
-                //$("#external_image_url").val("");
-                //$("#external_image").attr("src", "{{STATIC_URL}}/img/preview.png")
             }
             current_tab = tab_selected;
         }
@@ -250,7 +237,6 @@
             mode = _mode;
             callback = _callback;
 
-            console.log("Mode: " + mode);
             /*
              * Initialize handlers, set title
              */
@@ -624,7 +610,7 @@
   </div>
   <div class="modal-footer">
     <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-    <button class="btn btn-primary modal_change">Change selection</button>
+    <button class="btn btn-info modal_change">Change selection</button>
     <button class="btn btn-primary modal_select">Select</button>
   </div>
 </div>
