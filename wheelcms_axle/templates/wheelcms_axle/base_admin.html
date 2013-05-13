@@ -494,13 +494,13 @@
         $("#detailsModal .modal_select").click(function() {
             if(callback) {
                 var args = options || {}
+                args.download = false; // it must be set explicitly.
                 var formdata = $("#detailsModal form").serializeArray();
 
                 for(var i = 0; i < formdata.length; i++) {
                     args[formdata[i].name] = formdata[i].value;
                 }
 
-                // console.log(args)
                 callback(path, args);
             }
             $("#detailsModal").modal("hide");

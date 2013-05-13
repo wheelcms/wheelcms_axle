@@ -443,7 +443,7 @@ class MainHandler(WheelRESTHandler):
         return self.template("wheelcms_axle/popup.html", original="/data/powerful-editing")
 
     @applyrequest
-    def handle_panel_selection_details(self, path, type, klass=""):
+    def handle_panel_selection_details(self, path, type, klass="", title="", target="", download=False):
         """
             type is link of image (later misschien embed, object, whatever)
             link:
@@ -483,15 +483,17 @@ class MainHandler(WheelRESTHandler):
         )
 
         ## translate klass back to size/float/align
+        forminitial = dict(title=title, target=target, download=download)
+
         klass_parts = klass.split()
 
         for part in klass_parts:
             if part in [s[0] for s in SIZE_CHOICES]:
-                size = part
+                forminitial['size'] = part
             if part in [f[0] for f in FLOAT_CHOICES]:
-                float = part
+                forminitial['float'] = part
             if part in [a[0] for a in ALIGN_CHOICES]:
-                align = part
+                forminitial['align'] = part
 
         class PropForm(forms.Form):
             title = forms.CharField()
@@ -505,7 +507,7 @@ class MainHandler(WheelRESTHandler):
                 float = forms.ChoiceField(choices=FLOAT_CHOICES)
                 align = forms.ChoiceField(choices=ALIGN_CHOICES)
 
-        propform = PropForm(initial=dict(size=size, float=float, align=align))
+        propform = PropForm(initial=forminitial)
 
         return self.template("wheelcms_axle/popup_properties.html", spoke=spoke,
                              instance=instance, mode=type, form=propform)

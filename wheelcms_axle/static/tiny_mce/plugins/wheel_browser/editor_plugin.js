@@ -21,10 +21,16 @@
                     href = dom.getAttrib(anchor, 'href');
                     options.title = dom.getAttrib(anchor, 'title');
                     options.target = dom.getAttrib(anchor, 'target');
+                    if(href.match(/\+download$/)) {
+                        options.download = true;
+                        href = href.replace(/\/\+download$/, '');
+                    }
                 }
 
                 ed.getWin().parent.props_or_browser(href, "link", options,
                                                  function(link, options) {
+                    console.log(options);
+                    console.log(link);
                     href = href.replace(/ /g, '%20');
                     if(anchor == null) {
                         /* messy way to insert a link .. */
@@ -35,6 +41,9 @@
                                          return dom.getAttrib(n, 'href') == marker;
                                    });
                         anchor = elementArray[0]; // expect one, only one
+                    }
+                    if(options.download) {
+                        link += "/+download";
                     }
                     dom.setAttrib(anchor, 'href', link);
                     if(options.title) {
