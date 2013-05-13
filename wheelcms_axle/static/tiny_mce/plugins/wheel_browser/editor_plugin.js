@@ -55,7 +55,7 @@
                 if(node.nodeName=="IMG") {
                     src = ed.dom.getAttrib(node, 'src');
                     options.title = ed.dom.getAttrib(node, 'alt') || ed.dom.getAttrib(node, 'title');
-                    options.size = ed.dom.getAttrib(node, 'class') || 'original';
+                    options.klass = ed.dom.getAttrib(node, 'class') || '';
                     //console.log("Selection : " + src);
                 }
 
@@ -65,7 +65,7 @@
                     if (tinymce.isWebKit) {
                         ed.getWin().focus();
                     }
-                    var args = {src:link};
+                    var args = {src:link, "class":""};
                     if(options.local) {
                         args.src += '/+download';
                     }
@@ -74,6 +74,8 @@
                         args.alt = options.title;
                     }
                     args['class'] = options.size || 'original';
+                    args['class'] += " " + (options.float || "");
+                    args['class'] += " " + (options.align || "");
 
                     ed.execCommand('mceInsertContent', false,
                                    ed.dom.createHTML('img', args),
