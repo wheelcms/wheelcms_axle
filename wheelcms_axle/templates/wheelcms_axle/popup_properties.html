@@ -1,0 +1,59 @@
+{% include spoke.detail_template %}
+
+<div class="row-fluid">
+   <div class="span12">
+    <form class="form-horizontal">
+    {% include "two.bootstrap/bootstrap-form.html" %}
+    </form>
+  </div>
+</div>
+{% if 0 %}
+<div class="row-fluid">
+  <div class="span12">
+    <label class="control-label" for="local_image_title">Title</label>
+    <input id="local_image_title" type="text" name="local_title" value="{{instance.content.title}}"
+           maxlength="256">
+
+    {% if mode == 'link' %}
+    <label class="control-label" for="local_image_title">Target</label>
+    <input id="local_image_target" type="text" name="local_title" value="" maxlength="256">
+    {% else %}
+    <div class="controls">
+      <label class="control-label" for="size">Image size</label>
+      <label class="checkbox">
+        <input type="radio" name="local_image_size" value="img_content_original"> Original
+      </label>
+      <label class="checkbox">
+        <input type="radio" name="local_image_size" value="img_content_thumb"> Thumb
+      </label>
+      <label class="checkbox">
+        <input type="radio" name="local_image_size" value="img_content_small"> Small
+      </label>
+      <label class="checkbox">
+        <input type="radio" name="local_image_size" value="img_content_medium"> Medium
+      </label>
+      <label class="checkbox">
+        <input type="radio" name="local_image_size" value="img_content_large"> Large
+      </label>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- file (extra) option -->
+<div class="row-fluid">
+  <div class="span12">
+    <div class="control-group">
+      <div class="controls">
+        <label class="checkbox">
+            <input type="checkbox" name="direct" value="1">Link to download directly
+        </label>
+        <span class="help-block">
+          If checked, link will point to download immediately in stead
+          of File content type
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}

@@ -1,3 +1,5 @@
+from django import forms
+
 from two.ol.base import RESTLikeHandler, applyrequest, context, json, handler
 from wheelcms_axle.node import Node, NodeNotFound
 from wheelcms_axle.content import type_registry, Content, ImageContent
@@ -441,14 +443,53 @@ class MainHandler(WheelRESTHandler):
         return self.template("wheelcms_axle/popup.html", original="/data/powerful-editing")
 
     @applyrequest
-    def handle_panel_selection_details(self, path, type):
+    def handle_panel_selection_details(self, path, type, size=""):
+        """
+            type is link of image (later misschien embed, object, whatever)
+            link:
+             - title
+             - target
+             - bepaalde props
+            image:
+             - class (size, float)
+             - title/alt
+             ..?
+
+            Dit is redelijk generiek, staat los van feitelijke content/spoke. Hooguit een aparte 
+            manier van presenteren van content
+        """
         # import pdb; pdb.set_trace()
         path = strip_action(path)
         
         instance = Node.get(path).content()
         spoke = instance.spoke()
+
+        SIZE_CHOICES = (
+            ("img_content_original", "Original"),
+            ("img_content_thumb", "Thumb"),
+            ("img_content_small", "Small"),
+            ("img_content_medium", "Medium"),
+            ("img_content_large", "Original"),
+        )
+        FLOAT_CHOICES = (
+            ("img_content_floatleft", "Left"),
+            ("img_content_floatmiddle", "Center"),
+            ("img_content_floatright", "Right")
+        )
+
+        class PropForm(forms.Form):
+            title = forms.CharField()
+            _target = forms.CharField() # if link
+            # if file
+            download = forms.BooleanField(help_text="If checked, link will point to download immediately in stead of File content")
+            # if image
+            size = forms.ChoiceField(choices=SIZE_CHOICES)
+            float = forms.ChoiceField(choices=FLOAT_CHOICES)
+
+        propform = PropForm(initial=dict(local_image_size=size))
+
         ## change it into more of a real "form", so "size" can render properly.
-        return self.template(spoke.detail_template(), instance=instance, mode=type, selectable=True)
+        return self.template("wheelcms_axle/popup_properties.html", spoke=spoke, instance=instance, mode=type, form=propform)
 
     @json
     @applyrequest
@@ -465,6 +506,14 @@ class MainHandler(WheelRESTHandler):
         
         if not self.hasaccess():
             return self.forbidden()
+
+        ##
+        ## No path means a new item is to be selected. Use the current
+        ## item as a starting point
+        if not path:
+            path = self.instance.path
+
+        ## translate / to ""
 
         if path == "/":
             path = ""

@@ -249,6 +249,8 @@
         function init(_mode, _callback) {
             mode = _mode;
             callback = _callback;
+
+            console.log("Mode: " + mode);
             /*
              * Initialize handlers, set title
              */
@@ -311,36 +313,24 @@
              * This will depend on which tab is showing
              */
             $(".modal_select").click(function() {
+                modal.modal('hide');
                 if(callback) {
                     var link = ""
                     var args = {}
                     if(current_tab == "browse_local") {
-                        /*
-                         * combine link/image mode. Worst case we'll fill in some properties
-                         * as undefined that won't be used by that mode anyway
-                         */
                         link = current_path;
-                        args.title = $("#local_image_title").val();
-                        args.target = $("#local_image_target").val();
-                        args.size = $("input[type='radio'][name='local_image_size']:checked").val();
                         args.local = true;
                     }
                     else if(current_tab == "browse_external_link") {
                         link = get_external_link();
-                        args.title = $("#external_title").val();
-                        args.target = $("#external_target").val();
                         args.local = false;
                     }
                     else if(current_tab == "browse_external_image") {
                         link = get_external_image();
-                        args.title = $("#external_image_title").val();
-                        args.size = $("input[type='radio'][name='external_image_size']:checked").val();
                         args.local = false;
-                        //console.log(args);
                     }
-                    callback(link, args);
+                    show_props(link, mode, args, callback);
                 }
-                modal.modal('hide');
             });
 
             /*
@@ -493,8 +483,32 @@
     })();
 
     function show_props(path, type, options, callback) {
+        /*
+         * Show and re-initialize the properties modal.
+         */
         $("#detailsModal").modal();
         $("#detailsModalBody").load("panel_selection_details?path="+encodeURIComponent(path) + "&type=" + type + "&" + $.param(options));
+        $("#detailsModal .modal_select").unbind('click'); // remove previous handler(s)
+        $("#detailsModal .modal_change").unbind('click'); // remove previous handler(s)
+
+        $("#detailsModal .modal_select").click(function() {
+            if(callback) {
+                var args = options || {}
+                var formdata = $("#detailsModal form").serializeArray();
+
+                for(var i = 0; i < formdata.length; i++) {
+                    args[formdata[i].name] = formdata[i].value;
+                }
+
+                // console.log(args)
+                callback(path, args);
+            }
+            $("#detailsModal").modal("hide");
+        });
+        $("#detailsModal .modal_change").click(function() {
+            wheel_browser(path, type, options, callback);
+            $("#detailsModal").modal("hide");
+        });
 
     }
     function props_or_browser(path, type, options, callback) {
@@ -673,7 +687,7 @@
   </div>
   <div class="modal-footer">
     <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-    <button class="btn btn-primary modal_select">Change selection</button>
+    <button class="btn btn-primary modal_change">Change selection</button>
     <button class="btn btn-primary modal_select">Select</button>
   </div>
 </div>
