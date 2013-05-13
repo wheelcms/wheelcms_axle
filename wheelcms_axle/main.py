@@ -17,6 +17,11 @@ class WheelRESTHandler(RESTLikeHandler, WheelHandlerMixin):
     pass
 
 
+def strip_action(s):
+    if '+' in s:
+        s = s.split("+", 1)[0].rstrip('/')
+    return s
+
 class MainHandler(WheelRESTHandler):
     model = dict(instance=Node, parent=Node)
     instance = None
@@ -435,6 +440,16 @@ class MainHandler(WheelRESTHandler):
         """ popup experiments - #524 """
         return self.template("wheelcms_axle/popup.html", original="/data/powerful-editing")
 
+    @applyrequest
+    def handle_panel_selection_details(self, path, type):
+        # import pdb; pdb.set_trace()
+        path = strip_action(path)
+        
+        instance = Node.get(path).content()
+        spoke = instance.spoke()
+        ## change it into more of a real "form", so "size" can render properly.
+        return self.template(spoke.detail_template(), instance=instance, mode=type, selectable=True)
+
     @json
     @applyrequest
     def handle_panel(self, path, original, mode):
@@ -459,10 +474,6 @@ class MainHandler(WheelRESTHandler):
         ## not sure if this is the right place to do this, or if the browser
         ## modal should have been invoked without the action in the first place
 
-        def strip_action(s):
-            if '+' in s:
-                s = s.split("+", 1)[0].rstrip('/')
-            return s
 
         path = strip_action(path)
         original = strip_action(original)

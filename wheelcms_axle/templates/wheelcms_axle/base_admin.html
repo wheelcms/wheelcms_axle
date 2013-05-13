@@ -492,6 +492,20 @@
         }
     })();
 
+    function show_props(path, type, options, callback) {
+        $("#detailsModal").modal();
+        $("#detailsModalBody").load("panel_selection_details?path="+encodeURIComponent(path) + "&type=" + type + "&" + $.param(options));
+
+    }
+    function props_or_browser(path, type, options, callback) {
+        if(path) {
+            show_props(path, type, options, callback);
+        }
+        else {
+            wheel_browser(path, type, options, callback);
+        }
+    }
+
     $(document).ready(function() {
         /*
          * enable the tagmanager. We fiddle a bit with the
@@ -646,6 +660,20 @@
   </div>
   <div class="modal-footer">
     <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn btn-primary modal_select">Select</button>
+  </div>
+</div>
+
+<div id="detailsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3>Selection properties</h3>
+  </div>
+  <div class="modal-body" id="detailsModalBody">
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn btn-primary modal_select">Change selection</button>
     <button class="btn btn-primary modal_select">Select</button>
   </div>
 </div>

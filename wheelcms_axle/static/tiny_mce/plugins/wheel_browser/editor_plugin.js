@@ -23,7 +23,7 @@
                     options.target = dom.getAttrib(anchor, 'target');
                 }
 
-                ed.getWin().parent.wheel_browser(href, "link", options,
+                ed.getWin().parent.props_or_browser(href, "link", options,
                                                  function(link, options) {
                     href = href.replace(/ /g, '%20');
                     if(anchor == null) {
@@ -59,7 +59,7 @@
                     //console.log("Selection : " + src);
                 }
 
-                ed.getWin().parent.wheel_browser(src, "image", options,
+                ed.getWin().parent.props_or_browser(src, "image", options,
                                                  function(link, options) {
                     // Fixes crash in Safari
                     if (tinymce.isWebKit) {
