@@ -472,24 +472,32 @@ class MainHandler(WheelRESTHandler):
             ("img_content_large", "Original"),
         )
         FLOAT_CHOICES = (
-            ("img_content_floatleft", "Left"),
-            ("img_content_floatmiddle", "Center"),
-            ("img_content_floatright", "Right")
+            ("img_align_left", "Left"),
+            ("img_align_center", "Center"),
+            ("img_align_right", "Right")
+        )
+        ALIGN_CHOICES = (
+            ("img_align_top", "Top"),
+            ("img_align_middle", "Middle"),
+            ("img_align_bottom", "Bottom")
         )
 
         class PropForm(forms.Form):
             title = forms.CharField()
-            _target = forms.CharField() # if link
-            # if file
-            download = forms.BooleanField(help_text="If checked, link will point to download immediately in stead of File content")
-            # if image
-            size = forms.ChoiceField(choices=SIZE_CHOICES)
-            float = forms.ChoiceField(choices=FLOAT_CHOICES)
+            if type == "link":
+                target = forms.CharField()
+                if isinstance(spoke, FileSpoke):
+                    download = forms.BooleanField(help_text="If checked, link will point to "
+                                                            "download immediately in stead of File content")
+            if type == "image":
+                size = forms.ChoiceField(choices=SIZE_CHOICES)
+                float = forms.ChoiceField(choices=FLOAT_CHOICES)
+                align = forms.ChoiceField(choices=ALIGN_CHOICES)
 
         propform = PropForm(initial=dict(local_image_size=size))
 
-        ## change it into more of a real "form", so "size" can render properly.
-        return self.template("wheelcms_axle/popup_properties.html", spoke=spoke, instance=instance, mode=type, form=propform)
+        return self.template("wheelcms_axle/popup_properties.html", spoke=spoke,
+                             instance=instance, mode=type, form=propform)
 
     @json
     @applyrequest

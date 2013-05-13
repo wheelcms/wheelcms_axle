@@ -19,3 +19,27 @@ img.img_content_medium {
 img.img_content_large {
     width: 400px;
 }
+
+img.img_align_left {
+    float: left;
+}
+
+img.img_align_center {
+    float: center;
+}
+
+img.img_align_right {
+    float: right;
+}
+
+img.img_align_top {
+    vertical-align: text-top;
+}
+
+img.img_align_middle {
+    vertical-align: middle;
+}
+
+img.img_align_top {
+    vertical-align: text-bottom;
+}
