@@ -581,8 +581,6 @@ class MainHandler(WheelRESTHandler):
                                            instance=self.instance,
                                            bookmarks=bookmarks
                                            ))
-        # import pdb; pdb.set_trace()
-        
         for i in range(2):
             content = node.content()
 

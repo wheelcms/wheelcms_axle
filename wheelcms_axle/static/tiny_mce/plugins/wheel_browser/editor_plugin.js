@@ -29,8 +29,6 @@
 
                 ed.getWin().parent.props_or_browser(href, "link", options,
                                                  function(link, options) {
-                    console.log(options);
-                    console.log(link);
                     href = href.replace(/ /g, '%20');
                     if(anchor == null) {
                         /* messy way to insert a link .. */
@@ -65,7 +63,6 @@
                     src = ed.dom.getAttrib(node, 'src');
                     options.title = ed.dom.getAttrib(node, 'alt') || ed.dom.getAttrib(node, 'title');
                     options.klass = ed.dom.getAttrib(node, 'class') || '';
-                    //console.log("Selection : " + src);
                 }
 
                 ed.getWin().parent.props_or_browser(src, "image", options,
