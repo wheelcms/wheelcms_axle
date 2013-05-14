@@ -43,9 +43,16 @@
                 closecallback();
             });
 
+            var upload = null;
+
             $('#fileupload').fileupload({
-                dataType: 'json',
                 url: url + '/fileup',
+                dataType: 'json',
+                autoUpload: false,
+                add: function(e, data) {
+                    $("#uploadModal .modal_select").prop('disabled', false);
+                    upload = data;
+                },
                 done: function (e, data) {
                     if(data.result.status == "ok") {
                       $("#uploadModal").modal("hide");
@@ -63,6 +70,13 @@
                 // fail, .. http://api.jquery.com/Types/#Promise
                 }
             });
+
+            $("#uploadModal .modal_select").unbind('click');
+            $("#uploadModal .modal_select").prop('disabled', true);
+            $("#uploadModal .modal_select").click(function() {
+                upload.submit();
+            });
+
         }
 
         return function(_url, _mode, _callback, _closecallback) {
@@ -605,7 +619,7 @@
   </div>
   <div class="modal-footer">
     <button class="btn modal_close" data-dismiss="modal" aria-hidden="true">Close</button>
-    <button class="btn btn-primary modal_select">Select</button>
+    <button class="btn btn-primary modal_select">Save</button>
   </div>
 </div>
 
