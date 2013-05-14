@@ -194,6 +194,7 @@ class MainHandler(WheelRESTHandler):
                 if self.user().is_authenticated():
                     p.owner = self.user()
                 p.save()
+                self.form.save_m2m()
                 if attach:
                     parent.set(p)
                 else:
@@ -687,6 +688,7 @@ class MainHandler(WheelRESTHandler):
             if self.user().is_authenticated():
                 p.owner = self.user()
             p.save()
+            self.form.save_m2m()
             slug = self.form.cleaned_data['slug']
             sub = parent.add(slug)
             sub.set(p)
