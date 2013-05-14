@@ -569,6 +569,8 @@ class MainHandler(WheelRESTHandler):
         for p in bookmarks_paths:
             n = Node.get(p)
             content = n.content()
+            if not content: ## unattached
+                continue
             spoke = content.spoke()
             bookmarks.append(dict(children=[], path=n.path or '/',
                             title=content.title,

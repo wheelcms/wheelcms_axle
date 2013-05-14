@@ -28,17 +28,17 @@ class TestPanel(object):
         root = Node.root()
         request = superuser_request("/", method="GET")
         handler = MainHandlerTestable(request=request, instance=root)
-        panels = handler.panels(path="", mode="link")
-        assert len(panels['panels']) == 1
+        panels = handler.panels(path="", original="", mode="link")
+        assert len(panels['panels']) == 2  ## bookmarks + 1 panel
         assert panels['path'] == '/'
-        
+
         # import pytest; pytest.set_trace()
         crumbs = panels['crumbs']['context']['crumbs']
         assert len(crumbs) == 1
         assert crumbs[0]['path'] == ''
 
         ## inspect crumbs
-        root_panel = panels['panels'][0]
+        root_panel = panels['panels'][1]
         assert root_panel['context']['selectable']
         assert root_panel['context']['instance']['addables']
 
@@ -57,11 +57,11 @@ class TestPanel(object):
 
         request = superuser_request("/", method="GET")
         handler = MainHandlerTestable(request=request, instance=Node.root())
-        panels = handler.panels(path="", mode="link")
-        assert len(panels['panels']) == 1
+        panels = handler.panels(path="", original="", mode="link")
+        assert len(panels['panels']) == 2
         assert panels['path'] == '/'
-        
-        root_panel = panels['panels'][0]
+
+        root_panel = panels['panels'][1]
         assert root_panel['context']['selectable']
         assert root_panel['context']['instance']['addables']
         children = root_panel['context']['instance']['children']
@@ -77,11 +77,11 @@ class TestPanel(object):
 
         request = superuser_request("/", method="GET")
         handler = MainHandlerTestable(request=request, instance=Node.root())
-        panels = handler.panels(path="", mode="image")
-        assert len(panels['panels']) == 1
+        panels = handler.panels(path="", original="", mode="image")
+        assert len(panels['panels']) == 2
         assert panels['path'] == '/'
         
-        root_panel = panels['panels'][0]
+        root_panel = panels['panels'][1]
         assert root_panel['context']['selectable']
         assert root_panel['context']['instance']['addables']
         children = root_panel['context']['instance']['children']
@@ -102,8 +102,8 @@ class TestPanel(object):
 
         request = superuser_request("/image1", method="GET")
         handler = MainHandlerTestable(request=request, instance=image1)
-        panels = handler.panels(path="/image", mode="image")
-        assert len(panels['panels']) == 2
+        panels = handler.panels(path="/image", original="", mode="image")
+        assert len(panels['panels']) == 3
         assert panels['path'] == '/image'
         
         crumbs = panels['crumbs']['context']['crumbs']
@@ -111,7 +111,7 @@ class TestPanel(object):
         assert crumbs[0]['path'] == ''
         assert crumbs[1]['path'] == '/image'
 
-        root_panel = panels['panels'][0]
+        root_panel = panels['panels'][1]
         children = root_panel['context']['instance']['children']
         assert len(children) == 3
         for c in children:
@@ -122,6 +122,6 @@ class TestPanel(object):
                 assert not c['selectable']
                 assert not c['selected']
 
-        image_panel = panels['panels'][1]
+        image_panel = panels['panels'][2]
         assert not image_panel['context']['instance']['children']
         assert not image_panel['context']['instance']['addables']
