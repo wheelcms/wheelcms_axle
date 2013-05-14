@@ -18,7 +18,7 @@ class TinyMCE(BaseTinyMCE):
 
     def theme_css(self):
         theme = Configuration.config().themeinfo()
-        
+
         return ",".join(theme.css_resources())
 
 class BaseForm(forms.ModelForm):
@@ -32,7 +32,8 @@ class BaseForm(forms.ModelForm):
     def content_fields(self):
         return set(self.fields) - set(self.advanced_fields)
 
-    slug = forms.Field(required=False, help_text="A slug determines the url of the content. You can leave this empty to auto-generate a slug.")
+    slug = forms.Field(required=False, help_text="A slug determines the url "
+          "of the content. You can leave this empty to auto-generate a slug.")
 
     # just an experiment, to have a required field in the advanced section
     # important = forms.Field(required=True)
