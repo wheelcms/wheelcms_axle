@@ -87,7 +87,7 @@ class BaseForm(forms.ModelForm):
         # 
         #fix_form(self, *args, **kwargs)
 
-        
+
     def enlarge_field(self, field):
         field.widget.attrs['class'] = 'input-xxlarge'
 
