@@ -528,8 +528,6 @@ class MainHandler(WheelRESTHandler):
             mode can be either "link" (any content) or "image" (only image
             based content)
         """
-        # import pdb; pdb.set_trace()
-        
         if not self.hasaccess():
             return self.forbidden()
 

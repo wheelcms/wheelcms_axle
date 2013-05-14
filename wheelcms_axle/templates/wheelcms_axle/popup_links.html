@@ -6,7 +6,7 @@
   </thead>
   <tbody class="sortable">
     {% for bookmark in bookmarks %}
-      <tr class="entry {% if bookmark.selected %}info{%endif%} {% if not bookmark.selectable %}disabled-content{% endif %}"
+      <tr class="entry {% if bookmark.selected %}info{%endif%}"
           data-url="{{bookmark.path}}" data-selectable="{{bookmark.selectable|yesno}}">
         <td><img src="{{bookmark.icon}}"> {{bookmark.title}}
             {% if bookmark.selected %}
