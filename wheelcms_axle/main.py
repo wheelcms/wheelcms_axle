@@ -582,6 +582,8 @@ class MainHandler(WheelRESTHandler):
                                            instance=self.instance,
                                            bookmarks=bookmarks
                                            ))
+        upload = False
+
         for i in range(2):
             content = node.content()
 
@@ -607,6 +609,11 @@ class MainHandler(WheelRESTHandler):
                                 content=None,
                                 spoke=None,
                                 addables=addables)
+
+            if i == 0:
+                ## first iteration means current context. Check if uploading
+                ## is possible.
+                upload = bool(addables)
 
             for child in node.children():
                 selectable = False
@@ -642,17 +649,21 @@ class MainHandler(WheelRESTHandler):
             if node.isroot():
                 break
             node = node.parent()
+
         crumbs = []
         node = Node.get(path)
         while True:
             if node.isroot():
                 crumbs.insert(0, dict(path=node.path, title="Home"))
                 break
-            crumbs.insert(0, dict(path=node.path or '/', title=node.content().title))
+            crumbs.insert(0, dict(path=node.path or '/',
+                                  title=node.content().title))
             node = node.parent()
 
-        crumbtpl = self.render_template("wheelcms_axle/popup_crumbs.html", crumbs=crumbs)
-        return dict(panels=panels, path=path or '/', crumbs=crumbtpl)
+        crumbtpl = self.render_template("wheelcms_axle/popup_crumbs.html",
+                                        crumbs=crumbs)
+        return dict(panels=panels, path=path or '/',
+                    crumbs=crumbtpl, upload=upload)
 
     @json
     @applyrequest

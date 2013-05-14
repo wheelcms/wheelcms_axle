@@ -170,6 +170,12 @@
             data = $.parseJSON(data);
             var panels = data.panels;
             var crumbs = data.crumbs;
+            var upload = data.upload;
+            var context_path = data.path;
+
+            // enable/disable upload button depending on data.upload
+            $("#browseModal .modal_upload").prop('disabled', !upload);
+            $("#browseModal .modal_upload").data('url', context_path);
 
             var path = data.path;
 
@@ -353,29 +359,23 @@
                 load_panels(path, panelid);
                 return false;
             });
-            var open_upload = function(path) {
-                return function() {
-                    var url = path;
-                    modal.modal('hide');
+            var open_upload  = function() {
+                var url = $(this).data('url');
+                modal.modal('hide');
+                console.log(url);
 
-                    upload_modal(url, mode=="link"?"any":"image",
-                    function(path) { // select, load browser with new path
-                        // should scroll to selection(s)!
-                        load_panels(path, 3);
-                        modal.modal('show');
-                    },
-                    function() { // close -- restore browser
-                        load_panels(url, 3);
-                        modal.modal('show');
-                    });
-                }
+                upload_modal(url, mode=="link"?"any":"image",
+                function(path) { // select, load browser with new path
+                    // should scroll to selection(s)!
+                    load_panels(path, 3);
+                    modal.modal('show');
+                },
+                function() { // close -- restore browser
+                    load_panels(url, 3);
+                    modal.modal('show');
+                });
             }
-            /*
-             * clicking the upload icon should open the upload modal
-             */
-            $(".node_upload").live('click', function() {open_upload($(this).data('url'))()});
-            $("#browseModal .modal_upload").click(open_upload(current_path));
-            
+            $("#browseModal .modal_upload").click(open_upload);
         }
 
         function load_link(path, options) {
