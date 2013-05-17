@@ -79,7 +79,9 @@
                         args.title = options.title;
                         args.alt = options.title;
                     }
-                    args['class'] = options.size || 'original';
+                    // should probably be configurable
+                    args['class'] = "img-polaroid ";
+                    args['class'] += (options.size || 'original');
                     args['class'] += " " + (options.float || "");
                     args['class'] += " " + (options.align || "");
 

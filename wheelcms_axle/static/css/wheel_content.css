@@ -22,14 +22,18 @@ img.img_content_large {
 
 img.img_align_left {
     float: left;
+    margin-right: 10px;
 }
 
 img.img_align_center {
     float: center;
+    margin-right: 10px;
+    margin-left: 10px;
 }
 
 img.img_align_right {
     float: right;
+    margin-left: 10px;
 }
 
 img.img_align_top {
