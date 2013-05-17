@@ -86,4 +86,5 @@ class Toolbar(object):
 
     def show_settings(self):
         ## XXX decent permissions
-        return self.request.user.is_superuser
+        user = self.request.user
+        return (user.is_superuser or user.groups.filter(name="managers").exists())
