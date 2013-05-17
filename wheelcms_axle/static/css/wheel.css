@@ -111,3 +111,11 @@ form .help-block {
     margin: 0;
     color: rgb(215, 215, 215);
 }
+
+/*
+ * ul's next to a floating images (e.g. in tinymce) have the bullets
+ * overlap the image. See http://stackoverflow.com/a/710205/2021414
+ */
+.entry-content ul {
+    list-style-position: inside;
+}
