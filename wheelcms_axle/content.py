@@ -23,6 +23,8 @@ def far_future():
 class ContentClass(models.Model):
     name = models.CharField(max_length=256, blank=False)
 
+    def __unicode__(self):
+        return "Content class %s" % self.name
 
 class ContentBase(models.Model):
     CLASSES = ()
@@ -51,9 +53,10 @@ class ContentBase(models.Model):
     owner = models.ForeignKey(User, null=True)
 
     ## class..
-    classes = models.ManyToManyField(ContentClass, related_name="content")
+    classes = models.ManyToManyField(ContentClass, related_name="content",
+                                     blank=True)
 
-    tags = TaggableManager()
+    tags = TaggableManager(blank=True)
 
     class Meta:
         abstract = True
