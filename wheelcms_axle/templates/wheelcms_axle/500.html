@@ -1,0 +1,27 @@
+{% extends "wheelcms_axle/base.html" %}
+
+{% block htmltitle %}
+<title>Something bad happened</title>
+{% endblock %}
+
+{% block breadcrumb %}
+<div class="row">
+  <div class="span12">
+    <ul class="breadcrumb">
+        <li>
+            <a href="/">Home</a>
+        <span class="divider">/</span>
+        </li>
+        <li>
+          Something bad happened
+        </li>
+    </ul>
+  </div>
+</div>
+{% endblock %}
+{% block base_main %}
+
+<div class="well">
+Oops! Something bad happened and this site cannot serve this request. However, this problem has been logged and will be dealt with. Meanwhile, please continue to the <a href="{% url wheel_main %}">frontpage</a> of this site.
+</div>
+{% endblock %}

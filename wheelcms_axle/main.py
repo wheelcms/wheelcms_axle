@@ -15,6 +15,37 @@ from .actions import action_registry
 
 import stracks
 
+from django.template import loader, Context
+from django.http import HttpResponseServerError
+
+from wheelcms_axle import context_processors
+
+def wheel_error_context(request):
+    """
+        Provide enough context for the 404/500 template (and more specifically
+        its base) to render correctly.
+    """
+
+    context = Context()
+    context['request'] = request
+    context['user'] = request.user
+    context.update(context_processors.configuration(request))
+    return context
+
+def wheel_404(request):
+    """ alternative 404 page """
+    t = loader.get_template("wheelcms_axle/404.html")
+
+    return HttpResponseServerError(t.render(wheel_error_context(request)))
+
+
+def wheel_500(request):
+    """ alternative 500 page """
+    t = loader.get_template("wheelcms_axle/500.html")
+
+    return HttpResponseServerError(t.render(wheel_error_context(request)))
+
+
 class WheelRESTHandler(RESTLikeHandler, WheelHandlerMixin):
     pass
 
