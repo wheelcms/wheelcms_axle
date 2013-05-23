@@ -590,13 +590,17 @@ class MainHandler(WheelRESTHandler):
             bookmarks_paths.append(self.instance.path)
         #if path not in bookmarks_paths:
         #    bookmarks_paths.append(path)
-        if original not in bookmarks_paths:
+        ## original can also be an external url, starting with http
+        if original not in bookmarks_paths and not original.startswith("http"):
             bookmarks_paths.append(original)
 
         bookmarks = []
 
         for p in bookmarks_paths:
+            ## handle non-existing nodes and unattached nodes
             n = Node.get(p)
+            if not n:
+                continue
             content = n.content()
             if not content: ## unattached
                 continue
