@@ -224,22 +224,27 @@ class MainHandler(WheelRESTHandler):
                 p = self.form.save(commit=False)
                 if self.user().is_authenticated():
                     p.owner = self.user()
-                p.save()
-                self.form.save_m2m()
-                if attach:
-                    parent.set(p)
-                else:
-                    slug = self.form.cleaned_data['slug']
-                    sub = parent.add(slug)
-                    sub.set(p)
-                    target = sub
+                try:
+                    p.save()
 
-                ent = stracks.content(p.id, name=p.title)
-                ent.log("? (%s) created by ?" % typeinfo.title,
-                        stracks.user(self.user()), action=stracks.create())
+                    self.form.save_m2m()
+                    if attach:
+                        parent.set(p)
+                    else:
+                        slug = self.form.cleaned_data['slug']
+                        sub = parent.add(slug)
+                        sub.set(p)
+                        target = sub
 
-                return self.redirect(target.path or '/',
-                                     success='"%s" created' % p.title)
+                    ent = stracks.content(p.id, name=p.title)
+                    ent.log("? (%s) created by ?" % typeinfo.title,
+                            stracks.user(self.user()), action=stracks.create())
+
+                    return self.redirect(target.path or '/',
+                                         success='"%s" created' % p.title)
+                except OSError, e:
+                    self.context['error_message'] = "An error occured " \
+                            "while saving: %s" % str(e)
         else:
             self.context['form'] = formclass(parent=parent, attach=attach)
         ## Get spoke model
@@ -703,8 +708,6 @@ class MainHandler(WheelRESTHandler):
     @json
     @applyrequest
     def handle_fileup(self, type):
-        # import pdb; pdb.set_trace()
-
         if not self.hasaccess():
             return self.forbidden()
 
@@ -733,7 +736,12 @@ class MainHandler(WheelRESTHandler):
             p = self.form.save(commit=False)
             if self.user().is_authenticated():
                 p.owner = self.user()
-            p.save()
+            try:
+                p.save()
+            except OSError, e:
+                return dict(status="error",
+                            errors=dict(storage="An error occured while "
+                                        "saving: %s" % str(e)))
             self.form.save_m2m()
             slug = self.form.cleaned_data['slug']
             sub = parent.add(slug)
