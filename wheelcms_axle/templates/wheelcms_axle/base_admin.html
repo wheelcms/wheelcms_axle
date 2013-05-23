@@ -500,7 +500,7 @@
            var $v = $(v);
            var name = $v.attr("name");
            $v.attr("name", name + "-taginput");
-           var vals = $v.val().split(/[\s,]+/);
+           var vals = $v.val().split(/[,]+/);
            $v.val("");
            $v.tagsManager(
                 {prefilled:vals,
