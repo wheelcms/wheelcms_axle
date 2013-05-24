@@ -654,9 +654,9 @@ class MainHandler(WheelRESTHandler):
         node = Node.get(path)
         while True:
             if node.isroot():
-                crumbs.insert(0, dict(path=node.path, title="Home"))
+                crumbs.insert(0, dict(path='/', title="Home"))
                 break
-            crumbs.insert(0, dict(path=node.path or '/',
+            crumbs.insert(0, dict(path=node.path,
                                   title=node.content().title))
             node = node.parent()
 
