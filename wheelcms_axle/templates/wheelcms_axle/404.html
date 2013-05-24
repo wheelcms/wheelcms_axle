@@ -1,0 +1,27 @@
+{% extends "wheelcms_axle/base.html" %}
+
+{% block htmltitle %}
+<title>Page not found</title>
+{% endblock %}
+
+{% block breadcrumb %}
+<div class="row">
+  <div class="span12">
+    <ul class="breadcrumb">
+        <li>
+            <a href="/">Home</a>
+        <span class="divider">/</span>
+        </li>
+        <li>
+          Page not found
+        </li>
+    </ul>
+  </div>
+</div>
+{% endblock %}
+{% block base_main %}
+
+<div class="well">
+The page at path {{request.path}} could not be found. Perhaps <a href="/search/?q={{request.path}}">searching</a> will help, or continue to the <a href="{% url wheel_main %}">frontpage</a> of this site.
+</div>
+{% endblock %}

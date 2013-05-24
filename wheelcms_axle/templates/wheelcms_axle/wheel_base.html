@@ -67,7 +67,7 @@
     <ul class="nav">
       <li><a href="/+contact">Contact</a></li>
     </ul>
-    {% if user.is_anonymous %}
+    {% if not user.is_authenticated %}
     <ul class="nav">
       {% if settings.ALLOW_SIGNUP %}
       <li><a href="{% url userena_signup %}">Register</a></li>

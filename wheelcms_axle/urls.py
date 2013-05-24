@@ -1,8 +1,11 @@
 from django.conf.urls.defaults import patterns
 from two.ol.base import twpatterns
-from wheelcms_axle.main import MainHandler
+from wheelcms_axle.main import MainHandler, wheel_500, wheel_404
 from wheelcms_axle.configuration import ConfigurationHandler
 from wheelcms_axle.search import SearchHandler
+
+handler500 = wheel_500
+handler404 = wheel_404
 
 urlpatterns = patterns('',
     twpatterns("/@/search", SearchHandler, name="haystack_search"),

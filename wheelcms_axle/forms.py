@@ -9,6 +9,8 @@ from wheelcms_axle.templates import template_registry
 
 from tinymce.widgets import TinyMCE as BaseTinyMCE
 
+from taggit.utils import parse_tags
+
 class TinyMCE(BaseTinyMCE):
     def render(self, name, value, attrs=None):
         ## this will always overwrite content_css; modifiying it will
@@ -20,6 +22,17 @@ class TinyMCE(BaseTinyMCE):
         theme = Configuration.config().themeinfo()
 
         return ",".join(theme.css_resources())
+
+class TagWidget(forms.TextInput):
+    """ taggit's own TagWidget finds it necessary for unknown reasons
+        to "quote" tags containing a space, something that our tagsManager
+        plugin can't handle wel.
+    """
+    def render(self, name, value, attrs=None):
+        if value is not None and not isinstance(value, basestring):
+            value = ",".join(o.tag.name for o in value.select_related("tag"))
+
+        return super(TagWidget, self).render(name, value, attrs)
 
 class BaseForm(forms.ModelForm):
     class Meta:
@@ -34,6 +47,8 @@ class BaseForm(forms.ModelForm):
 
     slug = forms.Field(required=False, help_text="A slug determines the url "
           "of the content. You can leave this empty to auto-generate a slug.")
+
+    tags = forms.Field(required=False, help_text="Zero or more tags. Create a tag by ending with a comma or enter", widget=TagWidget())
 
     # just an experiment, to have a required field in the advanced section
     # important = forms.Field(required=True)
@@ -152,6 +167,23 @@ class BaseForm(forms.ModelForm):
             pass
 
         return slug
+
+    def clean_tags(self):
+        """ taggit's parse_tags behaves oddly when a single tag (no comma)
+            is passed:
+
+            (Pdb) print parse_tags("google io")
+            [u'google', u'io']
+            (Pdb) print parse_tags("google io,")
+            [u'google io']
+
+            We always only want to split on comma. To enforce this,
+            simply had a comma before calling parse_tags
+        """
+
+        tags = self.data.get('tags', '')
+        t = parse_tags(tags+",")
+        return t
 
     def clean_template(self):
         template = self.data.get('template')

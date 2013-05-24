@@ -15,6 +15,37 @@ from .actions import action_registry
 
 import stracks
 
+from django.template import loader, Context
+from django.http import HttpResponseServerError
+
+from wheelcms_axle import context_processors
+
+def wheel_error_context(request):
+    """
+        Provide enough context for the 404/500 template (and more specifically
+        its base) to render correctly.
+    """
+
+    context = Context()
+    context['request'] = request
+    context['user'] = request.user
+    context.update(context_processors.configuration(request))
+    return context
+
+def wheel_404(request):
+    """ alternative 404 page """
+    t = loader.get_template("wheelcms_axle/404.html")
+
+    return HttpResponseServerError(t.render(wheel_error_context(request)))
+
+
+def wheel_500(request):
+    """ alternative 500 page """
+    t = loader.get_template("wheelcms_axle/500.html")
+
+    return HttpResponseServerError(t.render(wheel_error_context(request)))
+
+
 class WheelRESTHandler(RESTLikeHandler, WheelHandlerMixin):
     pass
 
@@ -193,22 +224,27 @@ class MainHandler(WheelRESTHandler):
                 p = self.form.save(commit=False)
                 if self.user().is_authenticated():
                     p.owner = self.user()
-                p.save()
-                self.form.save_m2m()
-                if attach:
-                    parent.set(p)
-                else:
-                    slug = self.form.cleaned_data['slug']
-                    sub = parent.add(slug)
-                    sub.set(p)
-                    target = sub
+                try:
+                    p.save()
 
-                ent = stracks.content(p.id, name=p.title)
-                ent.log("? (%s) created by ?" % typeinfo.title,
-                        stracks.user(self.user()), action=stracks.create())
+                    self.form.save_m2m()
+                    if attach:
+                        parent.set(p)
+                    else:
+                        slug = self.form.cleaned_data['slug']
+                        sub = parent.add(slug)
+                        sub.set(p)
+                        target = sub
 
-                return self.redirect(target.path or '/',
-                                     success='"%s" created' % p.title)
+                    ent = stracks.content(p.id, name=p.title)
+                    ent.log("? (%s) created by ?" % typeinfo.title,
+                            stracks.user(self.user()), action=stracks.create())
+
+                    return self.redirect(target.path or '/',
+                                         success='"%s" created' % p.title)
+                except OSError, e:
+                    self.context['error_message'] = "An error occured " \
+                            "while saving: %s" % str(e)
         else:
             self.context['form'] = formclass(parent=parent, attach=attach)
         ## Get spoke model
@@ -559,13 +595,17 @@ class MainHandler(WheelRESTHandler):
             bookmarks_paths.append(self.instance.path)
         #if path not in bookmarks_paths:
         #    bookmarks_paths.append(path)
-        if original not in bookmarks_paths:
+        ## original can also be an external url, starting with http
+        if original not in bookmarks_paths and not original.startswith("http"):
             bookmarks_paths.append(original)
 
         bookmarks = []
 
         for p in bookmarks_paths:
+            ## handle non-existing nodes and unattached nodes
             n = Node.get(p)
+            if not n:
+                continue
             content = n.content()
             if not content: ## unattached
                 continue
@@ -668,8 +708,6 @@ class MainHandler(WheelRESTHandler):
     @json
     @applyrequest
     def handle_fileup(self, type):
-        # import pdb; pdb.set_trace()
-
         if not self.hasaccess():
             return self.forbidden()
 
@@ -698,7 +736,12 @@ class MainHandler(WheelRESTHandler):
             p = self.form.save(commit=False)
             if self.user().is_authenticated():
                 p.owner = self.user()
-            p.save()
+            try:
+                p.save()
+            except OSError, e:
+                return dict(status="error",
+                            errors=dict(storage="An error occured while "
+                                        "saving: %s" % str(e)))
             self.form.save_m2m()
             slug = self.form.cleaned_data['slug']
             sub = parent.add(slug)
