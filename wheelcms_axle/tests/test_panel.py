@@ -35,7 +35,7 @@ class TestPanel(object):
         # import pytest; pytest.set_trace()
         crumbs = panels['crumbs']['context']['crumbs']
         assert len(crumbs) == 1
-        assert crumbs[0]['path'] == ''
+        assert crumbs[0]['path'] == '/'
 
         ## inspect crumbs
         root_panel = panels['panels'][1]
@@ -108,7 +108,7 @@ class TestPanel(object):
         
         crumbs = panels['crumbs']['context']['crumbs']
         assert len(crumbs) == 2
-        assert crumbs[0]['path'] == ''
+        assert crumbs[0]['path'] == '/'
         assert crumbs[1]['path'] == '/image'
 
         root_panel = panels['panels'][1]
