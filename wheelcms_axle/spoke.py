@@ -81,6 +81,9 @@ class Spoke(object):
     ## None means no restrictions, () means no subcontent allowed
     children = None
 
+    ## The primary sub content. Used to create a quick shortcut
+    primary = None
+
     ## can it be implicitly added?
     implicit_add = True
 

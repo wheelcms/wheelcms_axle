@@ -162,4 +162,44 @@ class TestToolbar(object):
         toolbar = Toolbar(node, request, "view")
         assert not toolbar.show_settings()
 
+    def test_primary(self, client):
+        """ a type with primary should behave differently """
+
+        registry = self.registry
+
+        class DummyNode(object):
+            def content(self):
+                class DummyContent(object):
+                    meta_type = 'dummycontent'
+
+                    @classmethod
+                    def get_name(cls):
+                        return "test." + cls.meta_type
+
+                class DummyType(Spoke):
+                    model = DummyContent
+                    children = (Type1Type, Type2Type)
+                    primary = Type1Type
+
+                    @classmethod
+                    def name(self):
+                        return DummyContent.get_name()
+
+                registry.register(DummyType)
+
+                return DummyContent()
+
+        toolbar = Toolbar(DummyNode(), superuser_request("/"), "view")
+        children = toolbar.children()
+        assert len(children) == 1
+        assert children[0]['name'] == Type2Type.name()
+        assert children[0]['title'] == Type2Type.title
+        assert children[0]['icon_path'] == Type2Type.full_type_icon_path()
+
+        primary = toolbar.primary()
+        assert primary
+        assert primary['name'] == Type1Type.name()
+        assert primary['title'] == Type1Type.title
+        assert primary['icon_path'] == Type1Type.full_type_icon_path()
+
 

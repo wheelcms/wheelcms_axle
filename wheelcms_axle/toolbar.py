@@ -22,16 +22,34 @@ class Toolbar(object):
 
         return type_registry.get(self.instance.content().get_name())
 
+    def primary(self):
+        """ return type details for this type's primary content, if any """
+        type = self.type()
+        p = type.primary
+
+        if p:
+            return dict(name=p.name(),
+                        title=p.title,
+                        icon_path=p.full_type_icon_path())
+        return None
+
     def children(self):
+        """ return the addable children for this type, except the primary
+            type (if any) """
         type = self.type()
         ## order?
         ## unconnected, or no restrictions
         if type is None:
             ch = [t for t in type_registry.values() if t.implicit_add]
+            primary = None
         else:
             ch = type.addable_children()
+            primary = type.primary
 
-        return [dict(name=c.name(), title=c.title, icon_path=c.full_type_icon_path()) for c in ch]
+        return [dict(name=c.name(),
+                     title=c.title,
+                     icon_path=c.full_type_icon_path())
+                for c in ch if c != primary]
 
     def show_create(self):
         if self.status == 'special':  ## special page
