@@ -52,7 +52,7 @@
             var upload = null;
 
             var fileinput = $("#fileupload input[type=file]");
-            fileinput.replaceWith('<span class="btn btn-success fileinput-button"><i class="icon-plus icon-white"></i><span>Add file</span><input id="' + fileinput.attr('id') + '" type="file" name="' + fileinput.attr('name') + '"></span><div id="filepreview"></div>');
+            fileinput.replaceWith('<div id="filepreview" ></div><span class="btn btn-success fileinput-button"><i class="icon-plus icon-white"></i><span id="filelabel">Add file</span><input id="' + fileinput.attr('id') + '" type="file" name="' + fileinput.attr('name') + '"></span>');
             //var preview = $("#fileupload input[type=file]").parent(".controls")
             $('#fileupload').fileupload({
                 url: url + '/fileup',
@@ -69,7 +69,8 @@
                //  fileuploadprocessalways
                var file = data.files[data.index];
 
-               $("#filepreview").append("<div/>").append(file.preview).append($('<span>/>').text(file.name));
+               $("#filepreview").html(file.preview).append($('<h4/>').text(file.name));
+               $("#filelabel").text("Replace file");
             }).on('fileuploaddone', function (e, data) {
                     if(data.result.status == "ok") {
                       $("#uploadModal").modal("hide");
