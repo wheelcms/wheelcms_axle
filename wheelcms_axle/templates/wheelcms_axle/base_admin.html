@@ -5,6 +5,7 @@
 {{ block.super }}
 
 <link rel="stylesheet" href="/static/tagmanager/bootstrap-tagmanager.css" media="screen, projection, print"/>
+<link rel="stylesheet" href="/static/css/upload/jquery.fileupload-ui.css" media="screen, projection, print"/>
 {% endblock %}
 
 {% block javascript %}
@@ -12,8 +13,13 @@
 {{ block.super }}
 
 <script src="/static/js/upload/jquery.ui.widget.js"></script>
+<script src="/static/js/upload/load-image.min.js"></script>
+<script src="/static/js/upload/canvas-to-blob.min.js"></script>
 <script src="/static/js/upload/jquery.iframe-transport.js"></script>
 <script src="/static/js/upload/jquery.fileupload.js"></script>
+<script src="/static/js/upload/jquery.fileupload-process.js"></script>
+<script src="/static/js/upload/jquery.fileupload-resize.js"></script>
+<script src="/static/js/upload/jquery.fileupload-validate.js"></script>
 <script src="/static/tagmanager/bootstrap-tagmanager.js"></script>
 
 <script type="text/javascript" charset="utf-8">
@@ -45,15 +51,26 @@
 
             var upload = null;
 
+            var fileinput = $("#fileupload input[type=file]");
+            fileinput.replaceWith('<span class="btn btn-success fileinput-button"><i class="icon-plus icon-white"></i><span>Add file</span><input id="' + fileinput.attr('id') + '" type="file" name="' + fileinput.attr('name') + '"></span><div id="filepreview"></div>');
+            //var preview = $("#fileupload input[type=file]").parent(".controls")
             $('#fileupload').fileupload({
                 url: url + '/fileup',
                 dataType: 'json',
                 autoUpload: false,
-                add: function(e, data) {
+                previewMaxwidth: 100,
+                previewMaxHeight: 100,
+                previewCrop: true,
+            }).on('fileuploadadd', function(e, data) {
                     $("#uploadModal .modal_select").prop('disabled', false);
                     upload = data;
-                },
-                done: function (e, data) {
+
+            }).bind('fileuploadprocessalways', function(e, data) {
+               //  fileuploadprocessalways
+               var file = data.files[data.index];
+
+               $("#filepreview").append("<div/>").append(file.preview).append($('<span>/>').text(file.name));
+            }).on('fileuploaddone', function (e, data) {
                     if(data.result.status == "ok") {
                       $("#uploadModal").modal("hide");
 
@@ -68,7 +85,6 @@
                         $(".upload-alert").addClass("alert");
                     }
                 // fail, .. http://api.jquery.com/Types/#Promise
-                }
             });
 
             $("#uploadModal .modal_select").unbind('click');
@@ -362,7 +378,6 @@
             var open_upload  = function() {
                 var url = $(this).data('url');
                 modal.modal('hide');
-                console.log(url);
 
                 upload_modal(url, mode=="link"?"any":"image",
                 function(path) { // select, load browser with new path
