@@ -492,19 +492,19 @@ class MainHandler(WheelRESTHandler):
              - title/alt
              ..?
 
-            Dit is redelijk generiek, staat los van feitelijke content/spoke. Hooguit een aparte 
+            Dit is redelijk generiek, staat los van feitelijke content/spoke. Hooguit een aparte
             manier van presenteren van content
         """
         # import pdb; pdb.set_trace()
         path = strip_action(path)
-        
+
         node = Node.get(path)
         instance = None
         spoke = None
         if node:
             instance = node.content()
             spoke = instance.spoke()
-        
+
         SIZE_CHOICES = (
             ("img_content_original", "Original"),
             ("img_content_thumb", "Thumb"),
@@ -523,6 +523,13 @@ class MainHandler(WheelRESTHandler):
             ("img_align_bottom", "Bottom")
         )
 
+        TARGET_CHOICES = (
+            ("_self", "Same window"),
+            ("_blank", "New window"),
+        )
+        ## _parent and _top are not sensible options, nor is an explicit
+        ## framename
+
         ## translate klass back to size/float/align
         forminitial = dict(title=title, target=target, download=download)
 
@@ -539,7 +546,9 @@ class MainHandler(WheelRESTHandler):
         class PropForm(forms.Form):
             title = forms.CharField()
             if type == "link":
-                target = forms.CharField()
+                target = forms.ChoiceField(choices=TARGET_CHOICES,
+                                           initial="_self",
+                                           help_text="Where should the link open in when clicked?")
                 if spoke and isinstance(spoke, FileSpoke):
                     download = forms.BooleanField(help_text="If checked, link will point to "
                                                             "download immediately in stead of File content")
