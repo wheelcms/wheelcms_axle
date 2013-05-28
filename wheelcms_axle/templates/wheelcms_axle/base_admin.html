@@ -331,7 +331,7 @@
                         link = get_external_image();
                         args.local = false;
                     }
-                    show_props(link, mode, args, callback);
+                    show_props(link, mode, args, callback, true);
                 }
             });
 
@@ -451,12 +451,16 @@
         }
     })();
 
-    function show_props(path, type, options, callback) {
+    function show_props(path, type, options, callback, newselection) {
         /*
          * Show and re-initialize the properties modal.
          */
         $("#detailsModal").modal();
-        $("#detailsModalBody").load("panel_selection_details?path="+encodeURIComponent(path) + "&type=" + type + "&" + $.param(options));
+        var ns = "";
+        if(newselection) {
+            ns = "&newselection=1";
+        }
+        $("#detailsModalBody").load("panel_selection_details?path="+encodeURIComponent(path) + "&type=" + type + "&" + $.param(options) + ns);
         $("#detailsModal .modal_select").unbind('click'); // remove previous handler(s)
         $("#detailsModal .modal_change").unbind('click'); // remove previous handler(s)
 
@@ -482,7 +486,7 @@
     }
     function props_or_browser(path, type, options, callback) {
         if(path) {
-            show_props(path, type, options, callback);
+            show_props(path, type, options, callback, false);
         }
         else {
             wheel_browser(path, type, options, callback);

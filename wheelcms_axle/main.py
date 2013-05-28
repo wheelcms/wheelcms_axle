@@ -480,7 +480,9 @@ class MainHandler(WheelRESTHandler):
         return self.template("wheelcms_axle/popup.html", original="/data/powerful-editing")
 
     @applyrequest
-    def handle_panel_selection_details(self, path, type, klass="", title="", target="", download=False):
+    def handle_panel_selection_details(self, path, type,
+                                       klass="", title="", target="", download=False,
+                                       newselection=False):
         """
             type is link of image (later misschien embed, object, whatever)
             link:
@@ -495,15 +497,18 @@ class MainHandler(WheelRESTHandler):
             Dit is redelijk generiek, staat los van feitelijke content/spoke. Hooguit een aparte
             manier van presenteren van content
         """
-        # import pdb; pdb.set_trace()
         path = strip_action(path)
 
         node = Node.get(path)
         instance = None
         spoke = None
+        default_title = title
+
         if node:
             instance = node.content()
             spoke = instance.spoke()
+            if newselection:
+                default_title = instance.title
 
         SIZE_CHOICES = (
             ("img_content_original", "Original"),
@@ -531,7 +536,7 @@ class MainHandler(WheelRESTHandler):
         ## framename
 
         ## translate klass back to size/float/align
-        forminitial = dict(title=title, target=target, download=download)
+        forminitial = dict(title=default_title, target=target, download=download)
 
         klass_parts = klass.split()
 
