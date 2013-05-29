@@ -10,6 +10,7 @@ class Type1(Content):
 
 class Type1Type(Spoke):
     model = Type1
+    discussable = True
 
     @action
     def hello(self, handler, request, action):
@@ -21,6 +22,7 @@ class Type2(Content):
 
 class Type2Type(Spoke):
     model = Type2
+    discussable = False
 
 
 class TestFile(FileContent):
