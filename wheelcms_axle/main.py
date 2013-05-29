@@ -457,11 +457,14 @@ class MainHandler(WheelRESTHandler):
                 if content:
                     stracks.content(content.id,
                                 name=content.title
-                               ).log("? (%s) removed by ?" % content.spoke().title,
+                               ).log("? (%s) removed by ?" %
+                                     content.spoke().title,
                                      stracks.user(self.user()),
                                      action=stracks.delete())
                 else:
-                    stracks.user(self.user()).log("Unattached node removed: " + n.path, action=stracks.delete());
+                    stracks.user(self.user()).log("Unattached node removed: "
+                                                  + n.path,
+                                                  action=stracks.delete());
 
                 try:
                     n.parent().remove(n.slug())
