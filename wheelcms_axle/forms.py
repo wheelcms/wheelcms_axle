@@ -237,6 +237,7 @@ def FileFormfactory(type, light=False):
             """ make the title field not required """
             super(Form, self).__init__(enlarge=False, *args, **kw)
             self.fields['title'].required = False
+            self.fields['storage'].label = "Upload"
             if light:
                 self.fields['slug'].widget = forms.HiddenInput()
                 self.fields['template'].widget = forms.HiddenInput()
