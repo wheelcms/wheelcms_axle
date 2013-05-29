@@ -1,0 +1,11 @@
+{# base template for content #}
+{% extends "wheelcms_axle/base.html" %}
+
+{% block base_main %}
+  {% block content_main %}
+    {# generic content goes here #}
+  {% endblock %}
+  {% block content_comments %}
+   {% include "wheelcms_axle/comments.html" %}
+  {% endblock %}
+{% endblock %}
