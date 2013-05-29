@@ -58,6 +58,9 @@ class ContentBase(models.Model):
 
     tags = TaggableManager(blank=True)
 
+    ## explicit comment enable/disable
+    discussable = models.NullBooleanField(blank=True, null=True, default=None)
+
     class Meta:
         abstract = True
 

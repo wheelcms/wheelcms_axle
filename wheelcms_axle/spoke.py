@@ -90,6 +90,9 @@ class Spoke(object):
     ## explicit children - explicit children that can be added
     explicit_children = None
 
+    ## is content discussable? Iow, is commenting allowed?
+    discussable = False
+
     serializer = WheelSerializer
 
     document_fields = ('title', 'description')
@@ -241,6 +244,14 @@ class Spoke(object):
     def context(self, handler, request, node):
         """ hook to add additional data to the context """
         return {}
+
+    def can_discuss(self):
+        """ determine if content can be discussed. Either by explicit
+            database setting or by content default. """
+        explicit = self.instance.discussable
+        if explicit is None:
+            return self.discussable
+        return explicit
 
 class FileSpoke(Spoke):
     @classproperty

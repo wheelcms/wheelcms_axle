@@ -42,7 +42,7 @@ class BaseForm(forms.ModelForm):
 
     initial_advanced_fields =  ["created", "modified", "publication",
                                 "expire", "state", "template", "navigation",
-                                "important"]
+                                "important", "discussable"]
 
     def content_fields(self):
         return set(self.fields) - set(self.advanced_fields)
@@ -50,7 +50,19 @@ class BaseForm(forms.ModelForm):
     slug = forms.Field(required=False, help_text="A slug determines the url "
           "of the content. You can leave this empty to auto-generate a slug.")
 
-    tags = forms.Field(required=False, help_text="Zero or more tags. Create a tag by ending with a comma or enter", widget=TagWidget())
+    tags = forms.Field(required=False,
+                       help_text="Zero or more tags. "
+                       "Create a tag by ending with a comma or enter",
+                       widget=TagWidget())
+
+    discussable = forms.ChoiceField(required=False,
+                                    help_text="Enable/disable comments "
+                                              "or let the CMS decide",
+                                    choices=(
+                                      (None, 'System default'),
+                                      (False, 'Disable'),
+                                      (True, 'Enable')),
+                                      widget=forms.widgets.RadioSelect)
 
     # just an experiment, to have a required field in the advanced section
     # important = forms.Field(required=True)

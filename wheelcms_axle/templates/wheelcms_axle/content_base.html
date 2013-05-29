@@ -6,6 +6,8 @@
     {# generic content goes here #}
   {% endblock %}
   {% block content_comments %}
+   {% if spoke.can_discuss %}
    {% include "wheelcms_axle/comments.html" %}
+   {% endif %}
   {% endblock %}
 {% endblock %}
