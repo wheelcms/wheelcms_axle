@@ -93,18 +93,13 @@ class BaseForm(forms.ModelForm):
         ## make the description textarea a bit smaller
         if 'description' in self.fields:
             self.fields['description'].widget.attrs['rows'] = 4
-        
+
         if 'tags' in self.fields:
             self.fields['tags'].widget.attrs['class'] = "tagManager"
             self.fields['tags'].required = False
 
         for e in type_registry.extenders(self.Meta.model):
             e.extend_form(self, *args, **kwargs)
-
-        #from wheelcms_categories.models import fix_form
-        # 
-        #fix_form(self, *args, **kwargs)
-
 
     def enlarge_field(self, field):
         field.widget.attrs['class'] = 'input-xxlarge'
