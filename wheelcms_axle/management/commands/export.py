@@ -32,7 +32,8 @@ class Command(BaseCommand):
         base = path # "" # /sub5_2/sub4_2/sub3_2"
         root = Node.get(base)
         xml, files = Exporter().run(root, base)
-        open(os.path.join(writeto, "content.xml"), "w").write(prettify(xml).encode("utf8"))
+        open(os.path.join(writeto, "content.xml"),
+             "w").write(prettify(xml).encode("utf8"))
         for file in set(files):
             dirname = os.path.dirname(file)
             if dirname:
