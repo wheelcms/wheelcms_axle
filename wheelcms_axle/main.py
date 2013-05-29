@@ -477,25 +477,15 @@ class MainHandler(WheelRESTHandler):
 
     def handle_popup(self):
         """ popup experiments - #524 """
-        return self.template("wheelcms_axle/popup.html", original="/data/powerful-editing")
+        return self.template("wheelcms_axle/popup.html",
+                             original="/data/powerful-editing")
 
     @applyrequest
-    def handle_panel_selection_details(self, path, type,
-                                       klass="", title="", target="", download=False,
+    def handle_panel_selection_details(self, path, type, klass="", title="",
+                                       target="", download=False,
                                        newselection=False):
         """
-            type is link of image (later misschien embed, object, whatever)
-            link:
-             - title
-             - target
-             - bepaalde props
-            image:
-             - class (size, float)
-             - title/alt
-             ..?
-
-            Dit is redelijk generiek, staat los van feitelijke content/spoke. Hooguit een aparte
-            manier van presenteren van content
+            Setup the panel to configure a link/image insert
         """
         path = strip_action(path)
 
@@ -553,10 +543,11 @@ class MainHandler(WheelRESTHandler):
             if type == "link":
                 target = forms.ChoiceField(choices=TARGET_CHOICES,
                                            initial="_self",
-                                           help_text="Where should the link open in when clicked?")
+                         help_text="Where should the link open in when clicked?")
                 if spoke and isinstance(spoke, FileSpoke):
-                    download = forms.BooleanField(help_text="If checked, link will point to "
-                                                            "download immediately in stead of File content")
+                    download = forms.BooleanField(
+                                help_text="If checked, link will point to "
+                                "download immediately in stead of File content")
             if type == "image":
                 size = forms.ChoiceField(choices=SIZE_CHOICES)
                 float = forms.ChoiceField(choices=FLOAT_CHOICES)
