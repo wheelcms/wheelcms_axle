@@ -35,6 +35,8 @@ class TagWidget(forms.TextInput):
         return super(TagWidget, self).render(name, value, attrs)
 
 class BaseForm(forms.ModelForm):
+    light = False  ## by default it's not a light form
+
     class Meta:
         exclude = ["node", "meta_type", "owner", "classes"]
 
@@ -91,6 +93,7 @@ class BaseForm(forms.ModelForm):
         ## make the description textarea a bit smaller
         if 'description' in self.fields:
             self.fields['description'].widget.attrs['rows'] = 4
+        
         if 'tags' in self.fields:
             self.fields['tags'].widget.attrs['class'] = "tagManager"
             self.fields['tags'].required = False
@@ -220,11 +223,14 @@ def FileFormfactory(type, light=False):
         unspecified, take the filename from the uploaded file in stead.
     """
     base = formfactory(type)
+    islight = light  ## redefine as local for Form's closure
 
     class Form(base):
+        light = islight
+
         class Meta(base.Meta):
             if light:
-                fields = [ 'title', 'state', 'storage' ]
+                fields = ('title', 'state', 'storage')
 
         content_type = forms.ChoiceField(
                         choices=(('', 'detect type'),) +
@@ -241,6 +247,9 @@ def FileFormfactory(type, light=False):
             if light:
                 self.fields['slug'].widget = forms.HiddenInput()
                 self.fields['template'].widget = forms.HiddenInput()
+
+            if 'tags' in self.fields:
+                del self.fields['tags']  ## not tagselection
 
         def clean_title(self):
             """ generate title based on filename if necessary """
