@@ -62,30 +62,33 @@
                 previewMaxHeight: 100,
                 previewCrop: true,
             }).on('fileuploadadd', function(e, data) {
-                    $("#uploadModal .modal_select").prop('disabled', false);
-                    upload = data;
-
+                $("#uploadModal .modal_select").prop('disabled', false);
+                upload = data;
             }).bind('fileuploadprocessalways', function(e, data) {
-               //  fileuploadprocessalways
-               var file = data.files[data.index];
+                var file = data.files[data.index];
 
-               $("#filepreview").html(file.preview).append($('<h4/>').text(file.name));
-               $("#filelabel").text("Replace file");
+                // ordinary files don't have a preview
+                if(file.preview) {
+                    $("#filepreview").html(file.preview).append($('<h4/>').text(file.name));
+                }
+                else {
+                    $("#filepreview").append($('<h4/>').text(file.name));
+                }
+                $("#filelabel").text("Replace file");
             }).on('fileuploaddone', function (e, data) {
-                    if(data.result.status == "ok") {
-                      $("#uploadModal").modal("hide");
+                if(data.result.status == "ok") {
+                  $("#uploadModal").modal("hide");
 
-                      var path = data.result.path;
-                      if(callback) {
-                        callback(path);
-                      }
-                    }
-                    else {
-                        // if anything went wrong, it must have been with the uploaded file
-                        $(".upload-alert").text(data.result.errors.storage);
-                        $(".upload-alert").addClass("alert");
-                    }
-                // fail, .. http://api.jquery.com/Types/#Promise
+                  var path = data.result.path;
+                  if(callback) {
+                    callback(path);
+                  }
+                }
+                else {
+                    // if anything went wrong, it must have been with the uploaded file
+                    $(".upload-alert").text(data.result.errors.storage);
+                    $(".upload-alert").addClass("alert");
+                }
             });
 
             $("#uploadModal .modal_select").unbind('click');
