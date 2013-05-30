@@ -51,6 +51,7 @@ from django.db.models import FileField
 
 from .content import type_registry
 from .node import Node
+from .registries.configuration import configuration_registry
 
 
 class SerializationException(Exception):
@@ -218,7 +219,6 @@ class Exporter(object):
 
     def run(self, node, base="", unattached=True):
         """ export node and all content beneath it.
-            
             If unattached is True,
             also export unattached content.
 
@@ -232,14 +232,29 @@ class Exporter(object):
         root.set('base', base)
         files = self.export_node(root, node)
 
-        configxml = SubElement(root, "config")
         from .models import Configuration
-        config = Configuration.config()
 
-        for field in config._meta.concrete_model._meta.fields:
-            fieldxml = SubElement(configxml, "item", dict(name=field.name))
+        defaultconfig = Configuration.config()
 
-            fieldxml.text = field.value_to_string(config)
+        for (related, (label, model, formclass)) in \
+            configuration_registry.iteritems():
+
+            configxml = SubElement(root, "config")
+            configxml.attrib["set"] = related
+
+
+            if related:
+                try:
+                    config = getattr(defaultconfig, related).get()
+                except model.DoesNotExist:
+                    continue
+            else:
+                config = defaultconfig
+
+            for field in config._meta.concrete_model._meta.fields:
+                fieldxml = SubElement(configxml, "item", dict(name=field.name))
+
+                fieldxml.text = field.value_to_string(config)
 
         return root, files
 
@@ -268,7 +283,7 @@ class Importer(object):
                 sub_delays = self.import_node(n, child)
                 delays.extend(sub_delays)
 
-                
+
         return delays
 
     def run(self, tree, base=""):
@@ -284,15 +299,29 @@ class Importer(object):
         for delay in delays:
             delay()
 
-        # import pdb; pdb.set_trace()
-        
-        if tree.find("config") is not None:
-            from .models import Configuration
-            config = Configuration.config()
-            configxml = tree.find("config")
-            
+        # import ipdb; ipdb.set_trace()
+
+        from .models import Configuration
+        for configxml in tree.findall("config"):
+            defaultconfig = Configuration.config()
+            related = configxml.attrib.get('set', '')
+
+            if related:
+                c = configuration_registry.get(related)
+                if not c:
+                    continue
+                (label, model, formclass) = c
+                try:
+                    config = getattr(defaultconfig, related).get()
+                except model.DoesNotExist:
+                    config = model(main=defaultconfig)
+            else:
+                config = defaultconfig
+
             for field in configxml.findall("item"):
                 field_name = field.attrib.get("name")
+                if field_name in ("id", "main"):
+                    continue  ## skip internal / key fields
                 field_value = field.text or ""
                 setattr(config, field_name, field_value)
 

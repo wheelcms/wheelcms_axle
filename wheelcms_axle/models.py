@@ -65,6 +65,11 @@ class Configuration(models.Model):
         """ resolve self.theme into a Theme instance """
         return theme_registry.find(self.theme)
 
+from wheelcms_axle.registries.configuration import configuration_registry
+from .configuration import ConfigurationForm
+
+configuration_registry.register("", "Default", Configuration, ConfigurationForm)
+
 #class ConfigItem(models.Model):
 #    name = models.CharField(max_length=256, blank=False, null=False)
 #    value = models.TextField(blank=True, null=False, default="")

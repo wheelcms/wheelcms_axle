@@ -10,6 +10,7 @@ from wheelcms_axle.models import Configuration
 from wheelcms_axle.base import WheelHandlerMixin
 
 from .themes import theme_registry
+from .registries.configuration import configuration_registry
 
 class ConfigurationForm(forms.ModelForm):
     class Meta:
@@ -17,8 +18,6 @@ class ConfigurationForm(forms.ModelForm):
 
     theme = forms.ChoiceField(choices=((x.id, x.name) for x in theme_registry))
 
-from wheelcms_axle.registries.configuration import configuration_registry
-configuration_registry.register("", "Default", Configuration, ConfigurationForm)
 
 class ConfigurationHandler(FormHandler, WheelHandlerMixin):
     def construct_tabs(self, config):
