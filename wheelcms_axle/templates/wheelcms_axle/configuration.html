@@ -4,6 +4,30 @@
 <title>Site configuration</title>
 {% endblock %}
 
+{% block base_javascript %}
+
+{{block.super }}
+
+<script type="text/javascript">
+$(document).ready(function() {
+  var request_leave = false;
+  $(":input").change(function() {
+        request_leave = true;
+  });
+  $(".canleave").click(function() {
+        request_leave = false;
+  });
+  $(window).on('beforeunload',
+      function() {
+          if(request_leave) {
+            return 'You have unsafed changes. Leaving this page will lose those changes.'
+          }
+      } );
+});
+</script>
+
+{% endblock %}
+
 {% block breadcrumb %}
 <div class="row">
   <div class="span12">
@@ -20,17 +44,32 @@
 </div>
 {% endblock %}
 
-{% block base_main %}
+{% block main %}
 <h2>Site settings</h1>
 
-{# tabs with user management, ... ? #}
-<form method="post" action="." class="form-horizontal" 
-  {% if form.is_multipart %}enctype="multipart/form-data"{%endif%}>
-  {% csrf_token %}
-  {% include "two.bootstrap/bootstrap-form.html" %}
-  <div class="form-actions">
-    <input class="btn primary" type="submit" value="Save">
+<div class="tabbable tabs-left">
+  <ul class="nav nav-tabs">
+    {% for t in tabs %}
+    <li {% if t.selected %}class="active"{% endif %}>
+       <a href="?config={{t.related}}">{{t.label}}</a></li>
+    {% endfor %}
+  </ul>
+  <div class="tab-content">
+    {% for t in tabs %}
+    <div class="tab-pane {% if t.selected %}active{% endif %}">
+      {% if t.form %}
+      <form method="post" action="." class="form-horizontal"
+        {% if form.is_multipart %}enctype="multipart/form-data"{%endif%}>
+        <input type="hidden" name="config" value="{{t.related}}">
+        {% csrf_token %}
+        {% include "two.bootstrap/bootstrap-form.html" with form=t.form %}
+        <div class="form-actions">
+          <input class="btn primary canleave" type="submit" value="Save">
+        </div>
+      </form>
+      {% endif %}
+    </div>
+    {% endfor %}
   </div>
-</form>
-
+</ul>
 {% endblock %}

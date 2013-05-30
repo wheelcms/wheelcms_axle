@@ -65,6 +65,16 @@ class Configuration(models.Model):
         """ resolve self.theme into a Theme instance """
         return theme_registry.find(self.theme)
 
+#class ConfigItem(models.Model):
+#    name = models.CharField(max_length=256, blank=False, null=False)
+#    value = models.TextField(blank=True, null=False, default="")
+#    type = models.CharField(max_length=256, blank=False, null=False,
+#                            default="string")
+#    ns = models.CharField(max_length=256, blank=True, null=False,
+#                          default="default")
+#    configuration = models.ForeignKey(Configuration, related_name="items",
+#                           blank=False, null=False)
+
 ## signals for login/logout logging
 
 from django.db.models.signals import post_save
