@@ -38,6 +38,9 @@ $(document).ready(function() {
         </li>
         <li>
           Settings
+          {% for t in tabs %}
+            {% if t.selected %} &rsaquo;&rsaquo; {{t.label}} {% endif %}
+          {% endfor %}
         </li>
     </ul>
   </div>
