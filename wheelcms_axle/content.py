@@ -98,6 +98,9 @@ class ContentBase(models.Model):
         ## include app_label ? #486
         return "%s.%s" % (cls._meta.app_label.lower(), cls._meta.object_name.lower())
 
+    def get_absolute_url(self):
+        return self.node.path or '/'
+
     def __unicode__(self):
         try:
             return u"%s connected to node %s: %s" % \
