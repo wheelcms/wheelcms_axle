@@ -16,7 +16,7 @@ class Theme(object):
 
     def css(self):
         return "\n".join('<link rel="stylesheet" href="%s"' \
-               'media="screen, projection, print"/>' % \
+               ' media="screen, projection, print"/>' % \
                r for r in self.css_resources())
 
     def js(self):
