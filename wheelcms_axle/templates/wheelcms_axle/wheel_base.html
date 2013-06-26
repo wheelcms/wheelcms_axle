@@ -1,5 +1,6 @@
 {% extends "two.bootstrap/base.html" %}
 {% load topnav %}
+{% load fragments %}
 
 {% block htmltitle %}
 <title>{{page_title}}</title>
@@ -30,6 +31,8 @@
 {% block meta_head %}
     <!-- {{settings.BUILD}} {{settings.BRANCH}} {{settings.VERSION }} -->
     <meta name="generator" content="WheelCMS {{settings.VERSION}}">
+
+   {% fragments "head" %}
 {% endblock %}
 {% block extra_head %}
 
@@ -132,3 +135,7 @@
 <div class="pull-right">Powered by <a href="http://wheelcms.scritch.org/">WheelCMS</div></div>
 {% endblock %}
 
+
+{% block fragments %}
+
+{% endblock %}
