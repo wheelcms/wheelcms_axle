@@ -21,6 +21,51 @@ class CantRenameRoot(NodeException):
 class NodeNotFound(NodeException):
     """ raised if a node is not found """
 
+from django.db.models.query import QuerySet
+from django.utils import timezone
+from django.db.models import Q
+
+class NodeQuerySet(QuerySet):
+    def children(self, node):
+        """ only return direct children """
+        return self.filter(
+                  path__regex="^%s/[%s]+$" % (node.path, Node.ALLOWED_CHARS),
+                  )
+
+    def attached(self):
+        return self.filter(contentbase__isnull=False)
+
+    def public(self):
+        now = timezone.now()
+        return (self.attached().filter(
+                Q(contentbase__publication__isnull=True)|
+                Q(contentbase__publication__lte=now),
+                Q(contentbase__expire__isnull=True)|
+                Q(contentbase__expire__gte=now),
+                contentbase__state='published'))
+
+
+class NodeManager(models.Manager):
+    def get_query_set(self):
+        """ Return the NodeQuerySet that supports additional filters """
+        return NodeQuerySet(self.model)
+
+    def attached(self):
+        return self.all().attached()
+
+    def public(self):
+        return self.all().public()
+
+    def children(self, node):
+        return self.all().children(node)
+
+    def visible(self, user):
+        """
+            XXX TODO: when is content visible? May be even more
+            complex when roles are supported
+        """
+
+
 class NodeBase(models.Model):
     ROOT_PATH = ""
     ALLOWED_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789_-"
@@ -32,6 +77,7 @@ class NodeBase(models.Model):
     path = models.CharField(max_length=1024, blank=False, unique=True)
     position = models.IntegerField(default=0)
 
+    objects = NodeManager()
 
     class Meta:
         abstract = True
@@ -189,10 +235,7 @@ class NodeBase(models.Model):
 
     def childrenq(self, order="position", **kw):
         """ return the raw query for children """
-        return self.__class__.objects.filter(
-                  path__regex="^%s/[%s]+$" % (self.path, self.ALLOWED_CHARS),
-                  **kw
-                  ).order_by(order)
+        return self.__class__.objects.children(self).order_by(order).filter(**kw)
 
     def children(self, order="position"):
         return self.childrenq(order=order)
