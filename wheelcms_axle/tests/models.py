@@ -1,5 +1,5 @@
 from wheelcms_axle.content import Content, FileContent, ImageContent
-from wheelcms_axle.spoke import Spoke, action
+from wheelcms_axle.spoke import Spoke, action, FileSpoke
 from wheelcms_axle.content import type_registry
 
 from django.db import models
@@ -29,7 +29,7 @@ class TestFile(FileContent):
     storage = models.FileField(upload_to="files", blank=False)
 
 
-class TestFileType(Spoke):
+class TestFileType(FileSpoke):
     model = TestFile
     children = ()
 
@@ -37,7 +37,7 @@ class OtherTestFile(FileContent):
     storage = models.FileField(upload_to="files", blank=False)
 
 
-class OtherTestFileType(Spoke):
+class OtherTestFileType(FileSpoke):
     model = OtherTestFile
     children = ()
 
@@ -46,7 +46,7 @@ class TestImage(ImageContent):
     storage = models.ImageField(upload_to="images", blank=False)
 
 
-class TestImageType(Spoke):
+class TestImageType(FileSpoke):
     model = TestImage
     children = ()
 
@@ -54,7 +54,7 @@ class OtherTestImage(ImageContent):
     storage = models.ImageField(upload_to="images", blank=False)
 
 
-class OtherTestImageType(Spoke):
+class OtherTestImageType(FileSpoke):
     model = OtherTestImage
     children = ()
 

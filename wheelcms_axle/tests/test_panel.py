@@ -5,9 +5,9 @@
 """
 from ..models import Node
 
-from .models import Type1
-from wheelcms_axle.tests.models import TestImage
-from wheelcms_axle.tests.models import TestFile
+from .models import Type1, Type1Type
+from wheelcms_axle.tests.models import TestImage, TestImageType
+from wheelcms_axle.tests.models import TestFile, TestFileType
 
 from .test_handler import MainHandlerTestable, superuser_request
 
@@ -16,10 +16,15 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 storage = SimpleUploadedFile("foo.png", 
                              'GIF87a\x01\x00\x01\x00\x80\x01\x00\x00\x00\x00ccc,\x00'
                              '\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;')
-class TestPanel(object):
+
+from .test_spoke import BaseLocalRegistry
+
+class TestPanel(BaseLocalRegistry):
     """
         Test different panel invocation scenario's
     """
+    types = (Type1Type, TestImageType, TestFileType)
+
     def test_unattached_root_link(self, client):
         """
             A single root with no content attached. Should allow
@@ -32,7 +37,6 @@ class TestPanel(object):
         assert len(panels['panels']) == 2  ## bookmarks + 1 panel
         assert panels['path'] == '/'
 
-        # import pytest; pytest.set_trace()
         crumbs = panels['crumbs']['context']['crumbs']
         assert len(crumbs) == 1
         assert crumbs[0]['path'] == '/'
