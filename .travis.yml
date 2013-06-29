@@ -1,0 +1,11 @@
+language: python
+python:
+  - "2.7"
+  - "2.6"
+# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
+install:
+    - pip install zc.buildout
+    - buildout -c local.cfg
+# command to run tests, e.g. python setup.py test
+script:
+    - django ptest --settings=settings.test src/
