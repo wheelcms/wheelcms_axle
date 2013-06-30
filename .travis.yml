@@ -8,4 +8,4 @@ install:
     - buildout -c local.cfg
 # command to run tests, e.g. python setup.py test
 script:
-    - django ptest --settings=settings.test src/
+    - python manage.py ptest --settings=settings.test src/
