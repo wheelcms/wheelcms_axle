@@ -27,5 +27,6 @@ if __name__ == '__main__':
         AUTH_PROFILE_MODULE="wheelcms_axle.WheelProfile",
         CLEANUP_MEDIA=True,
         TEST_MEDIA_ROOT="/tmp/wheelcms_axle_test",
-        USE_TZ=True
+        USE_TZ=True,
+        STATIC_URL='/',
     )
