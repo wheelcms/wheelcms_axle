@@ -1,0 +1,10 @@
+git+git://github.com/iivvoo/twotest
+south
+django-haystack==1.2.7
+django-taggit
+django-tinymce
+django-userena
+Pillow
+git+git://github.com/iivvoo/two.ol
+git+git://github.com/iivvoo/two.bootstrap@bootstrap2.2
+git+git://github.com/Stracksapp/stracks_api
