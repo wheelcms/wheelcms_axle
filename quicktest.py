@@ -2,7 +2,8 @@ from twotest.quicktest import QuickDjangoTest
 
 if __name__ == '__main__':
     QuickDjangoTest(
-        (
+        apps=("wheelcms_axle",),
+        installed_apps=(
             'django.contrib.sites',
             'django.contrib.messages',
             'django.contrib.staticfiles',
