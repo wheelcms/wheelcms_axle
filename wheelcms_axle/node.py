@@ -32,6 +32,12 @@ class NodeQuerySet(QuerySet):
                   path__regex="^%s/[%s]+$" % (node.path, Node.ALLOWED_CHARS),
                   )
 
+    def offspring(self, node):
+        """ children, grandchildren, etc """
+        return self.filter(
+                  path__regex="^%s/[%s]+" % (node.path, Node.ALLOWED_CHARS),
+                  )
+
     def attached(self):
         return self.filter(contentbase__isnull=False)
 
@@ -58,6 +64,9 @@ class NodeManager(models.Manager):
 
     def children(self, node):
         return self.all().children(node)
+
+    def offspring(self, node):
+        return self.all().offspring(node)
 
     def visible(self, user):
         """

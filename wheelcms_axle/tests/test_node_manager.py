@@ -20,7 +20,6 @@ class TestNodeManager(BaseLocalRegistry):
         i3 = root.add("unattached")
         _ = Type1(node=i3.add("attached-on-unattached")).save()
 
-
     def test_all_empty(self, client):
         """ no nodes at all """
         all = Node.objects.all()
@@ -97,3 +96,15 @@ class TestNodeManager(BaseLocalRegistry):
         c = Node.objects.all().children(a)
         assert c.count() == 2
         assert set(n.path for n in c) == set(("/a/a1", "/a/a2"))
+
+    def test_offspring(self, client):
+        """ children and their offspring """
+        root = Node.root()
+        a = root.add("a")
+        a1 = a.add("a1")
+        a2 = a.add("a2")
+        a11 = a1.add("a11")
+
+        c = Node.objects.all().offspring(a)
+        assert c.count() == 3
+        assert set(n.path for n in c) == set(("/a/a1", "/a/a2", "/a/a1/a11"))
