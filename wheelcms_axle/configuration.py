@@ -16,7 +16,11 @@ class ConfigurationForm(forms.ModelForm):
     class Meta:
         model = Configuration
 
-    theme = forms.ChoiceField(choices=((x.id, x.name) for x in theme_registry))
+    def __init__(self, *args, **kw):
+        super(ConfigurationForm, self).__init__(*args, **kw)
+        self.fields['theme'].choices = ((x.id, x.name) for x in theme_registry)
+
+    theme = forms.ChoiceField()
 
 
 class ConfigurationHandler(FormHandler, WheelHandlerMixin):
