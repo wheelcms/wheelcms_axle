@@ -117,7 +117,23 @@ class TestNode(object):
         assert r1.path == "/rr1"
         translation.activate('fr')
         assert r1.path == "/rr1"
-        ## ook weer recursief
+
+    def test_rename_default_recursive(self, client):
+        """ rename on a node with no explicit language specified,
+            which should rename all nodes, if possible """
+        translation.activate('en')
+        root = Node.root()
+        r1 = root.add("r1")
+        r2 = r1.add("sub")
+
+        r1.rename("rr1")
+
+        assert r2.paths.count() == 3
+        assert r2.path == "/rr1/sub"
+        translation.activate('nl')
+        assert r2.path == "/rr1/sub"
+        translation.activate('fr')
+        assert r2.path == "/rr1/sub"
 
     def test_node_child(self, client):
         """ test the node.child method """
