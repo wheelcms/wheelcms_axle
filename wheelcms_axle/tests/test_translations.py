@@ -101,7 +101,53 @@ class TestNode(object):
         nl_child1 = Node.get("/kind/grandchild1")
         assert nl_child1 == child1
         assert nl_child1.path == "/kind/grandchild1"
-    ## test rename
+
+    def test_rename_default(self, client):
+        """ rename on a node with no explicit language specified,
+            which should rename all nodes, if possible """
+        translation.activate('en')
+        root = Node.root()
+        r1 = root.add("r1")
+
+        r1.rename("rr1")
+
+        assert r1.paths.count() == 3
+        assert r1.path == "/rr1"
+        translation.activate('nl')
+        assert r1.path == "/rr1"
+        translation.activate('fr')
+        assert r1.path == "/rr1"
+        ## ook weer recursief
+
+    def test_node_child(self, client):
+        """ test the node.child method """
+        translation.activate('en')
+        root = Node.root()
+        child = root.add("child")
+
+        assert root.child("child") == child
+
+    def test_node_child_langswitch(self, client):
+        """ test the node.child method """
+        translation.activate('en')
+        root = Node.root()
+        child = root.add("child")
+
+        translation.activate('fr')
+        assert root.child("child") == child
+
+    def test_children(self, client):
+        """ find the children of a node """
+        translation.activate('en')
+        root = Node.root()
+        r1 = root.add("r1")
+        r2 = root.add("r2")
+        r3 = root.add("r3")
+
+        r2.rename("rr2", language="en")
+
+        assert list(root.children()) == [r1, r2, r3]
+
 
 class TestContent(object):
     pass

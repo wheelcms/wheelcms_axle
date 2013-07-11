@@ -319,8 +319,6 @@ class NodeBase(models.Model):
         if self.isroot():
             raise CantRenameRoot()
 
-        language = language or get_language()
-
         np = NodePath.get_for_node(self, language=language)
         path = np.path
 
@@ -333,9 +331,20 @@ class NodeBase(models.Model):
             remainder = childpath.path[len(self.path):]
             childpath.path = newpath + remainder
             childpath.save()
-        np = NodePath.get_for_node(self, language=language)
-        np.path = newpath
-        np.save()
+
+        if language is None:
+            for l in settings.LANGUAGES:
+                np = NodePath.get_for_node(self, language=l)
+                np.path = newpath
+                np.save()
+        else:
+            np.path = newpath
+            np.save()
+        ## Must be cleared since not all languages are equal
+        ## else self.save() will create new path entries based on the
+        ## changed self._path, or restore the original path
+        self._path = None
+
         self.save()
 
     def __unicode__(self):
