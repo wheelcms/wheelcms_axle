@@ -29,24 +29,25 @@ from django.db.models import Q
 
 def get_language():
     language = translation.get_language()
-    if language not in getattr(settings, 'LANGUAGES', ()) and getattr(settings, 'FALLBACK', None):
+    if language not in getattr(settings, 'CONTENT_LANGUAGES', ()) and getattr(settings, 'FALLBACK', None):
         language = settings.FALLBACK
     return language
 
 class NodeQuerySet(QuerySet):
-    def children(self, node):
+    def children(self, node, language=None):
         """ only return direct children """
-        language = get_language()
+        language = language or get_language()
         return self.filter(
                   paths__path__regex="^%s/[%s]+$" %
                       (node.path, Node.ALLOWED_CHARS),
                   paths__language=language
                   )
 
-    def offspring(self, node):
+    def offspring(self, node, language=None):
         """ children, grandchildren, etc """
+        language = language or get_language()
         return self.filter(
-                  path__regex="^%s/[%s]+" % (node.path, Node.ALLOWED_CHARS),
+                  paths__path__regex="^%s/[%s]+" % (node.path, Node.ALLOWED_CHARS), paths__language=language
                   )
 
     def attached(self):
@@ -104,8 +105,18 @@ class NodeBase(models.Model):
         abstract = True
 
     def __init__(self, *args, **kw):
+        self._slug = kw.get('slug', None)
+        self._parent = kw.get('parent', None)
+        try:
+            del kw['slug']
+        except KeyError:
+            pass
+        try:
+            del kw['parent']
+        except KeyError:
+            pass
+
         super(NodeBase, self).__init__(*args, **kw)
-        self._path = kw.get('path', None)
 
     def content_(self):
         from .content import Content
@@ -115,8 +126,8 @@ class NodeBase(models.Model):
             return None
 
     @classmethod
-    def get_nodepath(self, path):
-        language = get_language()
+    def get_nodepath(self, path, language=None):
+        language = language or get_language()
         try:
             np = NodePath.objects.get(path=path, language=language)
             return np.node
@@ -125,15 +136,15 @@ class NodeBase(models.Model):
 
     def get_path(self, language=None):
         return NodePath.get_for_node(self, language).path
-        
+
     @property
     def path(self):
         return self.get_path()
 
     @classmethod
-    def get(cls, path):
+    def get(cls, path, language=None):
         """ retrieve node directly by path. Returns None if not found """
-        node = cls.get_nodepath(path)
+        node = cls.get_nodepath(path, language)
         if node:
             return node
         elif path == cls.ROOT_PATH:
@@ -176,12 +187,18 @@ class NodeBase(models.Model):
         """
             Create path entries for all supported languages
         """
-        if self._path is None:
+        if self._slug is None:
             return
 
-        for l in settings.LANGUAGES:
+        for l in settings.CONTENT_LANGUAGES:
+            if not self._parent:
+                ## must be root, could just as well assign ''
+                childpath = self._slug
+            else:
+                parentpath = self._parent.get_path(language=l)
+                childpath = parentpath + '/' + self._slug
             NodePath.objects.get_or_create(node=self,
-                                           path=self._path,
+                                           path=childpath,
                                            language=l)
     @classmethod
     def root(cls):
@@ -191,7 +208,7 @@ class NodeBase(models.Model):
 
         # create the rootnode (no matter if the language is supported)
         # return it
-        root = Node(path='')
+        root = Node(slug='')
         root.save()
         #root.save()
         # root.create_paths()
@@ -263,8 +280,16 @@ class NodeBase(models.Model):
 
         position = self.find_position(position, after, before)
 
-        child = self.__class__(path=self.path + "/" + path,
+        ##
+        ## Hier moeten selectief de parent paden gekopieerd worden!
+
+        child = self.__class__(slug=path, parent=self,
                                position=position)
+        for l in settings.CONTENT_LANGUAGES:
+            p = self.paths.get(language=l).path + '/' + path
+            if NodePath.objects.filter(path=p).exists():
+                raise DuplicatePathException(path)
+                
         try:
             child.save()
         except IntegrityError:
@@ -284,17 +309,18 @@ class NodeBase(models.Model):
         child = self.child(childslug)
         if child is None:
             raise NodeNotFound(self.path + '/' + childslug)
-        child.delete()
-        recursive = Node.objects.filter(path__startswith=self.path + '/' +
-                                                         childslug + '/')
+        #recursive = Node.objects.filter(path__startswith=self.path + '/' +
+        #                                                 childslug + '/')
+        recursive = self.__class__.objects.offspring(child)
         recursive.delete()
+        child.delete()
 
     def parent(self):
         """ return the parent for this node """
         if self.isroot():
             return self
         parentpath, mypath = self.path.rsplit("/", 1)
-        parent = self.__class__.objects.get(path=parentpath)
+        parent = self.__class__.get(path=parentpath)
         return parent
 
     def childrenq(self, order="position", **kw):
@@ -319,37 +345,40 @@ class NodeBase(models.Model):
         if self.isroot():
             raise CantRenameRoot()
 
-        np = NodePath.get_for_node(self, language=language)
-        path = np.path
-
-        newpath = path.rsplit("/", 1)[0] + "/" + slug
-        if NodePath.objects.filter(path=newpath, language=language).count():
-            raise DuplicatePathException(newpath)
-
-        ## do something transactionish?
-        for childpath in NodePath.objects.filter(path__startswith=self.path + '/', language=language):
-            remainder = childpath.path[len(self.path):]
-            childpath.path = newpath + remainder
-            childpath.save()
-
         if language is None:
-            for l in settings.LANGUAGES:
-                np = NodePath.get_for_node(self, language=l)
-                np.path = newpath
-                np.save()
+            languages = settings.CONTENT_LANGUAGES
         else:
+            languages = [language]
+
+        for language in languages:
+            np = NodePath.get_for_node(self, language=language)
+            path = np.path
+
+            newpath = path.rsplit("/", 1)[0] + "/" + slug
+            if NodePath.objects.filter(path=newpath, language=language).count():
+                raise DuplicatePathException(newpath)
+
+            ## do something transactionish?
+            for childpath in NodePath.objects.filter(path__startswith=path + '/', language=language):
+                remainder = childpath.path[len(path):]
+                childpath.path = newpath + remainder
+                childpath.save()
+
             np.path = newpath
             np.save()
         ## Must be cleared since not all languages are equal
         ## else self.save() will create new path entries based on the
         ## changed self._path, or restore the original path
-        self._path = None
+        self._slug = None
 
         self.save()
 
     def __unicode__(self):
         """ readable representation """
-        return u"path %s pos %d" % (self._path or '/', self.position)
+        try:
+            return u"path %s pos %d" % (self.path or '/', self.position)
+        except Exception: # yuck, XXX
+            return u"Unsaved node %s pos %d" % (self._slug or '/', self.position)
 
 WHEEL_NODE_BASECLASS = NodeBase
 class Node(WHEEL_NODE_BASECLASS):
@@ -357,11 +386,13 @@ class Node(WHEEL_NODE_BASECLASS):
 
 
 class NodePath(models.Model):
+    class Meta:
+        unique_together = ('path', 'language')
+
     path = models.CharField(max_length=1024, blank=False)
     language = models.CharField(max_length=20, blank=False)
     
     node = models.ForeignKey(Node, blank=False, related_name="paths")
-    ## unique_together: path, language
 
     def __unicode__(self):
         return "%s (%s)" % (self.path, self.language)

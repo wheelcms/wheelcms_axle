@@ -1,11 +1,14 @@
-from wheelcms_axle.node import Node
+from wheelcms_axle.node import Node, DuplicatePathException
 from django.utils import translation
 from django.conf import settings
 import pytest
 
+##
+## Should CONTENT_LANGUAGES become tuples? ('nl', 'Nederlands') ?
+
 class TestRootNode(object):
     def setup(self):
-        settings.LANGUAGES = ('en', 'nl', 'fr')
+        settings.CONTENT_LANGUAGES = ('en', 'nl', 'fr')
         settings.FALLBACK = False
 
     def test_disabled(self, client):
@@ -25,6 +28,8 @@ class TestRootNode(object):
         assert root.slug('nl') == ''
         assert root.slug('fr') == ''
 
+        assert root.isroot()
+
     def test_non_supported_language(self, client):
         """ a non-supported language, no fallback """
         translation.activate('de')
@@ -41,7 +46,7 @@ class TestRootNode(object):
 class TestNode(object):
     def setup(self):
         from django.conf import settings
-        settings.LANGUAGES = ('en', 'nl', 'fr')
+        settings.CONTENT_LANGUAGES = ('en', 'nl', 'fr')
 
     def test_node(self, client):
         translation.activate('en')
@@ -63,7 +68,6 @@ class TestNode(object):
         translation.activate('en')
         root = Node.root()
         child = root.add("child")
-        # import pytest; pytest.set_trace()
         child.rename("kind", language="nl")
         child.rename("enfant", language="fr")
 
@@ -102,6 +106,18 @@ class TestNode(object):
         assert nl_child1 == child1
         assert nl_child1.path == "/kind/grandchild1"
 
+    def test_add_different_slugs(self, client):
+        translation.activate('en')
+        root = Node.root()
+        child = root.add("child")
+        child.rename("kind", language="nl")
+        grandchild = child.add("grandchild")
+
+        assert grandchild.get_path(language="nl") == "/kind/grandchild"
+        assert grandchild.get_path(language="en") == "/child/grandchild"
+        assert Node.get("/child/grandchild", language="nl") is None
+        assert Node.get("/kind/grandchild", language="en") is None
+
     def test_rename_default(self, client):
         """ rename on a node with no explicit language specified,
             which should rename all nodes, if possible """
@@ -135,6 +151,45 @@ class TestNode(object):
         translation.activate('fr')
         assert r2.path == "/rr1/sub"
 
+    def test_rename_duplicate(self, client):
+        """ a trivial duplicate slug failure """
+        translation.activate('en')
+        root = Node.root()
+        r1 = root.add("r1")
+        r2 = root.add("r2")
+
+        pytest.raises(DuplicatePathException,
+                      r1.rename, "r2", language="fr")
+
+
+    def test_rename_complex(self, client):
+        """ a rather confusing case:
+            try to swap /r1 and /r2 for a specific language """
+        translation.activate('en')
+        root = Node.root()
+        r1 = root.add("r1")
+        r11 = r1.add("r11")
+        r2 = root.add("r2")
+        r22 = r2.add("r22")
+
+        r1.rename("rX", language="nl")
+        r2.rename("r1", language="nl")
+        r1.rename("r2", language="nl")
+
+        assert Node.get("/r1", language="nl") == r2
+        assert Node.get("/r2", language="nl") == r1
+
+    def test_rename_complex_duplicate(self, client):
+        """ a conflict within a specific language """
+        translation.activate('en')
+        root = Node.root()
+        r1 = root.add("r1")
+        r11 = r1.add("r11")
+        r2 = root.add("r2")
+        r22 = r2.add("r11")
+
+        pytest.raises(DuplicatePathException, r1.rename, "r2", language="nl")
+
     def test_node_child(self, client):
         """ test the node.child method """
         translation.activate('en')
@@ -142,6 +197,11 @@ class TestNode(object):
         child = root.add("child")
 
         assert root.child("child") == child
+
+    def test_node_child_notfound(self, client):
+        translation.activate('en')
+        root = Node.root()
+        assert root.child("x") is None
 
     def test_node_child_langswitch(self, client):
         """ test the node.child method """
@@ -163,6 +223,29 @@ class TestNode(object):
         r2.rename("rr2", language="en")
 
         assert list(root.children()) == [r1, r2, r3]
+
+    def test_offspring(self, client):
+        pytest.skip("todo")
+
+    def test_remove(self, client):
+        """ remove a node by one of it's path's """
+        translation.activate('en')
+        root = Node.root()
+        r1 = root.add("r1")
+        translation.activate('fr')
+        root.remove("r1")
+        assert root.child("r1") is None
+
+    def test_remove_recursive(self, client):
+        """ remove a node by one of it's path's """
+        translation.activate('en')
+        root = Node.root()
+        r1 = root.add("r1")
+        r2 = r1.add("r2")
+
+        translation.activate('fr')
+        root.remove("r1")
+        assert root.get("/r1/r2") is None
 
 
 class TestContent(object):
