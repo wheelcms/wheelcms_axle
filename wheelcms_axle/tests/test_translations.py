@@ -62,6 +62,26 @@ class TestNode(object):
         assert nl_child == child
         assert nl_child.path == "/kind"
 
+    def test_node_slug_offspring_language(self, client):
+        """ A node with different slugs for different languages,
+            with children"""
+        translation.activate('en')
+        root = Node.root()
+        child = root.add("child")
+        child1 = child.add("grandchild1")
+        child2 = child.add("grandchild2")
+
+        child.rename("kind", language="nl")
+        child2.rename("kleinkind2")
+
+        translation.activate('nl')
+        nl_child2 = Node.get("/kind/kleinkind2")
+        assert nl_child2 == child2
+        assert nl_child2.path == "/kind/kleinkind2"
+
+        nl_child1 = Node.get("/kind/grandchild1")
+        assert nl_child1 == child1
+        assert nl_child1.path == "/kind/grandchild1"
     ## test rename
 
 class TestContent(object):
