@@ -1,5 +1,6 @@
 import re
 
+from django.utils import translation
 from django.db import models, IntegrityError
 
 
@@ -83,7 +84,8 @@ class NodeBase(models.Model):
 
     validpathre = re.compile("^[%s]{1,%d}$" % (ALLOWED_CHARS, MAX_PATHLEN))
 
-    path = models.CharField(max_length=1024, blank=False, unique=True)
+    # path = models.CharField(max_length=1024, blank=False, unique=True)
+
     position = models.IntegerField(default=0)
 
     objects = NodeManager()
@@ -91,7 +93,11 @@ class NodeBase(models.Model):
     class Meta:
         abstract = True
 
-    def content(self):
+    def __init__(self, *args, **kw):
+        super(NodeBase, self).__init__(*args, **kw)
+        self._path = kw.get('path', None)
+
+    def content_(self):
         from .content import Content
         try:
             return self.contentbase.content()
@@ -99,17 +105,30 @@ class NodeBase(models.Model):
             return None
 
     @classmethod
-    def get(cls, path):
-        """ retrieve node directly by path. Returns None if not found """
+    def get_nodepath(self, path):
+        language = translation.get_language()
         try:
-            return cls.objects.get(path=path)
-        except cls.DoesNotExist:
-            if path == "":
-                return cls.root()
-
+            np = NodePath.objects.get(path=path, language=language)
+            return np.node
+        except NodePath.DoesNotExist:
             return None
 
-    def set(self, content, replace=False):
+    @property
+    def path(self):
+        language = translation.get_language()
+        return self.paths.filter(language=language)[0].path
+
+    @classmethod
+    def get(cls, path):
+        """ retrieve node directly by path. Returns None if not found """
+        node = cls.get_nodepath(path)
+        if node:
+            return node
+        elif path == cls.ROOT_PATH:
+            return cls.root()
+        return None
+
+    def set(self, content, replace=False): ## language
         """
             Set content on the node, optionally replacing existing
             content. This is a more friendly way of setting the node
@@ -140,9 +159,34 @@ class NodeBase(models.Model):
 
         return old
 
+    def save(self, *args, **kw):
+        super(NodeBase, self).save(*args, **kw)
+        """
+            Create path entries for all supported languages
+        """
+        if self._path is None:
+            return
+
+        from django.conf import settings
+        for l in settings.LANGUAGES:
+            NodePath.objects.get_or_create(node=self,
+                                           path=self._path,
+                                           language=l)
     @classmethod
     def root(cls):
-        return cls.objects.get_or_create(path=cls.ROOT_PATH)[0]
+        root_np = cls.get_nodepath(cls.ROOT_PATH)
+        if root_np:
+            return root_np
+
+        # create the rootnode (no matter if the language is supported)
+        # return it
+        root = Node(path='')
+        root.save()
+        #root.save()
+        # root.create_paths()
+        # try again, may return None if language not supported
+        root_np = cls.get_nodepath(cls.ROOT_PATH)
+        return root_np  # may be None
 
     def isroot(self):
         return self.path == self.ROOT_PATH
@@ -277,8 +321,21 @@ class NodeBase(models.Model):
 
     def __unicode__(self):
         """ readable representation """
-        return u"path %s pos %d" % (self.path or '/', self.position)
+        return u"path %s pos %d" % (self._path or '/', self.position)
 
 WHEEL_NODE_BASECLASS = NodeBase
 class Node(WHEEL_NODE_BASECLASS):
     pass
+
+
+class NodePath(models.Model):
+    path = models.CharField(max_length=1024, blank=False)
+    language = models.CharField(max_length=20, blank=False)
+    
+    node = models.ForeignKey(Node, blank=False, related_name="paths")
+    ## unique_together: path, language
+
+    def __unicode__(self):
+        return "%s (%s)" % (self.path, self.language)
+
+
