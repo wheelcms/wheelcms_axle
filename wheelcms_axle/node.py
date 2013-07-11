@@ -2,6 +2,7 @@ import re
 
 from django.utils import translation
 from django.db import models, IntegrityError
+from django.conf import settings
 
 
 class NodeException(Exception):
@@ -26,11 +27,20 @@ from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.db.models import Q
 
+def get_language():
+    language = translation.get_language()
+    if language not in getattr(settings, 'LANGUAGES', ()) and getattr(settings, 'FALLBACK', None):
+        language = settings.FALLBACK
+    return language
+
 class NodeQuerySet(QuerySet):
     def children(self, node):
         """ only return direct children """
+        language = get_language()
         return self.filter(
-                  path__regex="^%s/[%s]+$" % (node.path, Node.ALLOWED_CHARS),
+                  paths__path__regex="^%s/[%s]+$" %
+                      (node.path, Node.ALLOWED_CHARS),
+                  paths__language=language
                   )
 
     def offspring(self, node):
@@ -106,7 +116,7 @@ class NodeBase(models.Model):
 
     @classmethod
     def get_nodepath(self, path):
-        language = translation.get_language()
+        language = get_language()
         try:
             np = NodePath.objects.get(path=path, language=language)
             return np.node
@@ -115,8 +125,7 @@ class NodeBase(models.Model):
 
     @property
     def path(self):
-        language = translation.get_language()
-        return self.paths.filter(language=language)[0].path
+        return NodePath.get_for_node(self).path
 
     @classmethod
     def get(cls, path):
@@ -167,7 +176,6 @@ class NodeBase(models.Model):
         if self._path is None:
             return
 
-        from django.conf import settings
         for l in settings.LANGUAGES:
             NodePath.objects.get_or_create(node=self,
                                            path=self._path,
@@ -303,20 +311,24 @@ class NodeBase(models.Model):
         """ last part of self.path """
         return self.path.rsplit("/", 1)[-1]
 
-    def rename(self, slug):
+    def rename(self, slug, language=None):
         """ change the slug """
         if self.isroot():
             raise CantRenameRoot()
 
+        language = language or get_language()
+
         newpath = self.path.rsplit("/", 1)[0] + "/" + slug
-        if Node.objects.filter(path=newpath).count():
+        if NodePath.objects.filter(path=newpath, language=language).count():
             raise DuplicatePathException(newpath)
         ## do something transactionish?
-        for childs in Node.objects.filter(path__startswith=self.path + '/'):
-            remainder = childs.path[len(self.path):]
-            childs.path = newpath + remainder
-            childs.save()
-        self.path = newpath
+        for childpath in NodePath.objects.filter(path__startswith=self.path + '/', language=language):
+            remainder = childpath.path[len(self.path):]
+            childpath.path = newpath + remainder
+            childpath.save()
+        np = NodePath.get_for_node(self, language=language)
+        np.path = newpath
+        np.save()
         self.save()
 
     def __unicode__(self):
@@ -338,4 +350,8 @@ class NodePath(models.Model):
     def __unicode__(self):
         return "%s (%s)" % (self.path, self.language)
 
+    @classmethod
+    def get_for_node(cls, node, language=None):
+        language = language or get_language()
+        return node.paths.filter(language=language)[0]
 
