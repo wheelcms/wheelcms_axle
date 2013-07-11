@@ -123,9 +123,12 @@ class NodeBase(models.Model):
         except NodePath.DoesNotExist:
             return None
 
+    def get_path(self, language=None):
+        return NodePath.get_for_node(self, language).path
+        
     @property
     def path(self):
-        return NodePath.get_for_node(self).path
+        return self.get_path()
 
     @classmethod
     def get(cls, path):
@@ -307,9 +310,9 @@ class NodeBase(models.Model):
 
         return self.get(childpath)
 
-    def slug(self):
+    def slug(self, language=None):
         """ last part of self.path """
-        return self.path.rsplit("/", 1)[-1]
+        return self.get_path(language).rsplit("/", 1)[-1]
 
     def rename(self, slug, language=None):
         """ change the slug """
@@ -318,9 +321,13 @@ class NodeBase(models.Model):
 
         language = language or get_language()
 
-        newpath = self.path.rsplit("/", 1)[0] + "/" + slug
+        np = NodePath.get_for_node(self, language=language)
+        path = np.path
+
+        newpath = path.rsplit("/", 1)[0] + "/" + slug
         if NodePath.objects.filter(path=newpath, language=language).count():
             raise DuplicatePathException(newpath)
+
         ## do something transactionish?
         for childpath in NodePath.objects.filter(path__startswith=self.path + '/', language=language):
             remainder = childpath.path[len(self.path):]

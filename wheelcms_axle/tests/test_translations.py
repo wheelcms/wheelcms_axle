@@ -1,34 +1,37 @@
 from wheelcms_axle.node import Node
 from django.utils import translation
+from django.conf import settings
+import pytest
 
 class TestRootNode(object):
     def setup(self):
-        from django.conf import settings
         settings.LANGUAGES = ('en', 'nl', 'fr')
         settings.FALLBACK = False
 
-    def xtest_disabled(self, client):
+    def test_disabled(self, client):
         """ multi language support disabled """
-        pass
+        pytest.skip("todo")
 
-    def test_language_path(self, client):
-        from django.conf import settings
-        settings.LANGUAGES = ('en', 'nl', 'fr')
+    def test_setup(self, client):
         translation.activate('en')
         root = Node.root()
         assert root.path == ''
+        assert root.slug() == ''
+        assert root.get_path('en') == ''
+        assert root.get_path('nl') == ''
+        assert root.get_path('fr') == ''
+
+        assert root.slug('en') == ''
+        assert root.slug('nl') == ''
+        assert root.slug('fr') == ''
 
     def test_non_supported_language(self, client):
         """ a non-supported language, no fallback """
-        from django.conf import settings
-        settings.LANGUAGES = ('en', 'nl', 'fr')
         translation.activate('de')
         root = Node.root()
         assert root is None
 
     def test_default(self, client):
-        from django.conf import settings
-        settings.LANGUAGES = ('en', 'nl', 'fr')
         settings.FALLBACK = 'en'
         root = Node.root()
         assert root.path == ''
@@ -47,6 +50,13 @@ class TestNode(object):
         en_child = Node.get("/child")
         assert en_child == child
         assert en_child.path == "/child"
+        assert en_child.slug() == "child"
+        assert en_child.get_path("en") == "/child"
+        assert en_child.slug("en") == "child"
+        assert en_child.get_path("nl") == "/child"
+        assert en_child.slug("nl") == "child"
+        assert en_child.get_path("fr") == "/child"
+        assert en_child.slug("fr") == "child"
 
     def test_node_slug_language(self, client):
         """ A node with different slugs for different languages """
@@ -61,6 +71,13 @@ class TestNode(object):
         nl_child = Node.get("/kind")
         assert nl_child == child
         assert nl_child.path == "/kind"
+        assert nl_child.slug() == "kind"
+        assert nl_child.get_path("nl") == "/kind"
+
+        assert nl_child.get_path("en") == "/child"
+        assert nl_child.slug("en") == "child"
+        assert nl_child.get_path("fr") == "/enfant"
+        assert nl_child.slug("fr") == "enfant"
 
     def test_node_slug_offspring_language(self, client):
         """ A node with different slugs for different languages,
@@ -71,8 +88,10 @@ class TestNode(object):
         child1 = child.add("grandchild1")
         child2 = child.add("grandchild2")
 
+        # import pytest; pytest.set_trace()
         child.rename("kind", language="nl")
-        child2.rename("kleinkind2")
+        child2.rename("kleinkind2", language="nl")
+
 
         translation.activate('nl')
         nl_child2 = Node.get("/kind/kleinkind2")
