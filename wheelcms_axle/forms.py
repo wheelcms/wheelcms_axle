@@ -68,6 +68,7 @@ class BaseForm(forms.ModelForm):
     # important = forms.Field(required=True)
 
     def __init__(self, parent, attach=False, enlarge=True, reserved=(),
+                 language="any",
                  *args, **kwargs):
         """
             Django will put the extra slug field at the bottom, below
@@ -169,7 +170,8 @@ class BaseForm(forms.ModelForm):
         if not Node.validpathre.match(slug):
             raise forms.ValidationError("Only numbers, letters, _-")
         try:
-            existing = Node.objects.filter(path=parent_path + "/" + slug
+            ## Does language matter?
+            existing = Node.objects.filter(paths__path=parent_path + "/" + slug
                                           ).get()
             if existing != self.instance.node:
                 raise forms.ValidationError("Name in use")

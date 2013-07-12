@@ -251,3 +251,6 @@ class TestNode(object):
 class TestContent(object):
     pass
 
+## Test slug rename through handler / form
+## zie o.a. test_content_crud (test_tags)
+
