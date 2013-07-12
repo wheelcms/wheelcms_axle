@@ -251,6 +251,12 @@ class TestNode(object):
 class TestContent(object):
     pass
 
+##
+## Basis testcase:
+## 1 node met 3x content per taal, allemaal zelfde slug
+## 2 nodes met 6x content, verschillende slugs
+
 ## Test slug rename through handler / form
 ## zie o.a. test_content_crud (test_tags)
+## en test_spokes test_slug_generate_reserved_existing
 
