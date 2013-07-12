@@ -133,6 +133,12 @@ class BaseForm(forms.ModelForm):
         return spoke.workflowclass.default
 
     def clean_slug(self):
+        """
+            Verify the slugs uniqueness. If no slug is specified, generate
+            a unique slug based on the content's title
+
+            XXX make this translation/language aware
+        """
         if self.attach:
             return
 
@@ -140,13 +146,14 @@ class BaseForm(forms.ModelForm):
 
         parent_path = self.parent.path
 
-        # import pytest; pytest.set_trace()
         if not slug:
             slug = re.sub("[^%s]+" % Node.ALLOWED_CHARS, "-",
                           self.cleaned_data.get('title', '').lower()
                           )[:Node.MAX_PATHLEN].strip("-")
             try:
-                existing = Node.objects.filter(path=parent_path
+                ## language matters; slug can be (re)used for different
+                ## content if language is different!
+                existing = Node.objects.filter(paths__path=parent_path
                                                + "/" + slug).get()
             except Node.DoesNotExist:
                 existing = None
@@ -157,7 +164,8 @@ class BaseForm(forms.ModelForm):
                   (slug in self.reserved):
                 slug = base_slug + str(count)
                 try:
-                    existing = Node.objects.filter(path=self.parent.path
+                    existing = Node.objects.filter(
+                                          paths__path=self.parent.path
                                                    + "/" + slug).get()
                 except Node.DoesNotExist:
                     existing = None
