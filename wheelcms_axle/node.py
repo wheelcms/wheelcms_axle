@@ -118,7 +118,7 @@ class NodeBase(models.Model):
 
         super(NodeBase, self).__init__(*args, **kw)
 
-    def content_(self):
+    def content(self):
         from .content import Content
         try:
             return self.contentbase.content()
