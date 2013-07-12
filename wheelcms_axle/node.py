@@ -280,11 +280,13 @@ class NodeBase(models.Model):
 
         position = self.find_position(position, after, before)
 
-        ##
-        ## Hier moeten selectief de parent paden gekopieerd worden!
 
         child = self.__class__(slug=path, parent=self,
                                position=position)
+        ##
+        ## Verify the childpath is unique for each language-specific
+        ## parent path. We could do something distinct() here perhaps
+        ## in case languages share the same pathname
         for l in settings.CONTENT_LANGUAGES:
             p = self.paths.get(language=l).path + '/' + path
             if NodePath.objects.filter(path=p).exists():
