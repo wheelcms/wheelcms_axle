@@ -202,4 +202,9 @@ class TestToolbar(object):
         assert primary['title'] == Type1Type.title
         assert primary['icon_path'] == Type1Type.full_type_icon_path()
 
+    def test_primary_unattached(self, client):
+        """ an unattached node has no primary content """
+        toolbar = Toolbar(Node.root(), superuser_request("/"), "view")
+        assert toolbar.primary() is None
+
 

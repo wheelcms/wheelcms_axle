@@ -25,6 +25,10 @@ class Toolbar(object):
     def primary(self):
         """ return type details for this type's primary content, if any """
         type = self.type()
+        if type is None:
+            ## unconnected
+            return None
+
         p = type.primary
 
         if p:
