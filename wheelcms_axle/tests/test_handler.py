@@ -223,7 +223,8 @@ class TestBreadcrumb(object):
         request = create_request("GET", "/")
 
         handler = MainHandlerTestable(request=request, instance=child)
-        assert handler.breadcrumb() == [("Home", '/'), ("Child", "")]
+        assert handler.breadcrumb() == [("Home", root.get_absolute_url()),
+                                        ("Child", "")]
 
         ## root should ignore child
         handler = MainHandlerTestable(request=request, instance=root)
@@ -240,7 +241,8 @@ class TestBreadcrumb(object):
         request = create_request("GET", "/")
 
         handler = MainHandlerTestable(request=request, instance=child2)
-        assert handler.breadcrumb() == [("Home", '/'), ("Child", "/child"),
+        assert handler.breadcrumb() == [("Home", root.get_absolute_url()),
+                                        ("Child", child.get_absolute_url()),
                                         ("Child2", "")]
 
         ## root should ignore child
@@ -257,7 +259,8 @@ class TestBreadcrumb(object):
         request = create_request("GET", "/")
 
         handler = MainHandlerTestable(request=request, instance=child2)
-        assert handler.breadcrumb() == [("Home", '/'), ("Child", "/child"),
+        assert handler.breadcrumb() == [("Home", root.get_absolute_url()),
+                                        ("Child", child.get_absolute_url()),
                                         ("Unattached node /child/child2", "")]
 
     def test_parent_instance(self, client):
@@ -283,8 +286,9 @@ class TestBreadcrumb(object):
 
         handler = MainHandlerTestable(request=request, instance=child2)
         assert handler.breadcrumb(operation="Edit") == [
-            ("Home", '/'), ("Child", "/child"),
-            ("Child2", "/child/child2"), ("Edit", "")]
+            ("Home", root.get_absolute_url()),
+            ("Child", child.get_absolute_url()),
+            ("Child2", child2.get_absolute_url()), ("Edit", "")]
 
     def test_create_get(self, client):
         """ create should override and add Create operation crumb """
@@ -297,7 +301,8 @@ class TestBreadcrumb(object):
         handler = MainHandlerTestable(request=request, instance=child)
         context = handler.create(type=Type1.get_name())['context']
         assert 'breadcrumb' in context
-        assert context['breadcrumb'] == [('Home', '/'), ('Child', '/child'),
+        assert context['breadcrumb'] == [('Home', root.get_absolute_url()),
+                                         ('Child', child.get_absolute_url()),
                                          ('Create "%s"' % Type1Type.title, '')]
 
     def test_update(self, client):
@@ -312,7 +317,8 @@ class TestBreadcrumb(object):
         context = handler.update()['context']
         assert 'breadcrumb' in context
         assert context['breadcrumb'] == [
-                   ('Home', '/'), ('Child', '/child'),
+                   ('Home', root.get_absolute_url()),
+                   ('Child', child.get_absolute_url()),
                    ('Edit "%s" (%s)' % (child.content().title,
                                         Type1Type.title), '')]
 
