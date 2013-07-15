@@ -29,6 +29,16 @@ def resolve_path(p):
         This method will attempt to resolve that into an ordinary Node path
     """
     try:
+        ## resolve() should be able to resolve a url with an action, e.g.
+        ## /blog/some/path/foo.jpg/+download
+        ## but for some reason it 404's XXX
+        ## e.g. resolve("/blog/some/path/foo.jpg/+download")
+        p = p.rsplit("+", 1)[0]  ## remove action
+
+        ## make sure it ends in a / because that's what django likes
+        ## (possibly related to the REDIRECT_URL setting?)
+        if not p.endswith('/'):
+            p = p + '/'
         m = resolve(p)
         if 'instance' in m.kwargs:
             resolved = m.kwargs['instance'].rstrip('/')
@@ -511,7 +521,8 @@ class MainHandler(WheelRESTHandler):
         """
             Setup the panel to configure a link/image insert
         """
-        path = strip_action(path)
+        ## resolve relative / prefixed url to absolute node path
+        path = resolve_path(path)
 
         node = Node.get(path)
         instance = None
