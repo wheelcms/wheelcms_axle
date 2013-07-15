@@ -99,6 +99,8 @@ class ContentBase(models.Model):
         return "%s.%s" % (cls._meta.app_label.lower(), cls._meta.object_name.lower())
 
     def get_absolute_url(self):
+        if self.node is None:
+            return None
         return self.node.get_absolute_url()
 
     def __unicode__(self):

@@ -94,3 +94,16 @@ class TestContent(object):
         c1.save()
         assert c1.modified > modified
         assert c1.created == created
+
+    def test_absolute_url(self, client):
+        """ the absolute url for a content object is that of its node """
+        root = Node.root()
+        n = root.add("path").add("sub")
+        c1 = Type1(node=n).save()
+        assert c1.get_absolute_url() == n.get_absolute_url()
+
+    def test_absolute_url_unattached(self, client):
+        """ the absolute url for unattached content is None """
+        c1 = Type1().save()
+        assert c1.get_absolute_url() is None
+
