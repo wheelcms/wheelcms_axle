@@ -41,6 +41,9 @@
                         anchor = elementArray[0]; // expect one, only one
                     }
                     if(options.download) {
+                        if(!/\/$/.test(link)) {
+                            link += '/';
+                        }
                         link += "/+download";
                     }
                     dom.setAttrib(anchor, 'href', link);
@@ -73,7 +76,10 @@
                     }
                     var args = {src:link, "class":""};
                     if(options.local) {
-                        args.src += '/+download';
+                        if(!/\/$/.test(args.src)) {
+                            args.src += '/';
+                        }
+                        args.src += '+download';
                     }
                     if(options.title) {
                         args.title = options.title;

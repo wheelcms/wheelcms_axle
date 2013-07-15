@@ -1,4 +1,8 @@
 from django import forms
+from django.template import loader, Context
+from django.http import HttpResponseServerError, Http404
+from django.core.urlresolvers import resolve
+
 
 from two.ol.base import RESTLikeHandler, applyrequest, context, json, handler
 from wheelcms_axle.node import Node, NodeNotFound
@@ -15,10 +19,24 @@ from .actions import action_registry
 
 import stracks
 
-from django.template import loader, Context
-from django.http import HttpResponseServerError
 
 from wheelcms_axle import context_processors
+
+def resolve_path(p):
+    """
+        The path we receive from javascript code will include possible settings 
+        specific url prefix (e.g. /blog).
+        This method will attempt to resolve that into an ordinary Node path
+    """
+    try:
+        m = resolve(p)
+        if 'instance' in m.kwargs:
+            resolved = m.kwargs['instance'].rstrip('/')
+            if resolved:
+                return '/' + resolved
+            return '' # root
+    except Http404:
+        return None
 
 def wheel_error_context(request):
     """
@@ -581,15 +599,17 @@ class MainHandler(WheelRESTHandler):
         ##
         ## No path means a new item is to be selected. Use the current
         ## item as a starting point
+        
         if not path:
             path = self.instance.path
+        else:
+            path = resolve_path(path)
 
-        ## translate / to ""
+        if path is None:
+            return self.notfound()
 
-        if path == "/":
-            path = ""
-        if original == "/":
-            original = ""
+        original = resolve_path(original) or ""
+
         ## remove optional 'action', marked by a +
         ## not sure if this is the right place to do this, or if the browser
         ## modal should have been invoked without the action in the first place
@@ -598,10 +618,12 @@ class MainHandler(WheelRESTHandler):
         path = strip_action(path)
         original = strip_action(original)
 
-        node = Node.get(path)
+        node = start = Node.get(path)
         panels = []
 
-        bookmarks_paths = [""]
+        ## first panel: bookmarks/shortcuts
+
+        bookmarks_paths = [''] # root
         if self.instance.path not in bookmarks_paths:
             bookmarks_paths.append(self.instance.path)
         #if path not in bookmarks_paths:
@@ -621,7 +643,7 @@ class MainHandler(WheelRESTHandler):
             if not content: ## unattached
                 continue
             spoke = content.spoke()
-            bookmarks.append(dict(children=[], path=n.path or '/',
+            bookmarks.append(dict(children=[], path=n.get_absolute_url(),
                             title=content.title,
                             meta_type=content.meta_type,
                             content=content,
@@ -645,7 +667,7 @@ class MainHandler(WheelRESTHandler):
                 spoke = content.spoke()
                 addables = [x for x in spoke.addable_children()
                             if issubclass(x, FileSpoke)]
-                instance = dict(children=[], path=node.path or '/',
+                instance = dict(children=[], path=node.get_absolute_url(),
                                 title=content.title,
                                 meta_type=content.meta_type,
                                 content=content,
@@ -654,7 +676,7 @@ class MainHandler(WheelRESTHandler):
             else:
                 addables = [x for x in type_registry.values()
                             if issubclass(x, FileSpoke)]
-                instance = dict(children=[], path=node.path or '/',
+                instance = dict(children=[], path=node.get_absolute_url(),
                                 title="Unattached node",
                                 meta_type="none",
                                 content=None,
@@ -684,7 +706,7 @@ class MainHandler(WheelRESTHandler):
                            path.startswith(child.path + '/')
                 instance['children'].append(
                                       dict(title=content.title,
-                                           path=child.path,
+                                           path=child.get_absolute_url(),
                                            icon=spoke.icon_base() + '/' +
                                                 spoke.icon,
                                            selectable=selectable,
@@ -694,15 +716,16 @@ class MainHandler(WheelRESTHandler):
             panels.insert(1,
                           self.render_template("wheelcms_axle/popup_list.html",
                                                instance=instance,
-                                               path=path,
+                                               path=node.get_absolute_url(),
                                                mode=mode,
                                                selectable=(i==0)))
             if node.isroot():
                 break
             node = node.parent()
 
+        ## generate the crumbs
         crumbs = []
-        node = Node.get(path)
+        node = start
         while True:
             if node.isroot():
                 crumbs.insert(0, dict(path=node.get_absolute_url(), title="Home"))
@@ -713,7 +736,7 @@ class MainHandler(WheelRESTHandler):
 
         crumbtpl = self.render_template("wheelcms_axle/popup_crumbs.html",
                                         crumbs=crumbs)
-        return dict(panels=panels, path=path or '/',
+        return dict(panels=panels, path=start.get_absolute_url(),
                     crumbs=crumbtpl, upload=upload)
 
     @json
@@ -757,7 +780,7 @@ class MainHandler(WheelRESTHandler):
             slug = self.form.cleaned_data['slug']
             sub = parent.add(slug)
             sub.set(p)
-            return dict(status="ok", path=sub.path)
+            return dict(status="ok", path=sub.get_absolute_url())
 
         ## for now, assume that if something went wrong, it's with the uploaded file
         return dict(status="error",

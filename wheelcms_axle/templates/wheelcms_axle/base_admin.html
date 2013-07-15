@@ -37,7 +37,7 @@
                 url = '';
             }
             var data = $.ajax({
-                url: url + '/fileup?type=' + type,
+                url: url + 'fileup?type=' + type,
                 dataType:"json",
                 async: false
                 }).responseText;
@@ -55,7 +55,7 @@
             fileinput.replaceWith('<div id="filepreview" ></div><span class="btn btn-success fileinput-button"><i class="icon-plus icon-white"></i><span id="filelabel">Add file</span><input id="' + fileinput.attr('id') + '" type="file" name="' + fileinput.attr('name') + '"></span>');
             //var preview = $("#fileupload input[type=file]").parent(".controls")
             $('#fileupload').fileupload({
-                url: url + '/fileup',
+                url: url + 'fileup',
                 dataType: 'json',
                 autoUpload: false,
                 previewMaxwidth: 100,
