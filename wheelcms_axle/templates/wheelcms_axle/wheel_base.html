@@ -55,7 +55,7 @@
 
 {% block topbar %}
 {% block logo %}
-<a class="brand" href="/">{{config.title}}</a>
+<a class="brand" href="{{root.get_absolute_url}}">{{config.title}}</a>
 {% endblock %}
 
 <div class="nav-collapse">
@@ -68,7 +68,7 @@
   {% endblock %}
   <div class="pull-right">
     <ul class="nav">
-      <li><a href="/+contact">Contact</a></li>
+      <li><a href="{{root.get_absolute_url}}+contact">Contact</a></li>
     </ul>
     {% if not user.is_authenticated %}
     <ul class="nav">
@@ -88,7 +88,7 @@
       <li class="dropdown">
           <a href="/" data-target="#" class="dropdown-toggle" data-toggle="dropdown">{{user.email}} <b class="caret"></b></a>
           <ul class="dropdown-menu" role="menu">
-            {# <li><a href="/"><i class="icon-cog"></i> Preferences</a></li> #}
+            {# <li><a href="{{root.get_absolute_url}}"><i class="icon-cog"></i> Preferences</a></li> #}
 
             <li><a href="{% url userena_profile_detail user.username %}"><i class="icon-user"></i> Profile</a></li>
             <li class="divider"></li>
@@ -132,7 +132,7 @@
 {% endblock %}
 
 {% block base_footer %}
-<div class="pull-right">Powered by <a href="http://wheelcms.scritch.org/">WheelCMS</div></div>
+<div class="pull-right">Powered by <a href="http://wheelcms.io/">WheelCMS</div></div>
 {% endblock %}
 
 
