@@ -453,8 +453,8 @@ class MainHandler(WheelRESTHandler):
     def handle_reorder(self, rel, target, ref):
         if not self.hasaccess() or not self.post:
             return self.forbidden()
-        targetnode = Node.get(target)
-        referencenode = Node.get(ref)
+        targetnode = Node.get(resolve_path(target))
+        referencenode = Node.get(resolve_path(ref))
 
         if targetnode is None:
             return self.badrequest()
@@ -481,6 +481,7 @@ class MainHandler(WheelRESTHandler):
 
         count = 0
         for p in self.request.POST.getlist('selection'):
+            p = resolve_path(p)
             n = Node.get(p)
             ## XXX recursively delete, or not, or detach...
             if n:
