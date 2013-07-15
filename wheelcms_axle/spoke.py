@@ -50,7 +50,7 @@ def indexfactory(spoke):
         meta_type = indexes.CharField(stored=True, indexed=True,
                                       model_attr='meta_type')
         path = SpokeCharField(spoke=spoke, stored=True, indexed=True,
-                              model_attr='path')
+                              model_attr='get_absolute_url')
         slug = indexes.CharField(stored=True, indexed=True,
                                   model_attr='node__slug')
         created = indexes.DateField(stored=True, indexed=True,
