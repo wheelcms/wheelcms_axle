@@ -1,6 +1,7 @@
 from .models import Type1Type, Type2Type
 from wheelcms_axle.content import TypeRegistry, type_registry
 from wheelcms_axle.node import Node
+from wheelcms_axle.spoke import indexfactory
 
 from haystack.query import SearchQuerySet, EmptySearchQuerySet
 from haystack import site
@@ -97,6 +98,19 @@ class BaseTestSearch(object):
         assert len(res) == 2
         assert res[0].object in (t1, t2)
         assert res[1].object in (t1, t2)
+
+    def test_indexfactory(self, client):
+        root = Node.root()
+        c1 = root.add("child1")
+        c2 = c1.add("child2")
+        t1 = self.construct_type(title="hi", state="private", node=c2)
+        idf = indexfactory(self.type)
+        idx = idf(self.type.model)
+        data = idx.prepare(t1)
+
+        assert data['title'] == 'hi'
+        assert data['state'] == 'private'
+        assert data['path'] == c2.get_absolute_url()
 
 class TestSearch(BaseTestSearch):
     type = Type1Type
