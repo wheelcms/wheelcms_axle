@@ -1,6 +1,7 @@
 import re
 
 from django.db import models, IntegrityError
+from django.core.urlresolvers import reverse
 
 
 class NodeException(Exception):
@@ -274,6 +275,10 @@ class NodeBase(models.Model):
             childs.save()
         self.path = newpath
         self.save()
+
+    def get_absolute_url(self):
+        ## strip any leading / since django will add that as well
+        return reverse('wheel_main', kwargs={'instance':self.path.lstrip('/')})
 
     def __unicode__(self):
         """ readable representation """
