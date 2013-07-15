@@ -1,0 +1,27 @@
+<div class="row">
+  <div class="span12">
+    {% if breadcrumb %}
+    <ul class="breadcrumb">
+      {% for crumb in breadcrumb %}
+      <li {% if forloop.last %}class="active"{% endif %}>
+        {% if crumb.1 %}
+        <a href="{{crumb.1}}">{{crumb.0}}</a>
+        {% else %}
+        {{crumb.0}}
+        {% endif %}
+        {% if not forloop.last %}
+        <span class="divider">/</span>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <ul class="breadcrumb">
+        <li>
+            <a href="{{root.get_absolute_url}}">Home</a>
+        </li>
+    </ul>
+    {% endif %}
+  </div>
+</div>
+

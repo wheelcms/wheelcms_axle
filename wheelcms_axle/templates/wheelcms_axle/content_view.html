@@ -9,6 +9,6 @@
 <b>children</b>
 <br>
 {% for child in instance.children %}
-<a href="{{child.path}}">{{child.content.title}}</a><br>
+<a href="{{child.get_absolute_url}}">{{child.content.title}}</a><br>
 {% endfor %}
 {% endblock %}

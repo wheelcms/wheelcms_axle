@@ -9,7 +9,8 @@ def configuration(request):
         present since it contains information about the current
         theme """
     return dict(config=Configuration.config(),
-                settings=settings)
+                settings=settings,
+                root=Node.root())
 
 def toolbar(request):
     if request.user.is_authenticated():

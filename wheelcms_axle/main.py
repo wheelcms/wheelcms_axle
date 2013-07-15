@@ -203,9 +203,9 @@ class MainHandler(WheelRESTHandler):
 
         parent = self.parent or self.instance
         if parent and parent.path:
-            parentpath = parent.path
+            parentpath = parent.get_absolute_url()
         else:
-            parentpath = '/'
+            parentpath = Node.root().get_absolute_url()
 
         self.context['redirect_cancel'] = parentpath + "?info=Create+canceled"
         self.context['form_action'] = 'create'  ## make it absolute?
@@ -240,7 +240,7 @@ class MainHandler(WheelRESTHandler):
                     ent.log("? (%s) created by ?" % typeinfo.title,
                             stracks.user(self.user()), action=stracks.create())
 
-                    return self.redirect(target.path or '/',
+                    return self.redirect(target.get_absolute_url(),
                                          success='"%s" created' % p.title)
                 except OSError, e:
                     self.context['error_message'] = "An error occured " \
@@ -265,6 +265,7 @@ class MainHandler(WheelRESTHandler):
     def update(self):
         action = self.kw.get('action', '')
         if action:
+            ## match against path, not get_absolute_url which is configuration specific
             action_handler = action_registry.get(action, self.instance.path,
                                                  self.spoke())
             if action_handler is None:
@@ -280,7 +281,7 @@ class MainHandler(WheelRESTHandler):
         content = instance.content()
         parent = instance.parent()
 
-        self.context['redirect_cancel'] = (self.instance.path or '/') + \
+        self.context['redirect_cancel'] = self.instance.get_absolute_url() + \
                                           "?info=Update+cancelled"
         self.context['toolbar'] = Toolbar(self.instance, self.request, status="edit")
 
@@ -305,7 +306,7 @@ class MainHandler(WheelRESTHandler):
                 e = stracks.content(content.id, name=content.title)
                 e.log("? (%s) updated by ?" % content.spoke().title,
                       stracks.user(self.user()), action=stracks.edit())
-                return self.redirect(instance.path, success="Updated")
+                return self.redirect(instance.get_absolute_url(), success="Updated")
         else:
             self.context['form'] = formclass(parent=parent,
                              initial=dict(slug=slug), instance=instance.content())
@@ -336,7 +337,7 @@ class MainHandler(WheelRESTHandler):
             if operation == "Contents":
                 subpath += '/contents'
 
-            path = subpath or '/'
+            path = node.get_absolute_url()
 
             ## last entry should not get path
             if not operation:
@@ -368,6 +369,8 @@ class MainHandler(WheelRESTHandler):
 
         action = self.kw.get('action', '')
         if action:
+            ## again, use node's path directly, not get_absolute_url, which is
+            ## configuration specific
             action_handler = action_registry.get(action, self.instance.path, spoke)
             if action_handler is None:
                 return self.notfound()
@@ -414,8 +417,8 @@ class MainHandler(WheelRESTHandler):
             This also may behave differently depending on the user's access
         """
         if self.spoke() and self.spoke().addable_children():
-            return self.redirect(self.instance.path + '/list')
-        return self.redirect(self.instance.path or '/')
+            return self.redirect(self.instance.get_absolute_url() + 'list')
+        return self.redirect(self.instance.get_absolute_url())
 
     @json
     @applyrequest
@@ -463,7 +466,7 @@ class MainHandler(WheelRESTHandler):
                                      action=stracks.delete())
                 else:
                     stracks.user(self.user()).log("Unattached node removed: "
-                                                  + n.path,
+                                                  + n.get_absolute_url(),
                                                   action=stracks.delete());
 
                 try:
@@ -475,7 +478,7 @@ class MainHandler(WheelRESTHandler):
                 n.delete()
                 count += 1
 
-        return self.redirect(self.instance.path + '/list',
+        return self.redirect(self.instance.get_absolute_url() + 'list',
                              info="%d item(s) deleted" % count)
 
     def handle_popup(self):
@@ -702,9 +705,9 @@ class MainHandler(WheelRESTHandler):
         node = Node.get(path)
         while True:
             if node.isroot():
-                crumbs.insert(0, dict(path='/', title="Home"))
+                crumbs.insert(0, dict(path=node.get_absolute_url(), title="Home"))
                 break
-            crumbs.insert(0, dict(path=node.path,
+            crumbs.insert(0, dict(path=node.get_absolute_url(),
                                   title=node.content().title))
             node = node.parent()
 
