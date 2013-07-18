@@ -11,11 +11,15 @@ class Workflow(object):
 class DefaultWorkflow(Workflow):
     PRIVATE = "private"
     VISIBLE = "visible"
+    PENDING = "pending"
     PUBLISHED = "published"
+    REJECTED = "rejected"
 
     states = ((PRIVATE, "Private"),
               (VISIBLE, "Visible"),
-              (PUBLISHED, "Published"))
+              (PENDING, "Pending"),
+              (PUBLISHED, "Published"),
+              (REJECTED, "Rejected"))
 
     default = PRIVATE
 
