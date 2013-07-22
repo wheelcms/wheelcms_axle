@@ -131,7 +131,15 @@ class FileContent(Content):
     CLASSES = Content.CLASSES + (FILECLASS, )
 
     objects = models.Manager()
-    instances = ClassContentManager(FILECLASS)
+
+    @classproperty
+    def instances(cls):
+        """ Since django 1.5, this is no longer a manager since
+           'AttributeError: Manager isn't available; FileContent is abstract'
+        """
+        return ContentClass.objects.get_or_create(name=cls.FILECLASS)[0].content.all()
+
+    # instances = ClassContentManager(FILECLASS)
 
     content_type = models.CharField(blank=True, max_length=256)
     filename = models.CharField(blank=True, max_length=256)
@@ -163,7 +171,15 @@ class ImageContent(FileContent):
     CLASSES = FileContent.CLASSES + ("wheel.image", )
 
     objects = models.Manager()
-    instances = ClassContentManager(IMAGECLASS)
+
+    @classproperty
+    def instances(cls):
+        """ Since django 1.5, this is no longer a manager since
+           'AttributeError: Manager isn't available; ImageContent is abstract'
+        """
+        return ContentClass.objects.get_or_create(name=cls.IMAGECLASS)[0].content.all()
+
+    # instances = ClassContentManager(IMAGECLASS)
     caption = models.TextField(blank=True, default="")
 
     class Meta(FileContent.Meta):
