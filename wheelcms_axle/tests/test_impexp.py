@@ -17,6 +17,17 @@ from .test_spoke import filedata
 def p(n):
     print ElementTree.tostring(n, 'utf-8')
 
+def find_attribute(tree, tag, attribute, value):
+    """
+        python 2.6 elementree does not support complex path expressions
+
+        http://stackoverflow.com/questions/13667979/python-2-6-1-expected-path-separator
+    """
+    for node in tree.findall(tag):
+        if node.attrib.get(attribute) == value:
+            return node
+    return None
+
 class TestExporter(object):
     """
         Verify it returns parsable xml,
@@ -45,7 +56,7 @@ class TestExporter(object):
         children = child.find('children')
         assert len(children.getchildren()) == 0
         fields = child.find('fields')
-        title = fields.find('field[@name="title"]')
+        title = find_attribute(fields, 'field', "name", "title")
         assert title.text == 'Export Test'
 
         tags = fields.findall("tags/tag")
@@ -239,24 +250,23 @@ class TestSerializer(object):
         res, file = s.serialize(tt)
         assert res.tag == "fields"
         assert len(res.getchildren())
-        # import pytest; pytest.set_trace()
-        assert res.find("field[@name='title']").text == "Test"
-        assert res.find("field[@name='state']").text == "published"
-        assert res.find("field[@name='publication']").text
-        assert res.find("field[@name='created']").text
-        assert res.find("field[@name='modified']").text
-        assert res.find("field[@name='expire']").text
-        assert res.find("field[@name='navigation']").text == "True"
-        assert res.find("field[@name='meta_type']").text == tt.model.__name__.lower()
-        assert not res.find("field[@name='owner']")
-        assert not res.find("field[@name='node']")
+        assert find_attribute(res, "field", "name", 'title').text == "Test"
+        assert find_attribute(res, "field", "name", 'state').text == "published"
+        assert find_attribute(res, "field", "name", 'publication').text
+        assert find_attribute(res, "field", "name", 'created').text
+        assert find_attribute(res, "field", "name", 'modified').text
+        assert find_attribute(res, "field", "name", 'expire').text
+        assert find_attribute(res, "field", "name", 'navigation').text == "True"
+        assert find_attribute(res, "field", "name", 'meta_type').text == tt.model.__name__.lower()
+        assert not find_attribute(res, "field", "name", 'owner')
+        assert not find_attribute(res, "field", "name", 'node')
 
     def test_owner(self, client):
         """ owners are exported to their usernames """
         owner = User.objects.get_or_create(username="johndoe")[0]
         tt = Type1Type(Type1(owner=owner).save())
         res, files = WheelSerializer().serialize(tt)
-        assert res.find("field[@name='owner']").text == "johndoe"
+        assert find_attribute(res, "field", "name", 'owner').text == "johndoe"
 
 
 class BaseSpokeImportExportTest(object):
