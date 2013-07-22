@@ -69,7 +69,7 @@
       {% if toolbar.show_settings %}
       <div class="pull-right">
         <ul class="nav">
-          <li><div><a class="btn btn-mini" href="{% url wheel_config %}"><i class="icon-wrench"></i> Settings</a></div></li>
+          <li><div><a class="btn btn-mini" href="{% url "wheel_config" %}"><i class="icon-wrench"></i> Settings</a></div></li>
         </ul>
       </div>
       {% endif %}
@@ -82,9 +82,9 @@
               </a>
               <ul class="dropdown-menu" role="menu">
                 {# <li><a href="/"><i class="icon-cog"></i> Preferences</a></li> #}
-                <li><a href="{% url userena_profile_detail user.username %}"><i class="icon-user"></i> Profile</a></li>
+                <li><a href="{% url "userena_profile_detail" user.username %}"><i class="icon-user"></i> Profile</a></li>
                 <li class="divider"></li>
-                <li><a href="{% url userena_signout %}"><i class="icon-off"></i> Logout</a></li>
+                <li><a href="{% url "userena_signout" %}"><i class="icon-off"></i> Logout</a></li>
               </ul>
             </div>
           </li>

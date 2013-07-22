@@ -22,6 +22,6 @@
 {% block base_main %}
 
 <div class="well">
-The page at path {{request.path}} could not be found. Perhaps <a href="/search/?q={{request.path}}">searching</a> will help, or continue to the <a href="{% url wheel_main %}">frontpage</a> of this site.
+The page at path {{request.path}} could not be found. Perhaps <a href="/search/?q={{request.path}}">searching</a> will help, or continue to the <a href="{% url "wheel_main" %}">frontpage</a> of this site.
 </div>
 {% endblock %}
