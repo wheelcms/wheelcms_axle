@@ -35,7 +35,6 @@ class TestExporter(object):
         exporter = Exporter()
         xml, files = exporter.run(root)
         assert xml
-        assert isinstance(xml, Element)
         assert xml.tag == 'site'
         assert xml.attrib.get('version', -1) == '1'
         assert xml.attrib.get('base', '--') == ''
@@ -238,7 +237,6 @@ class TestSerializer(object):
         tt = Type1Type(t)
         s = WheelSerializer()
         res, file = s.serialize(tt)
-        assert isinstance(res, Element)
         assert res.tag == "fields"
         assert len(res.getchildren())
         # import pytest; pytest.set_trace()
@@ -279,7 +277,7 @@ class BaseSpokeImportExportTest(object):
         tt = self.create(state="published", title="Test", navigation=True)
         s = tt.serializer()
         res, files = s.serialize(tt)
-        assert isinstance(res, Element)
+        assert res.tag == "fields"
 
     def test_capable_deserialize(self, client):
         """ verify the spoke is able to deserialize itself """
@@ -292,7 +290,6 @@ class BaseSpokeImportExportTest(object):
 
         ## step 2: deserialize it
         tt, delay = self.spoke.serializer().deserialize(self.spoke, res)
-        assert isinstance(tt, self.spoke)
         assert tt.instance.title == "Hello World"
         assert tt.instance.state == "published"
         assert tt.instance.navigation
