@@ -59,7 +59,8 @@ class Toolbar(object):
         if self.status == 'special':  ## special page
             return False
 
-        if self.status == 'create':
+        ## do not show when creating or updating
+        if self.status in ('create', 'update'):
             return False
         if self.type() is None:
             return True
@@ -71,7 +72,8 @@ class Toolbar(object):
         if self.status == 'special':  ## special page
             return False
 
-        if self.status == "update":
+        ## do not show when creating or updating
+        if self.status in ("update", "create"):
             return False
         if not (self.instance and self.instance.content()):
             return False

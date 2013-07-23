@@ -4,7 +4,7 @@
 from django.contrib.auth.models import User
 
 from wheelcms_axle.node import Node
-from wheelcms_axle.content import type_registry, TypeRegistry
+from wheelcms_axle.content import type_registry
 from wheelcms_axle.toolbar import Toolbar
 from wheelcms_axle.tests.models import Type1, Type1Type, Type2Type, TestTypeRegistry
 
@@ -114,10 +114,23 @@ class TestToolbar(object):
         assert toolbar.children() == []
         assert not toolbar.show_create()
 
-    def test_show_create_status_create(self, client):
+    def test_create_mode_buttons(self, client):
+        """ verify that certain buttons are not shown in create mode """
         node = Node.root()
+        content = Type1(node=node)
+        content.save()
         toolbar = Toolbar(node, superuser_request("/"), "create")
         assert not toolbar.show_create()
+        assert not toolbar.show_update()
+
+    def test_update_mode_buttons(self, client):
+        """ verify that certain buttons are not shown in update mode """
+        node = Node.root()
+        content = Type1(node=node)
+        content.save()
+        toolbar = Toolbar(node, superuser_request("/"), "update")
+        assert not toolbar.show_create()
+        assert not toolbar.show_update()
 
     def test_no_implicit_unattached(self, client):
         """ An unattached node cannot restrict its children but
