@@ -258,7 +258,10 @@ class NodeBase(models.Model):
 
         if copy:
             origpath = node.path
-            origbase, slug = origpath.rsplit("/", 1)
+            if origpath != '':
+                origbase, slug = origpath.rsplit("/", 1)
+            else:
+                origbase, slug = "", "root"
 
             slug = unique_slug(slug)
             base = self.add(slug)
@@ -268,6 +271,7 @@ class NodeBase(models.Model):
                 path = self.path + '/' + slug + o.path[len(origpath):]
                 n = Node(path=path).save()
                 ## copy content
+            return base
 
         else:
             if node.is_ancestor(self):

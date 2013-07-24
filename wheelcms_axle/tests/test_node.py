@@ -537,3 +537,48 @@ class TestNode(object):
         res = target.paste(src, copy=True)
 
         assert Node.get("/target/src").position > target_child.position
+
+    def test_copy_node_inuse(self, client):
+        """ pasting a node to a node containing a child with the same name,
+            e.g. pasting /foo to /target when there's already a /target/foo
+        """
+        root = Node.root()
+        src = root.add("src")
+        src_c = src.add("child")
+        target = root.add("target")
+        target_src = target.add("src")
+
+        res = target.paste(src)
+
+        assert res.path != "/target/src"
+        assert Node.get(res.path + "/child")
+
+    def test_copy_node_to_self(self, client):
+        """ copy /foo to / """
+        root = Node.root()
+        src = root.add("src")
+        res = root.paste(src, copy=True)
+
+        assert res.path != "/src"
+
+    def test_copy_inside_offspring(self, client):
+        """ A node can be copied to one of its offspring nodes """
+        root = Node.root()
+        src = root.add("src")
+        target = src.add("target")
+
+        res = target.paste(src, copy=True)
+
+        assert res.path == "/src/target/src"
+        assert res != src
+
+    def test_copy_root_inside_offspring(self, client):
+        """ Copying root is a special case because it has an empty slug """
+        root = Node.root()
+        src = root.add("src")
+        target = src.add("target")
+
+        res = target.paste(root, copy=True)
+
+        assert res.path == "/src/target/root"
+        assert res != src
