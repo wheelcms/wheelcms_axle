@@ -1,5 +1,5 @@
 from wheelcms_axle.node import Node, DuplicatePathException
-from wheelcms_axle.node import InvalidPathException, CantRenameRoot
+from wheelcms_axle.node import InvalidPathException, CantRenameRoot, CantMoveToOffspring
 from wheelcms_axle.node import NodeNotFound
 
 import py.test
@@ -316,7 +316,6 @@ class TestNode(object):
         c2.add("b2")
         assert Node.get("/aaa/bbb/b1")
 
-        # import pytest; pytest.set_trace()
         c1.remove("bbb")
         assert Node.get("/aaa")
         assert not Node.get("/aaa/bbb/b1")
@@ -428,3 +427,113 @@ class TestNode(object):
         root.move(c1, after=c4)
 
         assert list(root.children()) == [c2, c3, c4, c1]
+
+    ## cut/copy/paste
+    def test_move_node(self, client):
+        """ move a node and its descendants elsewhere """
+        root = Node.root()
+        src = root.add("src")
+        src_c = src.add("child")
+        target = root.add("target")
+
+        res = target.paste(src)
+
+        assert Node.get('/target/src') == src
+        assert Node.get('/target/src/child') == src_c
+        assert Node.get('/src') is None
+        assert res.path == "/target/src"
+
+
+    def test_move_inside_offspring(self, client):
+        """ A node cannot be moved to one of its offspring nodes. """
+        root = Node.root()
+        src = root.add("src")
+        target = src.add("target")
+
+        py.test.raises(CantMoveToOffspring, target.paste, src)
+
+    def test_move_inside_offspring_root(self, client):
+        """ A node cannot be moved to one of its offspring nodes.
+            This, of course, also means root cannot be moved """
+        root = Node.root()
+        src = root.add("src")
+        py.test.raises(CantMoveToOffspring, src.paste, root)
+
+    def test_move_to_self(self, client):
+        """ moving /foo to / """
+        root = Node.root()
+        src = root.add("src")
+        res = root.paste(src)
+
+        assert res == src
+        assert res.path == "/src"
+
+
+    def test_move_node_inuse(self, client):
+        """ pasting a node to a node containing a child with the same name,
+            e.g. pasting /foo to /target when there's already a /target/foo
+        """
+        root = Node.root()
+        src = root.add("src")
+        src_c = src.add("child")
+        target = root.add("target")
+        target_src = target.add("src")
+
+        res = target.paste(src)
+
+        assert Node.get('/target/src') == target_src
+        assert src.path != "/src"
+        assert src.path != "/target/src"
+        assert Node.get(src.path + "/child")
+
+    def test_move_node_position(self, client):
+        """ a node loses its original position when moved,
+            it should always be moved to the bottom """
+        root = Node.root()
+        src = root.add("src", position=0)
+        target = root.add("target")
+        target_child = target.add("child", position=10)
+
+        res = target.paste(src)
+
+        assert Node.get("/target/src").position > target_child.position
+
+    ## test_copy_root
+    ## test_copy_inside -> copy /foo to /foo (resulting in /foo/foo)
+
+    ## how to handle content copy, and what if subtypes are not allowed?
+    ## what if name conflict? E.g. /target/foo and then /foo -> /target?
+
+    def test_copy_node(self, client):
+        """ copy a node and its descendants elsewhere """
+        root = Node.root()
+        src = root.add("src")
+        src_c = src.add("child")
+        target = root.add("target")
+
+        # import pytest; pytest.set_trace()
+        target.paste(src, copy=True)
+
+        ## it has been copied and is not the original
+        assert Node.get('/target/src') is not None
+        assert Node.get('/target/src') != src
+        assert Node.get('/target/src/child') is not None
+        assert Node.get('/target/src/child') != src_c
+
+        ## the original is still there
+        assert Node.get('/src') is not None
+        assert Node.get('/src') == src
+        assert Node.get('/src/child') is not None
+        assert Node.get('/src/child') == src_c
+
+    def test_copy_node_position(self, client):
+        """ a node loses its original position when copied,
+            it should always be moved to the bottom """
+        root = Node.root()
+        src = root.add("src", position=0)
+        target = root.add("target")
+        target_child = target.add("child", position=10)
+
+        res = target.paste(src, copy=True)
+
+        assert Node.get("/target/src").position > target_child.position

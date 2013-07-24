@@ -16,6 +16,9 @@ class InvalidPathException(NodeException):
 class NodeInUse(NodeException):
     """ the node already has content attached to it """
 
+class CantMoveToOffspring(NodeException):
+    """ a node cannot be moved to one of its offspring nodes """
+
 class CantRenameRoot(NodeException):
     """ the root's path is "" which cannot be changed """
 
@@ -148,6 +151,9 @@ class NodeBase(models.Model):
     def isroot(self):
         return self.path == self.ROOT_PATH
 
+    def is_ancestor(self, node):
+        return node.path.startswith(self.path + '/')
+
     def find_position(self, position=-1, after=None, before=None):
         children = self.children()
         positions = (c.position for c in self.children())
@@ -218,12 +224,72 @@ class NodeBase(models.Model):
         return child
 
     def move(self, child, position=-1, after=None, before=None):
-        """ move an existing child. This does not take into acount that the
-            child already has a position in the child-order, but that shouldn't
-            make a significant difference """
+        """ move (reorder) an existing child. This does not take into account
+            that the child already has a position in the child-order, but that
+            shouldn't make a significant difference
+
+            This method does not move nodes to *different* nodes (e.g. paste)
+       """
+
         position = self.find_position(position, after, before)
         child.position = position
         child.save()
+
+    def paste(self, node, copy=False):
+        """
+            Move a node elsewhere in the tree, optionally copying the node
+            (copy-paste) or deleting the original (cut-paste)
+        """
+        ## a move is just rewriting/renaming the child and its offspring,
+        ## a copy is recreating the node
+
+        ## ancestor nodes cannot be moved into offspring nodes, they can be
+        ## copied, but avoid recursion.
+
+        ## how to deal with the position? Insert at the bottom?
+
+        def unique_slug(slug):
+            orig_slug = slug
+            count = 0
+            while self.child(slug) is not None:
+                slug = "%s_%d" % (orig_slug, count)
+                count += 1
+            return slug
+
+        if copy:
+            origpath = node.path
+            origbase, slug = origpath.rsplit("/", 1)
+
+            slug = unique_slug(slug)
+            base = self.add(slug)
+            ## copy content
+
+            for o in Node.objects.offspring(node):
+                path = self.path + '/' + slug + o.path[len(origpath):]
+                n = Node(path=path).save()
+                ## copy content
+
+        else:
+            if node.is_ancestor(self):
+                raise CantMoveToOffspring()
+            oldpath = node.path
+            oldbase, slug = oldpath.rsplit("/", 1)
+            if oldbase == self.path:
+                ## pasting into its own parent, nothing to do
+                return node
+
+            slug = unique_slug(slug)
+
+            ## XXX somehow batch/transaction this
+            for o in Node.objects.offspring(node):
+                o.path = self.path + '/' + slug + o.path[len(oldpath):]
+                o.save()
+            node.path = self.path + '/' + slug
+            ## move to end
+            node.position = self.find_position(position=-1)
+            node.save()
+
+        return node
 
     def remove(self, childslug):
         """ remove a child, recursively """
@@ -269,7 +335,7 @@ class NodeBase(models.Model):
         if Node.objects.filter(path=newpath).count():
             raise DuplicatePathException(newpath)
         ## do something transactionish?
-        for childs in Node.objects.filter(path__startswith=self.path + '/'):
+        for childs in Node.objects.offspring(self):
             remainder = childs.path[len(self.path):]
             childs.path = newpath + remainder
             childs.save()
