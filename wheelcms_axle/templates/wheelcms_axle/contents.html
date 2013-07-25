@@ -100,70 +100,72 @@
 {% endif %}
 <h3>Content listing for "{{instance.content.title}}"</h3>
 <br>
-<table class="table table-condensed table-hover wheel-contentlist">
-  <thead>
-    <th><input class="toggle-all" type="checkbox"></th>
-    <th>Title</th>
-    <th>State</th>
-    <th></th>
-  </thead>
-  <tbody class="sortable">
-    {% if not instance.isroot %}
-    <tr class="clickrow" data-url="{{instance.parent.get_absolute_url}}list">
-      <td><i class="icon-circle-arrow-left"></i></td>
-      <td colspan="3">.. (parent)</td>
-    </tr>
-    {% endif %}
-    {% for child in instance.children %}
-      {% with content=child.content spoke=child.content.spoke %}
-        {% if content %}
-          <tr class="sortablerow" data-url="{{child.get_absolute_url}}">
-            <td><input name="selection" type="checkbox" value="{{child.get_absolute_url}}"
-                 data-path="{{child.get_absolute_url}}"
-                 data-title="{{content.title}}"
-                 data-type="{{spoke.title}}"></td>
-            <td class="clickrow" data-url="{{child.get_absolute_url}}contents"><img src="{{spoke.icon_base}}/{{spoke.icon}}"> {{content.title}}</td>
-            <td class="clickrow" data-url="{{child.get_absolute_url}}contents">{{spoke.state.label}}</td>
-            <td>
-                <a href="{{child.get_absolute_url}}edit"><i class="icon-edit"></i></a>
-                <a href="{{child.get_absolute_url}}"><i class="icon-eye-open"></i></a>
-                <a href="#" data-title="{{content.title}}"
-                            data-type="{{spoke.title}}"
-                            data-path="{{child.get_absolute_url}}" class="contents_item_remove"><i class="icon-remove"></i></a>
-            </td>
-          </tr>
-        {% else %}
-          {# unattached node #}
-          <tr>
-            <td></td>
-            <td data-url="{{child.get_absolute_url}}" class="clickrow"><i class="icon-magnet"></i>Unattached node {{child.get_absolute_url}}</td>
-            <td data-url="{{child.get_absolute_url}}" class="clickrow">unattached</td>
-            <td>
-                <a href="{{child.get_absolute_url}}"><i class="icon-eye-open"></i></a>
-                <a href="#" data-title="Unattached node {{child.get_absolute_url}}"
-                            data-type="Node"
-                            data-path="{{child.get_absolute_url}}" class="contents_item_remove"><i class="icon-remove"></i></a>
-            </td>
-          </tr>
-        {% endif %}
-      {% endwith %}
-    {% empty %}
-      <tr>
-        <td colspan="4">No content</td>
+{% block listing_table %}
+  <table class="table table-condensed table-hover wheel-contentlist">
+    <thead>
+      <th><input class="toggle-all" type="checkbox"></th>
+      <th>Title</th>
+      <th>State</th>
+      <th></th>
+    </thead>
+    <tbody class="sortable">
+      {% if not instance.isroot %}
+      <tr class="clickrow" data-url="{{instance.parent.get_absolute_url}}list">
+        <td><i class="icon-circle-arrow-left"></i></td>
+        <td colspan="3">.. (parent)</td>
       </tr>
-    {% endfor %}
-    <tr>
-      <td colspan="4">
-        <div class="btn-toolbar">
-          <div class="btn-group">
-            <button class="btn btn-small">Cut</button>
-            <button class="btn btn-small">Copy</button>
-            <button class="btn btn-small">Paste</button>
-            <button id="contents_action_delete" class="btn btn-small">Delete</button>
+      {% endif %}
+      {% for child in instance.children %}
+        {% with content=child.content spoke=child.content.spoke %}
+          {% if content %}
+            <tr class="sortablerow" data-url="{{child.get_absolute_url}}">
+              <td><input name="selection" type="checkbox" value="{{child.get_absolute_url}}"
+                   data-path="{{child.get_absolute_url}}"
+                   data-title="{{content.title}}"
+                   data-type="{{spoke.title}}"></td>
+              <td class="clickrow" data-url="{{child.get_absolute_url}}contents"><img src="{{spoke.icon_base}}/{{spoke.icon}}"> {{content.title}}</td>
+              <td class="clickrow" data-url="{{child.get_absolute_url}}contents">{{spoke.state.label}}</td>
+              <td>
+                  <a href="{{child.get_absolute_url}}edit"><i class="icon-edit"></i></a>
+                  <a href="{{child.get_absolute_url}}"><i class="icon-eye-open"></i></a>
+                  <a href="#" data-title="{{content.title}}"
+                              data-type="{{spoke.title}}"
+                              data-path="{{child.get_absolute_url}}" class="contents_item_remove"><i class="icon-remove"></i></a>
+              </td>
+            </tr>
+          {% else %}
+            {# unattached node #}
+            <tr>
+              <td></td>
+              <td data-url="{{child.get_absolute_url}}" class="clickrow"><i class="icon-magnet"></i>Unattached node {{child.get_absolute_url}}</td>
+              <td data-url="{{child.get_absolute_url}}" class="clickrow">unattached</td>
+              <td>
+                  <a href="{{child.get_absolute_url}}"><i class="icon-eye-open"></i></a>
+                  <a href="#" data-title="Unattached node {{child.get_absolute_url}}"
+                              data-type="Node"
+                              data-path="{{child.get_absolute_url}}" class="contents_item_remove"><i class="icon-remove"></i></a>
+              </td>
+            </tr>
+          {% endif %}
+        {% endwith %}
+      {% empty %}
+        <tr>
+          <td colspan="4">No content</td>
+        </tr>
+      {% endfor %}
+      <tr>
+        <td colspan="4">
+          <div class="btn-toolbar">
+            <div class="btn-group">
+              <button class="btn btn-small">Cut</button>
+              <button class="btn btn-small">Copy</button>
+              <button class="btn btn-small">Paste</button>
+              <button id="contents_action_delete" class="btn btn-small">Delete</button>
+            </div>
           </div>
-        </div>
-      </td>
-    </tr>
-  </tbody>
-</table>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+{% endblock %}
 {% endblock %}
