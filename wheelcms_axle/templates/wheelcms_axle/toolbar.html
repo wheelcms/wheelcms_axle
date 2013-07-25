@@ -95,7 +95,7 @@
       <div class="pull-right">
         <ul class="nav">
           <li>
-           {% if worklist %}
+           {% if worklist.count %}
            <div class="btn-group dropup">
              <a class="badge badge-important" title="{{worklist.count}} item{{worklist.count|pluralize}} to be reviewed"
                 data-toggle="dropdown"><img src="/static/img/icons/inbox_document.png"></i> {{worklist.count}}</a>
@@ -106,7 +106,7 @@
              </ul>
            </div>
            {% endif %}
-           {% if clipboard %}
+           {% if clipboard.count %}
            <div class="btn-group dropup">
              <a class="badge badge-info" title="{{clipboard.count}} item{{clipboard.count|pluralize}} in clipboard" data-toggle="dropdown"><img src="/static/img/icons/paste_plain.png"></i> {{clipboard.count}}</a>
              <ul class="dropdown-menu right">
