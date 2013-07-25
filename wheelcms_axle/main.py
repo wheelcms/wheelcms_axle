@@ -768,8 +768,11 @@ class MainHandler(WheelRESTHandler):
         ## use get() to return type-specific rendered light-form?
 
         if not self.post:
+            form = formclass(parent=parent)
+            if 'state' in form.fields:
+                form.fields['state'].initial = 'visible'  ## XXX BIG HACK ALERT. Issue 659
             return dict(form=self.render_template("wheelcms_axle/popup_upload.html",
-                                                  form=formclass(parent=parent),
+                                                  form=form,
                                                   type=type))
 
 
