@@ -192,6 +192,10 @@ class Spoke(object):
 
         return self.instance.template
 
+    def list_template(self):
+        ## perform a lookup for a registered LIST template?
+        return "wheelcms_axle/contents.html"
+
     def detail_template(self):
         """ A small detail template, used in browse modal """
         return "wheelcms_axle/popup_detail.html"

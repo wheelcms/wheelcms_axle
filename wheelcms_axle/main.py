@@ -435,6 +435,10 @@ class MainHandler(WheelRESTHandler):
             return self.forbidden()
         self.context['toolbar'] = Toolbar(self.instance, self.request, status="list")
         self.context['breadcrumb'] = self.breadcrumb(operation="Contents")
+        spoke = self.spoke()
+        if spoke:
+            return self.template(spoke.list_template())
+
         return self.template("wheelcms_axle/contents.html")
 
     def handle_contents(self):
