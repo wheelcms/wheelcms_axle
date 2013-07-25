@@ -11,7 +11,7 @@ class Migration(SchemaMigration):
         # Adding model 'Node'
         db.create_table('wheelcms_axle_node', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('path', self.gf('django.db.models.fields.CharField')(unique=True, max_length=1024)),
+            ('path', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255)),
             ('position', self.gf('django.db.models.fields.IntegerField')(default=0)),
         ))
         db.send_create_signal('wheelcms_axle', ['Node'])
@@ -176,7 +176,7 @@ class Migration(SchemaMigration):
         'wheelcms_axle.node': {
             'Meta': {'object_name': 'Node'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'path': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '1024'}),
+            'path': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
             'position': ('django.db.models.fields.IntegerField', [], {'default': '0'})
         },
         'wheelcms_axle.wheelprofile': {
