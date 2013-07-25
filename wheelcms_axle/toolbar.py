@@ -1,4 +1,6 @@
 from wheelcms_axle.content import type_registry
+from wheelcms_axle.workflows.default import worklist as default_worklist
+from wheelcms_axle import access
 
 class Toolbar(object):
     """
@@ -111,4 +113,14 @@ class Toolbar(object):
     def show_settings(self):
         ## XXX decent permissions
         user = self.request.user
-        return (user.is_superuser or user.groups.filter(name="managers").exists())
+        return access.has_access(user)
+
+    def worklist(self):
+        """ return list of items to be reviewed """
+        pending = default_worklist()
+        ## TODO: group by type?
+        return dict(count=pending.count(), items=pending)
+
+    def clipboard(self):
+        """ return list of items in the clipboard """
+        return []

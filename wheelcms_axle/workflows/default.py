@@ -31,3 +31,15 @@ class DefaultWorkflow(Workflow):
 
     def state(self):
         return dict(self.states)[self.spoke.instance.state]
+
+def worklist():
+    """
+        Return all attached content with a non-final state.
+        Currently, this assumes the hardcoded 'pending' state,
+        but eventually all registered workflows should be
+        queried for their states
+    """
+    from wheelcms_axle.content import Content
+    pending = Content.objects.filter(state="pending", node__isnull=False)
+    return pending
+

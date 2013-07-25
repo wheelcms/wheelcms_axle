@@ -83,3 +83,31 @@ class TestDefaultWorkflow(object):
         data.save()
         form = Type1Type.form(parent=Node.root(), instance=data)
         assert form['state'].value() == "published"
+
+from wheelcms_axle.workflows.default import worklist
+
+class TestWorklist(object):
+    def test_empty(self, client):
+        """ No content means no worklist """
+        assert worklist().count() == 0
+
+    def test_attached_pending(self, client):
+        """ pending and attached, the way we like it """
+        t = Type1(node=Node.root(), state="pending").save()
+        assert worklist().count() == 1
+        assert worklist()[0] == t.content_ptr
+
+    def test_unattached_pending(self, client):
+        """ unattached content cannot be accessed anyway """
+        Type1(state="pending").save()
+        assert worklist().count() == 0
+
+    def test_attached_private(self, client):
+        """ private content needs no explicit action """
+        Type1(node=Node.root(), state="private").save()
+        assert worklist().count() == 0
+
+    def test_attached_published(self, client):
+        """ published content needs no explicit action """
+        Type1(node=Node.root(), state="published").save()
+        assert worklist().count() == 0

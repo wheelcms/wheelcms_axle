@@ -119,3 +119,15 @@ form .help-block {
 .entry-content ul {
     list-style-position: inside;
 }
+
+/*
+ * Position a dropdown to the right. Required for dropdown buttons
+ * on the right site of the screen and large dropdown menus that get
+ * clipped
+ *
+ * http://forrst.com/posts/Bootstrap_right_positioned_dropdown-2KB
+ */
+.dropdown-menu.right {
+    left:auto;
+    right:0;
+}
