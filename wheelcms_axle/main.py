@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.template import loader, Context
 from django.http import HttpResponseServerError, Http404
 from django.core.urlresolvers import resolve
@@ -28,6 +29,13 @@ def resolve_path(p):
         specific url prefix (e.g. /blog).
         This method will attempt to resolve that into an ordinary Node path
     """
+    ## first of all, strip optional path
+
+    if settings.USE_LOCALEURL:
+        ## XXX BIG HACK, BCD SPECIFIC, issue #736
+        if p.startswith("/en") or p.startswith("/nl"):
+            p = p[3:]
+
     try:
         ## resolve() should be able to resolve a url with an action, e.g.
         ## /blog/some/path/foo.jpg/+download
