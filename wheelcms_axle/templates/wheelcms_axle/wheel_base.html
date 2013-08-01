@@ -68,9 +68,12 @@
   </form>
   {% endblock %}
   <div class="pull-right">
+    {% block rightnav %}
     <ul class="nav">
       <li><a href="{{root.get_absolute_url}}+contact">Contact</a></li>
     </ul>
+    {% endblock %}
+    {% block right_signin_nav %}
     {% if not user.is_authenticated %}
     <ul class="nav">
       {% if settings.ALLOW_SIGNUP %}
@@ -98,6 +101,7 @@
       </li>
     </ul>
     {% endif %}
+    {% endblock %}
   </div>
 </div>
 {% endblock %}
