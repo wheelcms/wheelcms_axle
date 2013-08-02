@@ -1,6 +1,5 @@
 TINYMCE_DEFAULT_CONFIG = {
     'theme': "advanced", 
-    'content_css': '/static/css/wheel_content.css',
     'style_formats': [
         { 'title': 'Images'},
         { 'title': 'Original Size Image', 'selector': 'img', 'attributes': {'class': 'img_content_original' }},
