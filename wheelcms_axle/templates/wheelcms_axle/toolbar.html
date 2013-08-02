@@ -1,4 +1,6 @@
 {% load url from future %}
+{% load staticfiles %}
+
 {% if toolbar %}
 <div class="navbar navbar-fixed-bottom">
   <div class="navbar-inner">
@@ -98,7 +100,7 @@
            {% if worklist.count %}
            <div class="btn-group dropup">
              <a class="badge badge-important" title="{{worklist.count}} item{{worklist.count|pluralize}} to be reviewed"
-                data-toggle="dropdown"><img src="/static/img/icons/inbox_document.png"></i> {{worklist.count}}</a>
+                data-toggle="dropdown"><img src="{% static "img/icons/inbox_document.png" %}"></i> {{worklist.count}}</a>
              <ul class="dropdown-menu right">
                 {% for item in worklist.items %}
                 <li><a href="{{item.get_absolute_url}}edit#collapseadvanced">{{item.title}}</a></li>
@@ -108,7 +110,7 @@
            {% endif %}
            {% if clipboard.count %}
            <div class="btn-group dropup">
-             <a class="badge badge-info" title="{{clipboard.count}} item{{clipboard.count|pluralize}} in clipboard" data-toggle="dropdown"><img src="/static/img/icons/paste_plain.png"></i> {{clipboard.count}}</a>
+             <a class="badge badge-info" title="{{clipboard.count}} item{{clipboard.count|pluralize}} in clipboard" data-toggle="dropdown"><img src="{% static "img/icons/paste_plain.png" %}"></i> {{clipboard.count}}</a>
              <ul class="dropdown-menu right">
                 {% for item in worklist.items %}
                 <li><a href="{{item.get_absolute_url}}edit#collapseadvanced">{{item.title}}</a></li>

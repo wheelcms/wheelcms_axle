@@ -2,14 +2,15 @@
 {% load url from future %}
 {% load topnav %}
 {% load fragments %}
+{% load staticfiles %}
 
 {% block htmltitle %}
 <title>{{page_title}}</title>
 {% endblock %}
 {% block bootstrapcss %}
     {{config.themeinfo.css|safe}}
-    <link rel="stylesheet" href="/static/css/bootstrap-responsive.min.css" media="screen, projection, print"/>
-    <link rel="stylesheet" href="/static/css/twool-bootstrap.css" media="screen, projection, print"/>
+    <link rel="stylesheet" href="{% static "css/bootstrap-responsive.min.css" %}" media="screen, projection, print"/>
+    <link rel="stylesheet" href="{% static "css/twool-bootstrap.css" %}" media="screen, projection, print"/>
     <style type="text/css">
         body {
             padding-top: 60px;
@@ -20,13 +21,13 @@
 {% endblock %}
 
 {% block bootstrapjs %}
-    <script src="/static/js/jquery-1.7.min.js"></script>
+    <script src="{% static "js/jquery-1.7.min.js" %}"></script>
     {{config.themeinfo.js|safe}}
 {% endblock %}
 
 {% block base_stylesheets %}
-    <link rel="stylesheet" href="/static/css/wheel.css" media="screen, projection, print"/>
-    <link rel="stylesheet" href="/static/css/wheel_content.css" media="screen, projection, print"/>
+    <link rel="stylesheet" href="{% static "css/wheel.css" %}" media="screen, projection, print"/>
+    <link rel="stylesheet" href="{% static "css/wheel_content.css" %}" media="screen, projection, print"/>
 {% endblock %}
 
 {% block meta_head %}
@@ -107,10 +108,10 @@
 {% endblock %}
 
 {% block base_javascript %}
-    <script src="/static/js/jquery-ui-1.9.2.custom.min.js"></script>
-    <script src="/static/js/jquery.cookie.1.3.1.js"></script>
-    <script src="/static/js/wheel.js"></script>
-    <script type="text/javascript" src="{{ STATIC_URL }}/tiny_mce/tiny_mce.js"></script>
+    <script src="{% static "js/jquery-ui-1.9.2.custom.min.js" %}"></script>
+    <script src="{% static "js/jquery.cookie.1.3.1.js" %}"></script>
+    <script src="{% static "js/wheel.js" %}"></script>
+    <script type="text/javascript" src="{% static "tiny_mce/tiny_mce.js" %}"></script>
 
 {% endblock %}
 

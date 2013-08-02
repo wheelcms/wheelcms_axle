@@ -1,26 +1,27 @@
 {# base template that includes editing controls #}
 {% extends "wheelcms_axle/base.html" %}
+{% load staticfiles %}
 
 {% block base_stylesheets  %}
 {{ block.super }}
 
-<link rel="stylesheet" href="/static/tagmanager/bootstrap-tagmanager.css" media="screen, projection, print"/>
-<link rel="stylesheet" href="/static/css/upload/jquery.fileupload-ui.css" media="screen, projection, print"/>
+<link rel="stylesheet" href="{% static "tagmanager/bootstrap-tagmanager.css" %}" media="screen, projection, print"/>
+<link rel="stylesheet" href="{% static "css/upload/jquery.fileupload-ui.css" %}" media="screen, projection, print"/>
 {% endblock %}
 
 {% block javascript %}
 
 {{ block.super }}
 
-<script src="/static/js/upload/jquery.ui.widget.js"></script>
-<script src="/static/js/upload/load-image.min.js"></script>
-<script src="/static/js/upload/canvas-to-blob.min.js"></script>
-<script src="/static/js/upload/jquery.iframe-transport.js"></script>
-<script src="/static/js/upload/jquery.fileupload.js"></script>
-<script src="/static/js/upload/jquery.fileupload-process.js"></script>
-<script src="/static/js/upload/jquery.fileupload-resize.js"></script>
-<script src="/static/js/upload/jquery.fileupload-validate.js"></script>
-<script src="/static/tagmanager/bootstrap-tagmanager.js"></script>
+<script src="{% static "js/upload/jquery.ui.widget.js" %}"></script>
+<script src="{% static "js/upload/load-image.min.js" %}"></script>
+<script src="{% static "js/upload/canvas-to-blob.min.js" %}"></script>
+<script src="{% static "js/upload/jquery.iframe-transport.js" %}"></script>
+<script src="{% static "js/upload/jquery.fileupload.js" %}"></script>
+<script src="{% static "js/upload/jquery.fileupload-process.js" %}"></script>
+<script src="{% static "js/upload/jquery.fileupload-resize.js" %}"></script>
+<script src="{% static "js/upload/jquery.fileupload-validate.js" %}"></script>
+<script src="{% static "tagmanager/bootstrap-tagmanager.js" %}"></script>
 
 <script type="text/javascript" charset="utf-8">
     var upload_modal = (function() {
@@ -452,7 +453,7 @@
             $("#external_image_title").val("");
             $("#external_image_url").val("");
             $("input[name='external_image_size']").attr('checked', false);
-            $("#external_image").attr("src", "{{STATIC_URL}}/img/preview.png")
+            $("#external_image").attr("src", "{% static 'img/preview.png' %}")
 
             // strip possible actions from the end of the url, e.g. /+download
             path = path.replace(/\/\+[\w_-]+$/, '');
@@ -603,7 +604,7 @@
             </form>
           </div>
           <div class="span6">
-            <img id="external_image" src="{{STATIC_URL}}/img/preview.png" class="img-polaroid">
+            <img id="external_image" src="{% static 'img/preview.png' %}" class="img-polaroid">
           </div>
         </div>
       </div>
