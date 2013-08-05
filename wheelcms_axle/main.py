@@ -31,11 +31,6 @@ def resolve_path(p):
     """
     ## first of all, strip optional path
 
-    if settings.USE_LOCALEURL:
-        ## XXX BIG HACK, BCD SPECIFIC, issue #736
-        if p.startswith("/en") or p.startswith("/nl"):
-            p = p[3:]
-
     try:
         ## resolve() should be able to resolve a url with an action, e.g.
         ## /blog/some/path/foo.jpg/+download
