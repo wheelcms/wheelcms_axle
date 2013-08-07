@@ -428,6 +428,7 @@ class TestNode(object):
 
         assert list(root.children()) == [c2, c3, c4, c1]
 
+class TestNodeCopyPaste(object):
     ## cut/copy/paste
     def test_move_node(self, client):
         """ move a node and its descendants elsewhere """
