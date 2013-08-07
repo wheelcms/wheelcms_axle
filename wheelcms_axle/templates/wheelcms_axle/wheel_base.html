@@ -81,7 +81,7 @@
       <li><a href="{% url "userena_signup" %}">Register</a></li>
       {% endif %}
       {# issue 576 - do not redirect to logout page #}
-      {% if request.path != settings.LOGOUT_URL %}
+      {% if not is_logout_url %}
       <li><a href="{% url "userena_signin" %}?next={{request.path}}">Signin</a></li>
       {% else %}
       <li><a href="{% url "userena_signin" %}?next=/">Signin</a></li>
