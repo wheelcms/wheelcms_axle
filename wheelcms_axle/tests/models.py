@@ -58,6 +58,11 @@ class OtherTestImageType(FileSpoke):
     model = OtherTestImage
     children = ()
 
+class TypeM2M(Content):
+    m2m = models.ManyToManyField("self")
+
+class TypeM2MType(Spoke):
+    model = TypeM2M
 
 type_registry.register(Type1Type)
 type_registry.register(Type2Type)
@@ -65,6 +70,7 @@ type_registry.register(TestFileType)
 type_registry.register(TestImageType)
 type_registry.register(OtherTestFileType)
 type_registry.register(OtherTestImageType)
+type_registry.register(TypeM2MType)
 
 from wheelcms_axle.content import TypeRegistry
 

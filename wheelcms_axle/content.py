@@ -81,6 +81,18 @@ class ContentBase(models.Model):
             self.classes.add(ContentClass.objects.get_or_create(name=klass)[0])
         return self  ## foo = x.save() is nice
 
+    def copy(self):
+        """ create a copy """
+        ## XXX should this be a Spoke method?
+        c = self.__class__.objects.get(pk=self.pk)
+        c.pk = c.id = None
+        c.save()
+        # import pytest; pytest.set_trace()
+
+        for m2m in c._meta.many_to_many:
+            setattr(c, m2m.name, getattr(self, m2m.name).all())
+        return c
+
     def content(self):
         if self.meta_type:
             return getattr(self, self.meta_type)

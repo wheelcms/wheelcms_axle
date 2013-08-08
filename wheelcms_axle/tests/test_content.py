@@ -1,10 +1,13 @@
-from wheelcms_axle.models import Node, NodeInUse
-from wheelcms_axle.tests.models import Type1, Type2
+import pytest
 
 from django.db import IntegrityError
 from django.utils import timezone
+from django.contrib.auth.models import User
 
-import pytest
+from wheelcms_axle.node import Node, NodeInUse
+from wheelcms_axle.content import Content
+from wheelcms_axle.tests.models import Type1, Type2, TypeM2M
+
 
 class TestContent(object):
     """ Test content / content-node related stuff """
@@ -107,3 +110,45 @@ class TestContent(object):
         c1 = Type1().save()
         assert c1.get_absolute_url() is None
 
+    ## copy/paste
+
+    def test_copy_content_simple(self, client):
+        c1 = Type1(title="hello", state="visible", t1field="orig").save()
+        c2 = c1.copy()
+        assert c1 != c2
+        assert c1.title == c2.title
+        assert c1.state == c2.state
+        assert c1.t1field == c2.t1field
+
+        c2.t1field = "copy"
+        c2.save()
+
+        ## verify the inheritance magic works as expected
+        bases = Content.objects.all().order_by("id")
+        assert bases.count() == 2
+        orig = bases[0]
+        copy = bases[1]
+
+        assert orig != copy
+        assert orig.type1 != copy.type1
+
+        t1s = Type1.objects.all()
+        assert t1s[0].t1field != t1s[1].t1field
+
+    def test_copy_content_owner(self, client):
+        owner = User.objects.get_or_create(username="owner")[0]
+        c1 = Type1(title="hello", owner=owner).save()
+        c2 = c1.copy()
+        assert c1 != c2
+        assert c1.owner == c2.owner
+
+    def test_copy_content_m2m(self, client):
+        m2m1 = TypeM2M().save()
+        m2m2 = TypeM2M().save()
+        c1 = TypeM2M().save()
+
+        c1.m2m = [m2m1, m2m2]
+
+        c2 = c1.copy()
+
+        assert set(c2.m2m.all()) == set((m2m1, m2m2))
