@@ -1,4 +1,5 @@
 from wheelcms_axle.content import type_registry
+from wheelcms_axle.node import Node
 from wheelcms_axle.workflows.default import worklist as default_worklist
 from wheelcms_axle import access
 
@@ -123,4 +124,11 @@ class Toolbar(object):
 
     def clipboard(self):
         """ return list of items in the clipboard """
-        return []
+        # import pdb; pdb.set_trace()
+        
+        clipboard_copy = self.request.session.get('clipboard_copy', [])
+        clipboard_cut = self.request.session.get('clipboard_cut', [])
+
+        clipboard = clipboard_copy or clipboard_cut
+
+        return dict(count=len(clipboard), items=[Node.get(i).content() for i in clipboard])

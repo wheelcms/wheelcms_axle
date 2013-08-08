@@ -28,6 +28,12 @@
         }
         return false;
     });
+    $("#xcontents_action_copy").click(function() {
+        var copies = $("input[type='checkbox'][name='selection']:checked");
+
+        alert("Content copied");
+        return false;
+    });
     $(".contents_item_remove").click(function() {
         /*
          * The small 'x' icon on a single entry.
@@ -100,6 +106,8 @@
 {% endif %}
 <h3>Content listing for "{{instance.content.title}}"</h3>
 <br>
+<form method="POST" action="contents_actions_cutcopypaste">
+{% csrf_token %}
 {% block listing_table %}
   <table class="table table-condensed table-hover wheel-contentlist">
     <thead>
@@ -157,9 +165,9 @@
         <td colspan="4">
           <div class="btn-toolbar">
             <div class="btn-group">
-              <button class="btn btn-small">Cut</button>
-              <button class="btn btn-small">Copy</button>
-              <button class="btn btn-small">Paste</button>
+              <button id="contents_action_cut" name="action" class="btn btn-small" value="cut">Cut</button>
+              <button id="contents_action_copy" name="action" class="btn btn-small" value="copy">Copy</button>
+              <button id="contents_action_paste" name="action" class="btn btn-small" {% if not can_paste %} disabled="disabled" {% endif %} value="paste">Paste</button>
               <button id="contents_action_delete" class="btn btn-small">Delete</button>
             </div>
           </div>
@@ -168,4 +176,5 @@
     </tbody>
   </table>
 {% endblock %}
+</form>
 {% endblock %}

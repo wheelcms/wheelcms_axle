@@ -112,7 +112,8 @@
            <div class="btn-group dropup">
              <a class="badge badge-info" title="{{clipboard.count}} item{{clipboard.count|pluralize}} in clipboard" data-toggle="dropdown"><img src="{% static "img/icons/paste_plain.png" %}"></i> {{clipboard.count}}</a>
              <ul class="dropdown-menu right">
-                {% for item in worklist.items %}
+                <li><b>Cut or copied</b></li>
+                {% for item in clipboard.items %}
                 <li><a href="{{item.get_absolute_url}}edit#collapseadvanced">{{item.title}}</a></li>
                 {% endfor %}
                 {# clear clipboard, .. ? #}

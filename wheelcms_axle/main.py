@@ -439,9 +439,12 @@ class MainHandler(WheelRESTHandler):
         self.context['toolbar'] = Toolbar(self.instance, self.request, status="list")
         self.context['breadcrumb'] = self.breadcrumb(operation="Contents")
         spoke = self.spoke()
+
+        self.context['can_paste'] = len(self.request.session.get('clipboard_copy', [])) + len(self.request.session.get('clipboard_cut'))
+
         if spoke:
             return self.template(spoke.list_template())
-
+        
         return self.template("wheelcms_axle/contents.html")
 
     def handle_contents(self):
@@ -477,6 +480,59 @@ class MainHandler(WheelRESTHandler):
         else:  # before
             self.instance.move(targetnode, before=referencenode)
         return dict(result="ok")
+
+    def handle_contents_actions_cutcopypaste(self):
+        action = self.request.POST.get('action')
+        raw_selection = self.request.POST.getlist('selection', [])
+
+        # import pdb; pdb.set_trace()
+        selection = []
+        for s in raw_selection:
+            p = resolve_path(s)
+            if p and Node.get(p):
+                selection.append(p)
+
+        count = len(selection)
+        
+        if action == "cut":
+            self.request.session['clipboard_copy'] = []
+            self.request.session['clipboard_cut'] = selection
+
+
+            return self.redirect(self.instance.get_absolute_url() + 'list',
+                                 info="%d item(s) cut" % count)
+        elif action == "copy":
+            self.request.session['clipboard_cut'] = []
+            self.request.session['clipboard_copy'] = selection
+            return self.redirect(self.instance.get_absolute_url() + 'list',
+                                 info="%d item(s) copied" % count)
+        elif action == "paste":
+            copy = False
+            clipboard_copy = self.request.session.get('clipboard_copy', [])
+            clipboard_cut = self.request.session.get('clipboard_cut', [])
+            clipboard = []
+
+            if clipboard_copy:
+                copy = True
+                clipboard = clipboard_copy
+            elif clipboard_cut:
+                copy = False
+                clipboard = clipboard_cut
+
+            for p in clipboard:
+                n = Node.get(p)
+                if n:
+                    self.instance.paste(n, copy=copy)
+
+            self.request.session['clipboard_copy'] = []
+            self.request.session['clipboard_cut'] = []
+            count = len(clipboard)
+            return self.redirect(self.instance.get_absolute_url() + 'list',
+                                 info="%d item(s) pasted" % count)
+
+
+
+        return self.redirect(self.instance.get_absolute_url() + 'list')
 
     def handle_contents_actions_delete(self):
         """
