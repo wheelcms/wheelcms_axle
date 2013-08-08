@@ -113,6 +113,7 @@ class TestContent(object):
     ## copy/paste
 
     def test_copy_content_simple(self, client):
+        """ Standard content copy. """
         c1 = Type1(title="hello", state="visible", t1field="orig").save()
         c2 = c1.copy()
         assert c1 != c2
@@ -136,6 +137,8 @@ class TestContent(object):
         assert t1s[0].t1field != t1s[1].t1field
 
     def test_copy_content_owner(self, client):
+        """ verify the owner (foreign key) gets copied """
+        ## Should current user become new owner? XXX
         owner = User.objects.get_or_create(username="owner")[0]
         c1 = Type1(title="hello", owner=owner).save()
         c2 = c1.copy()
@@ -143,6 +146,7 @@ class TestContent(object):
         assert c1.owner == c2.owner
 
     def test_copy_content_m2m(self, client):
+        """ m2m relations need special handling """
         m2m1 = TypeM2M().save()
         m2m2 = TypeM2M().save()
         c1 = TypeM2M().save()
@@ -152,3 +156,35 @@ class TestContent(object):
         c2 = c1.copy()
 
         assert set(c2.m2m.all()) == set((m2m1, m2m2))
+
+    def test_copy_content_node(self, client):
+        """ copy a node and its content """
+        root = Node.root()
+        n = root.add("content")
+        c = Type1(title="c on n", node=n).save()
+
+        n2 = root.paste(n, copy=True)
+        assert n2.content() != n.content()
+        assert n2.content().title == c.title
+        assert n2.content().node != n
+
+    def test_copy_content_node_recursive(self, client):
+        root = Node.root()
+        sub = root.add("sub")
+        Type1(title="content on sub", node=sub).save()
+        subc1 = sub.add("c1")
+        Type1(title="content on sub/c1", node=subc1).save()
+        subc2 = sub.add("c2")
+        Type1(title="content on sub/c2", node=subc2).save()
+
+        # import pytest; pytest.set_trace()
+        sub2 = root.paste(sub, copy=True)
+        assert len(sub2.children()) == 2
+        assert sub2.content() != sub.content()
+        assert sub2.content().title == "content on sub"
+
+        assert sub2.child("c1").content() != subc1.content()
+        assert sub2.child("c1").content().title == "content on sub/c1"
+        assert sub2.child("c2").content() != subc2.content()
+        assert sub2.child("c2").content().title == "content on sub/c2"
+

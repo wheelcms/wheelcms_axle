@@ -265,12 +265,14 @@ class NodeBase(models.Model):
 
             slug = unique_slug(slug)
             base = self.add(slug)
-            ## copy content
+            if node.content():
+                node.content().copy(node=base)
 
             for o in Node.objects.offspring(node):
                 path = self.path + '/' + slug + o.path[len(origpath):]
-                n = Node(path=path).save()
-                ## copy content
+                n, _ = Node.objects.get_or_create(path=path)
+                if o.content():
+                    o.content().copy(node=n)
             return base
 
         else:

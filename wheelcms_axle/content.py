@@ -81,11 +81,13 @@ class ContentBase(models.Model):
             self.classes.add(ContentClass.objects.get_or_create(name=klass)[0])
         return self  ## foo = x.save() is nice
 
-    def copy(self):
-        """ create a copy """
+    def copy(self, node=None):
+        """ create a copy, attach it to new node if specified """
         ## XXX should this be a Spoke method?
         c = self.__class__.objects.get(pk=self.pk)
         c.pk = c.id = None
+        if node:
+            c.node = node
         c.save()
         # import pytest; pytest.set_trace()
 
