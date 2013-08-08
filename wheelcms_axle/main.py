@@ -482,6 +482,13 @@ class MainHandler(WheelRESTHandler):
         return dict(result="ok")
 
     def handle_contents_actions_cutcopypaste(self):
+        ##
+        ## TODO:
+        ## 
+        ## Handle paste in same folder (Node already handles this?)
+        ## Provide correct type of clipboard in toolbar (cut/copied)
+        ## Adjust info message (moved, copied?)
+        ## Handle empty selections, possibly in frontend
         action = self.request.POST.get('action')
         raw_selection = self.request.POST.getlist('selection', [])
 
