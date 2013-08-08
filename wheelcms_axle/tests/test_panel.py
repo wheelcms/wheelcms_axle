@@ -19,6 +19,7 @@ storage = SimpleUploadedFile("foo.png",
 
 from .test_spoke import BaseLocalRegistry
 
+
 class TestPanel(BaseLocalRegistry):
     """
         Test different panel invocation scenario's
@@ -106,6 +107,7 @@ class TestPanel(BaseLocalRegistry):
 
         request = superuser_request(image1.get_absolute_url(), method="GET")
         handler = MainHandlerTestable(request=request, instance=image1)
+        
         panels = handler.panels(path=image1.get_absolute_url(), original="", mode="image")
         assert len(panels['panels']) == 3
         assert panels['path'] == image1.get_absolute_url()
