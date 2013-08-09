@@ -482,13 +482,7 @@ class MainHandler(WheelRESTHandler):
         return dict(result="ok")
 
     def handle_contents_actions_cutcopypaste(self):
-        ##
-        ## TODO:
-        ## 
-        ## Handle paste in same folder (Node already handles this?)
-        ## Provide correct type of clipboard in toolbar (cut/copied)
-        ## Adjust info message (moved, copied?)
-        ## Handle empty selections, possibly in frontend
+        """ handle cut/copy/paste of items """
         if not self.hasaccess() or not self.post:
             return self.forbidden()
 
@@ -509,12 +503,12 @@ class MainHandler(WheelRESTHandler):
 
 
             return self.redirect(self.instance.get_absolute_url() + 'list',
-                                 info="%d item(s) cut" % count)
+                                 info="%d item(s) added to clipboard for move" % count)
         elif action == "copy":
             self.request.session['clipboard_cut'] = []
             self.request.session['clipboard_copy'] = selection
             return self.redirect(self.instance.get_absolute_url() + 'list',
-                                 info="%d item(s) copied" % count)
+                                 info="%d item(s) added to clipboard for copy" % count)
         elif action == "paste":
             copy = False
             clipboard_copy = self.request.session.get('clipboard_copy', [])
@@ -545,8 +539,13 @@ class MainHandler(WheelRESTHandler):
             self.request.session['clipboard_copy'] = []
             self.request.session['clipboard_cut'] = []
             count = len(accum_success)
+            if copy:
+                info = "%d item(s) copied" % count
+            else:
+                info = "%d item(s) moved" % count
+
             return self.redirect(self.instance.get_absolute_url() + 'list',
-                                 info="%d item(s) pasted" % count)
+                                 info=info)
 
 
 
