@@ -453,6 +453,13 @@ class TestNodeCopyPaste(object):
 
         py.test.raises(CantMoveToOffspring, target.paste, src)
 
+    def test_move_inside_self(self, client):
+        """ A node cannot be moved to one of its offspring nodes. """
+        root = Node.root()
+        src = root.add("src")
+
+        py.test.raises(CantMoveToOffspring, src.paste, src)
+
     def test_move_inside_offspring_root(self, client):
         """ A node cannot be moved to one of its offspring nodes.
             This, of course, also means root cannot be moved """

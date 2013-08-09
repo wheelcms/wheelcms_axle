@@ -296,7 +296,7 @@ class NodeBase(models.Model):
             return base, success, failed
 
         else:
-            if node.is_ancestor(self):
+            if node == self or node.is_ancestor(self):
                 raise CantMoveToOffspring()
             oldpath = node.path
             oldbase, slug = oldpath.rsplit("/", 1)

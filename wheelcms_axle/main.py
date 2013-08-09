@@ -533,7 +533,7 @@ class MainHandler(WheelRESTHandler):
                 if n:
                     base, success, failure = self.instance.paste(n, copy=copy)
                     accum_success.extend(success)
-                    accum_success.extend(failure)
+                    accum_failure.extend(failure)
 
             self.request.session['clipboard_copy'] = []
             self.request.session['clipboard_cut'] = []
