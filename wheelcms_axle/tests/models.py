@@ -64,6 +64,12 @@ class TypeM2M(Content):
 class TypeM2MType(Spoke):
     model = TypeM2M
 
+class TypeUnique(Content):
+    uniek = models.TextField(unique=True)
+
+class TypeUniqueType(Spoke):
+    model = TypeUnique
+
 type_registry.register(Type1Type)
 type_registry.register(Type2Type)
 type_registry.register(TestFileType)
@@ -71,6 +77,7 @@ type_registry.register(TestImageType)
 type_registry.register(OtherTestFileType)
 type_registry.register(OtherTestImageType)
 type_registry.register(TypeM2MType)
+type_registry.register(TypeUniqueType)
 
 from wheelcms_axle.content import TypeRegistry
 

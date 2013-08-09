@@ -248,6 +248,8 @@ class NodeBase(models.Model):
 
         ## how to deal with the position? Insert at the bottom?
 
+        from .content import ContentCopyException
+
         def unique_slug(slug):
             orig_slug = slug
             count = 0
@@ -266,13 +268,26 @@ class NodeBase(models.Model):
             slug = unique_slug(slug)
             base = self.add(slug)
             if node.content():
-                node.content().copy(node=base)
+                try:
+                    node.content().copy(node=base)
+                except ContentCopyException:
+                    pass ## delete node
 
+            failed = set()
             for o in Node.objects.offspring(node):
+                for f in failed:
+                    if o.path.startswith(f + '/'):
+                        continue
+
                 path = self.path + '/' + slug + o.path[len(origpath):]
                 n, _ = Node.objects.get_or_create(path=path)
                 if o.content():
-                    o.content().copy(node=n)
+                    try:
+                        o.content().copy(node=n)
+                    except ContentCopyException:
+                        n.delete()
+                        failed.add(o.path)
+                        ## but we shouldn't copy any offspring either!
             return base
 
         else:

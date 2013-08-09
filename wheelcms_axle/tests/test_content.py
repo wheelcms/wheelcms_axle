@@ -5,8 +5,9 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 
 from wheelcms_axle.node import Node, NodeInUse
-from wheelcms_axle.content import Content
-from wheelcms_axle.tests.models import Type1, Type2, TypeM2M
+from wheelcms_axle.content import Content, ContentCopyFailed
+from wheelcms_axle.content import ContentCopyNotSupported
+from wheelcms_axle.tests.models import Type1, Type2, TypeM2M, TypeUnique
 
 
 class TestContent(object):
@@ -157,6 +158,19 @@ class TestContent(object):
 
         assert set(c2.m2m.all()) == set((m2m1, m2m2))
 
+    def test_copy_content_unique(self, client):
+        """ m2m relations need special handling """
+        uniek = TypeUnique(uniek="one of a kind").save()
+
+        pytest.raises(ContentCopyFailed, uniek.copy)
+
+    def test_copy_content_not_copyable(self, client):
+        """ m2m relations need special handling """
+        not_copyable = Type1()
+        not_copyable.copyable = False
+
+        pytest.raises(ContentCopyNotSupported, not_copyable.copy)
+
     def test_copy_content_node(self, client):
         """ copy a node and its content """
         root = Node.root()
@@ -177,7 +191,6 @@ class TestContent(object):
         subc2 = sub.add("c2")
         Type1(title="content on sub/c2", node=subc2).save()
 
-        # import pytest; pytest.set_trace()
         sub2 = root.paste(sub, copy=True)
         assert len(sub2.children()) == 2
         assert sub2.content() != sub.content()
@@ -188,3 +201,18 @@ class TestContent(object):
         assert sub2.child("c2").content() != subc2.content()
         assert sub2.child("c2").content().title == "content on sub/c2"
 
+    def test_copy_content_node_unique(self, client):
+        root = Node.root()
+        sub = root.add("sub")
+        Type1(title="content on sub", node=sub).save()
+        subc1 = sub.add("c1")
+        TypeUnique(uniek="unique content on sub/c1", node=subc1).save()
+        subc2 = sub.add("c2")
+        Type1(title="content on sub/c2", node=subc2).save()
+
+        subunique = subc1.add("subunique")
+
+
+        sub2 = root.paste(sub, copy=True)
+        assert len(sub2.children()) == 1
+        assert Node.get(sub2.path + "/c1/subunique") is None

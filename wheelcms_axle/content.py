@@ -6,7 +6,7 @@ from two.ol.util import classproperty
 
 from django.utils import timezone
 from django.contrib.auth.models import User
-from django.db import models
+from django.db import models, IntegrityError
 
 from taggit.managers import TaggableManager
 
@@ -14,6 +14,17 @@ from .registry import Registry
 
 from .node import Node
 
+class ContentException(Exception):
+    pass
+
+class ContentCopyException(ContentException):
+    pass
+
+class ContentCopyNotSupported(ContentCopyException):
+    pass
+
+class ContentCopyFailed(ContentCopyException):
+    pass
 
 def far_future():
     """ default expiration is roughly 20 years from now """
@@ -28,6 +39,8 @@ class ContentClass(models.Model):
 
 class ContentBase(models.Model):
     CLASSES = ()
+
+    copyable = True
 
     node = models.OneToOneField(Node, related_name="contentbase", null=True)
     title = models.CharField(max_length=256, blank=False)
@@ -82,14 +95,27 @@ class ContentBase(models.Model):
         return self  ## foo = x.save() is nice
 
     def copy(self, node=None):
-        """ create a copy, attach it to new node if specified """
-        ## XXX should this be a Spoke method?
+        """ create a copy, attach it to new node if specified.
+            content is copyable by default, but special measures must
+            be taken with ManyToMany fields and fields with a unique=True
+            constraint.
+
+            To disable copy support on a model set copyable = False
+            (shouldn't this be defined at Spoke level? XXX)
+        """
+        if not self.copyable:
+            raise ContentCopyNotSupported()
+
         c = self.__class__.objects.get(pk=self.pk)
         c.pk = c.id = None
         if node:
             c.node = node
-        c.save()
-        # import pytest; pytest.set_trace()
+
+        try:
+            c.save()
+        except IntegrityError as e:
+            ## most likely a unique field
+            raise ContentCopyFailed(e.args[0])
 
         for m2m in c._meta.many_to_many:
             setattr(c, m2m.name, getattr(self, m2m.name).all())
