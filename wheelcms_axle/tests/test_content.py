@@ -177,7 +177,7 @@ class TestContent(object):
         n = root.add("content")
         c = Type1(title="c on n", node=n).save()
 
-        n2 = root.paste(n, copy=True)
+        n2, success, failed = root.paste(n, copy=True)
         assert n2.content() != n.content()
         assert n2.content().title == c.title
         assert n2.content().node != n
@@ -191,7 +191,7 @@ class TestContent(object):
         subc2 = sub.add("c2")
         Type1(title="content on sub/c2", node=subc2).save()
 
-        sub2 = root.paste(sub, copy=True)
+        sub2, success, failed = root.paste(sub, copy=True)
         assert len(sub2.children()) == 2
         assert sub2.content() != sub.content()
         assert sub2.content().title == "content on sub"
@@ -212,7 +212,6 @@ class TestContent(object):
 
         subunique = subc1.add("subunique")
 
-
-        sub2 = root.paste(sub, copy=True)
+        sub2, success, failed = root.paste(sub, copy=True)
         assert len(sub2.children()) == 1
         assert Node.get(sub2.path + "/c1/subunique") is None

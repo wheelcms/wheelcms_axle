@@ -250,6 +250,9 @@ class NodeBase(models.Model):
 
         from .content import ContentCopyException
 
+        failed = []
+        success = []
+
         def unique_slug(slug):
             orig_slug = slug
             count = 0
@@ -273,22 +276,22 @@ class NodeBase(models.Model):
                 except ContentCopyException:
                     pass ## delete node
 
-            failed = set()
-            for o in Node.objects.offspring(node):
+            for o in Node.objects.offspring(node).order_by("path"):
+                ## skip all offspring of a failed node
                 for f in failed:
                     if o.path.startswith(f + '/'):
-                        continue
-
-                path = self.path + '/' + slug + o.path[len(origpath):]
-                n, _ = Node.objects.get_or_create(path=path)
-                if o.content():
-                    try:
-                        o.content().copy(node=n)
-                    except ContentCopyException:
-                        n.delete()
-                        failed.add(o.path)
-                        ## but we shouldn't copy any offspring either!
-            return base
+                        break
+                else:
+                    path = self.path + '/' + slug + o.path[len(origpath):]
+                    n, _ = Node.objects.get_or_create(path=path)
+                    if o.content():
+                        try:
+                            o.content().copy(node=n)
+                            success.append(o.path)
+                        except ContentCopyException:
+                            n.delete()
+                            failed.append(o.path)
+            return base, success, failed
 
         else:
             if node.is_ancestor(self):
@@ -297,7 +300,7 @@ class NodeBase(models.Model):
             oldbase, slug = oldpath.rsplit("/", 1)
             if oldbase == self.path:
                 ## pasting into its own parent, nothing to do
-                return node
+                return node, success, failed
 
             slug = unique_slug(slug)
 
@@ -310,7 +313,7 @@ class NodeBase(models.Model):
             node.position = self.find_position(position=-1)
             node.save()
 
-        return node
+        return node, success, failed
 
     def remove(self, childslug):
         """ remove a child, recursively """

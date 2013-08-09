@@ -437,7 +437,7 @@ class TestNodeCopyPaste(object):
         src_c = src.add("child")
         target = root.add("target")
 
-        res = target.paste(src)
+        res, success, failed = target.paste(src)
 
         assert Node.get('/target/src') == src
         assert Node.get('/target/src/child') == src_c
@@ -464,7 +464,7 @@ class TestNodeCopyPaste(object):
         """ moving /foo to / """
         root = Node.root()
         src = root.add("src")
-        res = root.paste(src)
+        res, success, failed = root.paste(src)
 
         assert res == src
         assert res.path == "/src"
@@ -480,7 +480,7 @@ class TestNodeCopyPaste(object):
         target = root.add("target")
         target_src = target.add("src")
 
-        res = target.paste(src)
+        res, success, failed = target.paste(src)
 
         assert Node.get('/target/src') == target_src
         assert src.path != "/src"
@@ -495,7 +495,7 @@ class TestNodeCopyPaste(object):
         target = root.add("target")
         target_child = target.add("child", position=10)
 
-        res = target.paste(src)
+        res, success, failed = target.paste(src)
 
         assert Node.get("/target/src").position > target_child.position
 
@@ -535,7 +535,7 @@ class TestNodeCopyPaste(object):
         target = root.add("target")
         target_child = target.add("child", position=10)
 
-        res = target.paste(src, copy=True)
+        res, success, failed = target.paste(src, copy=True)
 
         assert Node.get("/target/src").position > target_child.position
 
@@ -549,7 +549,7 @@ class TestNodeCopyPaste(object):
         target = root.add("target")
         target_src = target.add("src")
 
-        res = target.paste(src)
+        res, success, failed = target.paste(src)
 
         assert res.path != "/target/src"
         assert Node.get(res.path + "/child")
@@ -558,7 +558,7 @@ class TestNodeCopyPaste(object):
         """ copy /foo to / """
         root = Node.root()
         src = root.add("src")
-        res = root.paste(src, copy=True)
+        res, success, failed = root.paste(src, copy=True)
 
         assert res.path != "/src"
 
@@ -568,7 +568,7 @@ class TestNodeCopyPaste(object):
         src = root.add("src")
         target = src.add("target")
 
-        res = target.paste(src, copy=True)
+        res, success, failed = target.paste(src, copy=True)
 
         assert res.path == "/src/target/src"
         assert res != src
@@ -579,7 +579,7 @@ class TestNodeCopyPaste(object):
         src = root.add("src")
         target = src.add("target")
 
-        res = target.paste(root, copy=True)
+        res, success, failed = target.paste(root, copy=True)
 
         assert res.path == "/src/target/root"
         assert res != src

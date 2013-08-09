@@ -440,11 +440,11 @@ class MainHandler(WheelRESTHandler):
         self.context['breadcrumb'] = self.breadcrumb(operation="Contents")
         spoke = self.spoke()
 
-        self.context['can_paste'] = len(self.request.session.get('clipboard_copy', [])) + len(self.request.session.get('clipboard_cut'))
+        self.context['can_paste'] = len(self.request.session.get('clipboard_copy', [])) + len(self.request.session.get('clipboard_cut', []))
 
         if spoke:
             return self.template(spoke.list_template())
-        
+
         return self.template("wheelcms_axle/contents.html")
 
     def handle_contents(self):
@@ -492,7 +492,6 @@ class MainHandler(WheelRESTHandler):
         action = self.request.POST.get('action')
         raw_selection = self.request.POST.getlist('selection', [])
 
-        # import pdb; pdb.set_trace()
         selection = []
         for s in raw_selection:
             p = resolve_path(s)
@@ -500,7 +499,7 @@ class MainHandler(WheelRESTHandler):
                 selection.append(p)
 
         count = len(selection)
-        
+
         if action == "cut":
             self.request.session['clipboard_copy'] = []
             self.request.session['clipboard_cut'] = selection
@@ -526,14 +525,19 @@ class MainHandler(WheelRESTHandler):
                 copy = False
                 clipboard = clipboard_cut
 
+            accum_success = []
+            accum_failure = []
+
             for p in clipboard:
                 n = Node.get(p)
                 if n:
-                    self.instance.paste(n, copy=copy)
+                    base, success, failure = self.instance.paste(n, copy=copy)
+                    accum_success.extend(success)
+                    accum_success.extend(failure)
 
             self.request.session['clipboard_copy'] = []
             self.request.session['clipboard_cut'] = []
-            count = len(clipboard)
+            count = len(accum_success)
             return self.redirect(self.instance.get_absolute_url() + 'list',
                                  info="%d item(s) pasted" % count)
 
