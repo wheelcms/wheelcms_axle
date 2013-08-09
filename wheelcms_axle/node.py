@@ -273,8 +273,10 @@ class NodeBase(models.Model):
             if node.content():
                 try:
                     node.content().copy(node=base)
+                    success.append(node.path)
                 except ContentCopyException:
-                    pass ## delete node
+                    failed.append(node.path)
+                    base.delete()
 
             for o in Node.objects.offspring(node).order_by("path"):
                 ## skip all offspring of a failed node
@@ -308,10 +310,12 @@ class NodeBase(models.Model):
             for o in Node.objects.offspring(node):
                 o.path = self.path + '/' + slug + o.path[len(oldpath):]
                 o.save()
+                success.append(o.path)
             node.path = self.path + '/' + slug
             ## move to end
             node.position = self.find_position(position=-1)
             node.save()
+            success.append(node.path)
 
         return node, success, failed
 

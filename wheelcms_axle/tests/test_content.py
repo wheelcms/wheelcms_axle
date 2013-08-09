@@ -204,6 +204,16 @@ class TestContent(object):
     def test_copy_content_node_unique(self, client):
         root = Node.root()
         sub = root.add("sub")
+        TypeUnique(title="content on sub", node=sub).save()
+
+        sub2, success, failed = root.paste(sub, copy=True)
+        assert len(root.children()) == 1
+        assert len(success) == 0
+        assert len(failed) == 1
+
+    def test_copy_content_node_unique_sub(self, client):
+        root = Node.root()
+        sub = root.add("sub")
         Type1(title="content on sub", node=sub).save()
         subc1 = sub.add("c1")
         TypeUnique(uniek="unique content on sub/c1", node=subc1).save()
@@ -215,3 +225,5 @@ class TestContent(object):
         sub2, success, failed = root.paste(sub, copy=True)
         assert len(sub2.children()) == 1
         assert Node.get(sub2.path + "/c1/subunique") is None
+        assert len(success) == 2
+        assert len(failed) == 1
