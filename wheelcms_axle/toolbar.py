@@ -124,11 +124,13 @@ class Toolbar(object):
 
     def clipboard(self):
         """ return list of items in the clipboard """
-        # import pdb; pdb.set_trace()
-        
         clipboard_copy = self.request.session.get('clipboard_copy', [])
         clipboard_cut = self.request.session.get('clipboard_cut', [])
 
+        
         clipboard = clipboard_copy or clipboard_cut
 
-        return dict(count=len(clipboard), items=[Node.get(i).content() for i in clipboard])
+        return dict(count=len(clipboard),
+                    copy=bool(clipboard_copy),
+                    cut=bool(clipboard_cut),
+                    items=[Node.get(i).content() for i in clipboard])
