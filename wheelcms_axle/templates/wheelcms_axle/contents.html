@@ -28,12 +28,6 @@
         }
         return false;
     });
-    $("#xcontents_action_copy").click(function() {
-        var copies = $("input[type='checkbox'][name='selection']:checked");
-
-        alert("Content copied");
-        return false;
-    });
     $(".contents_item_remove").click(function() {
         /*
          * The small 'x' icon on a single entry.
@@ -45,7 +39,9 @@
     $(".toggle-all").click(function(e) {
         /* select/deselect all entries */
         var boxes = $("input[type='checkbox'][name='selection']");
-        boxes.attr("checked", $(this).attr("checked")?true:false);
+        var state = $(this).attr("checked")?true:false;
+        boxes.attr("checked", state);
+        $(".toggleaction").attr("disabled", !state);
     });
     $(".sortable").sortable({
         items: "tr.sortablerow",
@@ -56,13 +52,20 @@
             var after = target.next("tr");
 
             if(before.hasClass("sortablerow") && before.data('url')) {
-                //console.log("Move " + target_path + " after " + before.data('url'));
                 $.post("reorder", {rel: "after", target: target_path, ref: before.data('url')})
             }
             else {
-                //console.log("Move " + target_path + " before " + after.data('url'));
                 $.post("reorder", {rel: "before", target: target_path, ref: after.data('url')})
             }
+        }
+    });
+    $("input[name='selection']").change(function() {
+        // any button, not specifically the one that was clicked
+        if($("input[name='selection']:checked").length) {
+            $(".toggleaction").attr("disabled", false);
+        }
+        else {
+            $(".toggleaction").attr("disabled", true);
         }
     });
   });
@@ -165,10 +168,10 @@
         <td colspan="4">
           <div class="btn-toolbar">
             <div class="btn-group">
-              <button id="contents_action_cut" name="action" class="btn btn-small" value="cut">Cut</button>
-              <button id="contents_action_copy" name="action" class="btn btn-small" value="copy">Copy</button>
+              <button id="contents_action_cut" disabled="disabled" name="action" class="btn btn-small toggleaction" value="cut">Cut</button>
+              <button id="contents_action_copy" disabled="disabled" name="action" class="btn btn-small toggleaction" value="copy">Copy</button>
               <button id="contents_action_paste" name="action" class="btn btn-small" {% if not can_paste %} disabled="disabled" {% endif %} value="paste">Paste</button>
-              <button id="contents_action_delete" class="btn btn-small">Delete</button>
+              <button id="contents_action_delete" disabled="disabled" class="btn btn-small toggelaction">Delete</button>
             </div>
           </div>
         </td>
