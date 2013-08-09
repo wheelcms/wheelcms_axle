@@ -275,12 +275,14 @@ class NodeBase(models.Model):
                     node.content().copy(node=base)
                     success.append(node.path)
                 except ContentCopyException:
-                    failed.append(node.path)
+                    failed.append((node.path, "Content cannot be copied"))
                     base.delete()
+                    ## no need to continue
+                    return base, success, failed
 
             for o in Node.objects.offspring(node).order_by("path"):
                 ## skip all offspring of a failed node
-                for f in failed:
+                for f, reason in failed:
                     if o.path.startswith(f + '/'):
                         break
                 else:
@@ -292,7 +294,7 @@ class NodeBase(models.Model):
                             success.append(o.path)
                         except ContentCopyException:
                             n.delete()
-                            failed.append(o.path)
+                            failed.append((o.path, "Content cannot be copied"))
             return base, success, failed
 
         else:

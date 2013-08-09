@@ -6,7 +6,7 @@ from django.core.urlresolvers import resolve
 
 
 from two.ol.base import RESTLikeHandler, applyrequest, context, json, handler
-from wheelcms_axle.node import Node, NodeNotFound
+from wheelcms_axle.node import Node, NodeNotFound, CantMoveToOffspring
 from wheelcms_axle.content import type_registry, Content, ImageContent
 
 from wheelcms_axle.spoke import FileSpoke
@@ -489,6 +489,9 @@ class MainHandler(WheelRESTHandler):
         ## Provide correct type of clipboard in toolbar (cut/copied)
         ## Adjust info message (moved, copied?)
         ## Handle empty selections, possibly in frontend
+        if not self.hasaccess() or not self.post:
+            return self.forbidden()
+
         action = self.request.POST.get('action')
         raw_selection = self.request.POST.getlist('selection', [])
 
@@ -531,9 +534,13 @@ class MainHandler(WheelRESTHandler):
             for p in clipboard:
                 n = Node.get(p)
                 if n:
-                    base, success, failure = self.instance.paste(n, copy=copy)
-                    accum_success.extend(success)
-                    accum_failure.extend(failure)
+                    try:
+                        base, success, failure = self.instance.paste(n, copy=copy)
+                        accum_success.extend(success)
+                        accum_failure.extend(failure)
+                    except CantMoveToOffspring:
+                        accum_failure.append((p, "Can't move to self or offspring"))
+
 
             self.request.session['clipboard_copy'] = []
             self.request.session['clipboard_cut'] = []
