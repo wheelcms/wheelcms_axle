@@ -78,7 +78,6 @@ class NodeManager(models.Manager):
             complex when roles are supported
         """
 
-
 class NodeBase(models.Model):
     ROOT_PATH = ""
     ALLOWED_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789_-"
@@ -383,3 +382,8 @@ class NodeBase(models.Model):
 WHEEL_NODE_BASECLASS = NodeBase
 class Node(WHEEL_NODE_BASECLASS):
     pass
+
+class Paths(models.Model):
+    language = models.CharField(max_length=10, blank=False)
+    node = models.ForeignKey(Node, related_name="paths")
+
