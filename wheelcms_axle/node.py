@@ -31,6 +31,10 @@ class NodeNotFound(NodeException):
 from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.db.models import Q
+import random
+
+def random_path():
+    return hex(random.randrange(0, 10**20))
 
 def get_language():
     language = translation.get_language()
@@ -42,13 +46,13 @@ class NodeQuerySet(QuerySet):
     def children(self, node):
         """ only return direct children """
         return self.filter(
-                  path__regex="^%s/[%s]+$" % (node.path, Node.ALLOWED_CHARS),
+                  tree_path__regex="^%s/[%s]+$" % (node.tree_path, Node.ALLOWED_CHARS),
                   )
 
     def offspring(self, node):
         """ children, grandchildren, etc """
         return self.filter(
-                  path__regex="^%s/[%s]+" % (node.path, Node.ALLOWED_CHARS),
+                  tree_path__regex="^%s/[%s]+" % (node.tree_path, Node.ALLOWED_CHARS),
                   )
 
     def attached(self):
@@ -95,7 +99,7 @@ class NodeBase(models.Model):
 
     validpathre = re.compile("^[%s]{1,%d}$" % (ALLOWED_CHARS, MAX_PATHLEN))
 
-    path = models.CharField(max_length=255, blank=False, unique=True)
+    tree_path = models.CharField(max_length=255, blank=False, unique=True, default=random_path)
     position = models.IntegerField(default=0)
 
     objects = NodeManager()
@@ -124,16 +128,20 @@ class NodeBase(models.Model):
         except Content.DoesNotExist:
             return None
 
+    @property
+    def path(self):
+        return self.get_path()
+
     @classmethod
     def get(cls, path, language=None):
         """ retrieve node directly by path. Returns None if not found """
         language = language or get_language()
-        # XXX gaat mis omdat query op language=None failt
-        #if path == "/child":
-        #   import pytest; pytest.set_trace()
         try:
             return Paths.objects.get(path=path, language=language).node
         except Paths.DoesNotExist:
+            ## the root may not yet have been created
+            if path == "":
+                return cls.root()
             return None
 
 
@@ -171,7 +179,7 @@ class NodeBase(models.Model):
     @classmethod
     def root(cls):
         try:
-            return cls.objects.get(path=cls.ROOT_PATH)
+            return cls.objects.get(tree_path=cls.ROOT_PATH)
         except Node.DoesNotExist:
             root = Node(parent=None, slug="")
             root.save()
@@ -179,10 +187,10 @@ class NodeBase(models.Model):
 
 
     def isroot(self):
-        return self.path == self.ROOT_PATH
+        return self.tree_path == self.ROOT_PATH
 
     def is_ancestor(self, node):
-        return node.path.startswith(self.path + '/')
+        return node.tree_path.startswith(self.tree_path + '/')
 
     def find_position(self, position=-1, after=None, before=None):
         children = self.children()
@@ -240,30 +248,33 @@ class NodeBase(models.Model):
         return Paths.objects.get(node=self, language=language).path
 
     def save(self, *args, **kw):
-        #if self._slug == "child":
-        #    import pytest; pytest.set_trace()
+        ## If the object has not yet been saved (ever), create the node's paths
+        saved = True
+        if self.pk is None:
+            saved = False
 
-        import random
-        ## only if not set / not root!
-        self.path = hex(random.randrange(0, 10**20))
+
+        ## first save the object so we can create references
         super(NodeBase, self).save(*args, **kw)
 
-        for language in settings.CONTENT_LANGUAGES:
-            try:
-                langpath = Paths.objects.get(node=self, language=language)
-            except Paths.DoesNotExist:
-                langpath = Paths(node=self, language=language)
+        ## create paths based on self._slug / self._parent which were passed to __init__
+        if not saved:
+            for language in settings.CONTENT_LANGUAGES:
+                try:
+                    langpath = Paths.objects.get(node=self, language=language)
+                except Paths.DoesNotExist:
+                    langpath = Paths(node=self, language=language)
 
-            if not self._parent:
-                path = '' # '/' + str(self.id) -- be consistent with 'old' behavior, for now
-                langpath.path = self._slug
-            else:
-                path = self._parent.path + '/' + str(self.id)
-                langpath.path = self._parent.get_path(language) + '/' + self._slug
-            langpath.save()
+                if not self._parent:
+                    path = '' # '/' + str(self.id) -- be consistent with 'old' behavior, for now
+                    langpath.path = self._slug
+                else:
+                    path = self._parent.tree_path + '/' + str(self.id)
+                    langpath.path = self._parent.get_path(language) + '/' + self._slug
+                langpath.save()
 
-        self.path = path
-        super(NodeBase, self).save()
+            self.tree_path = path
+            super(NodeBase, self).save()
 
     def add(self, path, position=-1, after=None, before=None):
         """ handle invalid paths (invalid characters, empty, too long) """
@@ -325,7 +336,7 @@ class NodeBase(models.Model):
             return slug
 
         if copy:
-            origpath = node.path
+            origpath = node.tree_path
             if origpath != '':
                 origbase, slug = origpath.rsplit("/", 1)
             else:
@@ -336,36 +347,36 @@ class NodeBase(models.Model):
             if node.content():
                 try:
                     node.content().copy(node=base)
-                    success.append(node.path)
+                    success.append(node.tree_path)
                 except ContentCopyException:
-                    failed.append((node.path, "Content cannot be copied"))
+                    failed.append((node.tree_path, "Content cannot be copied"))
                     base.delete()
                     ## no need to continue
                     return base, success, failed
 
-            for o in Node.objects.offspring(node).order_by("path"):
+            for o in Node.objects.offspring(node).order_by("tree_path"):
                 ## skip all offspring of a failed node
                 for f, reason in failed:
-                    if o.path.startswith(f + '/'):
+                    if o.tree_path.startswith(f + '/'):
                         break
                 else:
-                    path = self.path + '/' + slug + o.path[len(origpath):]
-                    n, _ = Node.objects.get_or_create(path=path)
+                    path = self.tree_path + '/' + slug + o.tree_path[len(origpath):]
+                    n, _ = Node.objects.get_or_create(tree_path=path)
                     if o.content():
                         try:
                             o.content().copy(node=n)
-                            success.append(o.path)
+                            success.append(o.tree_path)
                         except ContentCopyException:
                             n.delete()
-                            failed.append((o.path, "Content cannot be copied"))
+                            failed.append((o.tree_path, "Content cannot be copied"))
             return base, success, failed
 
         else:
             if node == self or node.is_ancestor(self):
                 raise CantMoveToOffspring()
-            oldpath = node.path
+            oldpath = node.tree_path
             oldbase, slug = oldpath.rsplit("/", 1)
-            if oldbase == self.path:
+            if oldbase == self.tree_path:
                 ## pasting into its own parent, nothing to do
                 return node, success, failed
 
@@ -373,14 +384,14 @@ class NodeBase(models.Model):
 
             ## XXX somehow batch/transaction this
             for o in Node.objects.offspring(node):
-                o.path = self.path + '/' + slug + o.path[len(oldpath):]
+                o.tree_path = self.tree_path + '/' + slug + o.tree_path[len(oldpath):]
                 o.save()
-                success.append(o.path)
-            node.path = self.path + '/' + slug
+                success.append(o.tree_path)
+            node.tree_path = self.tree_path + '/' + slug
             ## move to end
             node.position = self.find_position(position=-1)
             node.save()
-            success.append(node.path)
+            success.append(node.tree_path)
 
         return node, success, failed
 
@@ -388,9 +399,9 @@ class NodeBase(models.Model):
         """ remove a child, recursively """
         child = self.child(childslug)
         if child is None:
-            raise NodeNotFound(self.path + '/' + childslug)
+            raise NodeNotFound(self.tree_path + '/' + childslug)
         child.delete()
-        recursive = Node.objects.filter(path__startswith=self.path + '/' +
+        recursive = Node.objects.filter(tree_path__startswith=self.tree_path + '/' +
                                                          childslug + '/')
         recursive.delete()
 
@@ -398,8 +409,8 @@ class NodeBase(models.Model):
         """ return the parent for this node """
         if self.isroot():
             return self
-        parentpath, mypath = self.path.rsplit("/", 1)
-        parent = self.__class__.objects.get(path=parentpath)
+        parentpath, mypath = self.tree_path.rsplit("/", 1)
+        parent = self.__class__.objects.get(tree_path=parentpath)
         return parent
 
     def childrenq(self, order="position", **kw):
@@ -415,33 +426,47 @@ class NodeBase(models.Model):
 
         return self.get(childpath)
 
-    def slug(self):
+    def slug(self, language=None):
         """ last part of self.path """
-        return self.path.rsplit("/", 1)[-1]
+        return self.get_path(language).rsplit("/", 1)[-1]
 
-    def rename(self, slug):
+    def rename(self, slug, language=None):
         """ change the slug """
         if self.isroot():
             raise CantRenameRoot()
 
-        newpath = self.path.rsplit("/", 1)[0] + "/" + slug
-        if Node.objects.filter(path=newpath).count():
-            raise DuplicatePathException(newpath)
-        ## do something transactionish?
-        for childs in Node.objects.offspring(self):
-            remainder = childs.path[len(self.path):]
-            childs.path = newpath + remainder
-            childs.save()
-        self.path = newpath
-        self.save()
+        ## if no language was specified, rename all
+        languages = [language] if language else settings.CONTENT_LANGUAGES
 
-    def get_absolute_url(self):
+        for testmode in (True, False):
+            ## first loop checks if all relevant languages can be renamed, second loop renames
+            for language in languages:
+                try:
+                    localized_path = Paths.objects.get(node=self, language=language)
+                except Paths.DoesNotExist:
+                    continue
+
+                newpath = localized_path.path.rsplit("/", 1)[0] + "/" + slug
+
+                if testmode:
+                    if Paths.objects.filter(path=newpath, language=language).exists():
+                        raise DuplicatePathException(newpath, language)
+                else:
+                    for p in Paths.objects.filter(Q(path=localized_path.path) |
+                                                  Q(path__startswith=localized_path.path + '/'),
+                                                  language=language):
+                        remainder = p.path[len(localized_path.path):]
+                        p.path = newpath + remainder
+                        p.save()
+
+
+    def get_absolute_url(self, language=None):
         ## strip any leading / since django will add that as well
-        return reverse('wheel_main', kwargs={'instance':self.path.lstrip('/')})
+        return reverse('wheel_main', kwargs={'instance':self.get_path(language).lstrip('/')})
 
     def __unicode__(self):
         """ readable representation """
-        return u"path %s pos %d" % (self.path or '/', self.position)
+        return u"path %s pos %d" % (self.tree_path or '/', self.position)
 
 WHEEL_NODE_BASECLASS = NodeBase
 class Node(WHEEL_NODE_BASECLASS):
