@@ -380,18 +380,48 @@ class NodeBase(models.Model):
                 ## pasting into its own parent, nothing to do
                 return node, success, failed
 
-            slug = unique_slug(slug)
-
             ## XXX somehow batch/transaction this
             for o in Node.objects.offspring(node):
-                o.tree_path = self.tree_path + '/' + slug + o.tree_path[len(oldpath):]
+                o.tree_path = self.tree_path + o.tree_path[len(oldbase):]
                 o.save()
                 success.append(o.tree_path)
-            node.tree_path = self.tree_path + '/' + slug
+            node.tree_path = self.tree_path + '/' + str(node.id)
             ## move to end
             node.position = self.find_position(position=-1)
             node.save()
             success.append(node.tree_path)
+
+            ## the great renaming
+            # import pytest; pytest.set_trace()
+            for language in settings.CONTENT_LANGUAGES:
+                try:
+                    localized_path = Paths.objects.get(node=node, language=language)
+                except Paths.DoesNotExist:
+                    continue
+
+                slug = localized_path.path.rsplit('/', 1)[1]
+
+                mypath = self.get_path(language)
+                newpath = mypath + '/' + slug
+                count = 0
+
+                while Paths.objects.filter(path=newpath, language=language).exists():
+                    newpath = mypath + slug + "_" + str(count)
+                    count += 1
+
+                #if testmode:
+                #if Paths.objects.filter(path=newpath, language=language).exists():
+                #    raise DuplicatePathException(newpath, language)
+                #else:
+                for p in Paths.objects.filter(Q(path=localized_path.path) |
+                                              Q(path__startswith=localized_path.path + '/'),
+                                              language=language):
+                    remainder = p.path[len(localized_path.path):]
+
+                    p.path = newpath + remainder
+
+                    p.save()
+
 
         return node, success, failed
 

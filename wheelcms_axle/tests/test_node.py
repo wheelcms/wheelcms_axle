@@ -488,6 +488,7 @@ class TestNodeCopyPaste(object):
         target = root.add("target")
         target_src = target.add("src")
 
+        # import pytest; pytest.set_trace()
         res, success, failed = target.paste(src)
 
         assert Node.get('/target/src') == target_src
