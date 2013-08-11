@@ -395,15 +395,14 @@ class NodeBase(models.Model):
 
         return node, success, failed
 
-    def remove(self, childslug):
+    def remove(self, childslug, language=None):
         """ remove a child, recursively """
-        child = self.child(childslug)
+        child = self.child(childslug, language)
+
         if child is None:
             raise NodeNotFound(self.tree_path + '/' + childslug)
+        Node.objects.offspring(child).delete()
         child.delete()
-        recursive = Node.objects.filter(tree_path__startswith=self.tree_path + '/' +
-                                                         childslug + '/')
-        recursive.delete()
 
     def parent(self):
         """ return the parent for this node """
