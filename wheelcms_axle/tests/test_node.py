@@ -28,6 +28,7 @@ class TestNode(object):
         root = Node.root()
         child = root.add("child")
         child2 = child.add("child")
+        # import pytest; pytest.set_trace()
         assert child.child('child') == child2
 
     def test_nonroot_child_notfound(self, client):

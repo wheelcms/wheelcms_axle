@@ -1,7 +1,10 @@
 import re
 
+from django.utils import translation
 from django.db import models, IntegrityError
 from django.core.urlresolvers import reverse
+from django.conf import settings
+
 
 
 class NodeException(Exception):
@@ -28,6 +31,12 @@ class NodeNotFound(NodeException):
 from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.db.models import Q
+
+def get_language():
+    language = translation.get_language()
+    if language not in getattr(settings, 'CONTENT_LANGUAGES', ()) and getattr(settings, 'FALLBACK', None):
+        language = settings.FALLBACK
+    return language
 
 class NodeQuerySet(QuerySet):
     def children(self, node):
@@ -94,6 +103,20 @@ class NodeBase(models.Model):
     class Meta:
         abstract = True
 
+    def __init__(self, *args, **kw):
+        self._slug = kw.get('slug', None)
+        self._parent = kw.get('parent', None)
+        try:
+            del kw['slug']
+        except KeyError:
+            pass
+        try:
+            del kw['parent']
+        except KeyError:
+            pass
+
+        super(NodeBase, self).__init__(*args, **kw)
+
     def content(self):
         from .content import Content
         try:
@@ -102,15 +125,17 @@ class NodeBase(models.Model):
             return None
 
     @classmethod
-    def get(cls, path):
+    def get(cls, path, language=None):
         """ retrieve node directly by path. Returns None if not found """
+        language = language or get_language()
+        # XXX gaat mis omdat query op language=None failt
+        #if path == "/child":
+        #   import pytest; pytest.set_trace()
         try:
-            return cls.objects.get(path=path)
-        except cls.DoesNotExist:
-            if path == "":
-                return cls.root()
-
+            return Paths.objects.get(path=path, language=language).node
+        except Paths.DoesNotExist:
             return None
+
 
     def set(self, content, replace=False):
         """
@@ -145,7 +170,13 @@ class NodeBase(models.Model):
 
     @classmethod
     def root(cls):
-        return cls.objects.get_or_create(path=cls.ROOT_PATH)[0]
+        try:
+            return cls.objects.get(path=cls.ROOT_PATH)
+        except Node.DoesNotExist:
+            root = Node(parent=None, slug="")
+            root.save()
+            return root
+
 
     def isroot(self):
         return self.path == self.ROOT_PATH
@@ -204,6 +235,36 @@ class NodeBase(models.Model):
                 position = 0
         return position
 
+    def get_path(self, language=None):
+        language = language or get_language()
+        return Paths.objects.get(node=self, language=language).path
+
+    def save(self, *args, **kw):
+        #if self._slug == "child":
+        #    import pytest; pytest.set_trace()
+
+        import random
+        ## only if not set / not root!
+        self.path = hex(random.randrange(0, 10**20))
+        super(NodeBase, self).save(*args, **kw)
+
+        for language in settings.CONTENT_LANGUAGES:
+            try:
+                langpath = Paths.objects.get(node=self, language=language)
+            except Paths.DoesNotExist:
+                langpath = Paths(node=self, language=language)
+
+            if not self._parent:
+                path = '' # '/' + str(self.id) -- be consistent with 'old' behavior, for now
+                langpath.path = self._slug
+            else:
+                path = self._parent.path + '/' + str(self.id)
+                langpath.path = self._parent.get_path(language) + '/' + self._slug
+            langpath.save()
+
+        self.path = path
+        super(NodeBase, self).save()
+
     def add(self, path, position=-1, after=None, before=None):
         """ handle invalid paths (invalid characters, empty, too long) """
         ## lowercasing is the only normalization we do
@@ -214,7 +275,10 @@ class NodeBase(models.Model):
 
         position = self.find_position(position, after, before)
 
-        child = self.__class__(path=self.path + "/" + path,
+        #if path == "child":
+        #    import pytest; pytest.set_trace()
+
+        child = self.__class__(parent=self, slug=path,
                                position=position)
         try:
             child.save()
@@ -345,9 +409,9 @@ class NodeBase(models.Model):
     def children(self, order="position"):
         return self.childrenq(order=order)
 
-    def child(self, slug):
+    def child(self, slug, language=None):
         """ return a specific child by its slug """
-        childpath = self.path + '/' + slug
+        childpath = self.get_path(language) + '/' + slug
 
         return self.get(childpath)
 
@@ -384,6 +448,12 @@ class Node(WHEEL_NODE_BASECLASS):
     pass
 
 class Paths(models.Model):
+    class Meta:
+        unique_together = (("language", "path"), )
+
     language = models.CharField(max_length=10, blank=False)
+    path = models.CharField(max_length=255, blank=False)
     node = models.ForeignKey(Node, related_name="paths")
 
+    def __unicode__(self):
+        return u"path [%s] for language %s on node %s" % (self.path, self.language, self.node)
