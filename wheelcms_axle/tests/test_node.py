@@ -94,6 +94,11 @@ class TestNode(object):
         py.test.raises(InvalidPathException, root.add,
                        "x" * (Node.MAX_PATHLEN+1))
 
+    def test_add_empty(self, client):
+        """ a path or langslug map must be provided """
+        root = Node.root()
+        py.test.raises(InvalidPathException, root.add)
+
     def test_implicit_position(self, client):
         """ childs are returned in order they were added """
         root = Node.root()
@@ -521,7 +526,6 @@ class TestNodeCopyPaste(object):
         src_c = src.add("child")
         target = root.add("target")
 
-        # import pytest; pytest.set_trace()
         target.paste(src, copy=True)
 
         ## it has been copied and is not the original

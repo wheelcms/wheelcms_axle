@@ -110,12 +110,18 @@ class NodeBase(models.Model):
     def __init__(self, *args, **kw):
         self._slug = kw.get('slug', None)
         self._parent = kw.get('parent', None)
+        self._langslugs = kw.get('langslugs', {})
+
         try:
             del kw['slug']
         except KeyError:
             pass
         try:
             del kw['parent']
+        except KeyError:
+            pass
+        try:
+            del kw['langslugs']
         except KeyError:
             pass
 
@@ -265,36 +271,44 @@ class NodeBase(models.Model):
                 except Paths.DoesNotExist:
                     langpath = Paths(node=self, language=language)
 
+                langslug = self._langslugs.get(language, self._slug)
+
                 if not self._parent:
                     path = '' # '/' + str(self.id) -- be consistent with 'old' behavior, for now
-                    langpath.path = self._slug
+                    langpath.path = langslug
                 else:
                     path = self._parent.tree_path + '/' + str(self.id)
-                    langpath.path = self._parent.get_path(language) + '/' + self._slug
+                    langpath.path = self._parent.get_path(language) + '/' + langslug
                 langpath.save()
 
             self.tree_path = path
             super(NodeBase, self).save()
 
-    def add(self, path, position=-1, after=None, before=None):
+    def add(self, path=None, langslugs={}, position=-1, after=None, before=None):
         """ handle invalid paths (invalid characters, empty, too long) """
         ## lowercasing is the only normalization we do
-        path = path.lower()
+        ## path is actually slug
 
-        if not self.validpathre.match(path):
-            raise InvalidPathException(path)
+        slugs = [s['slug'].lower() for s in langslugs]
+        if path is not None:
+            path = path.lower()
+            slugs.append(path)
+            
+        ## no path specified?
+        for slug in slugs:
+            if not self.validpathre.match(slug):
+                raise InvalidPathException(slug)
+        if not slugs:
+            raise InvalidPathException("No slug or map specified")
 
         position = self.find_position(position, after, before)
 
-        #if path == "child":
-        #    import pytest; pytest.set_trace()
-
-        child = self.__class__(parent=self, slug=path,
+        child = self.__class__(parent=self, slug=path, langslugs=langslugs,
                                position=position)
         try:
             child.save()
         except IntegrityError:
-            raise DuplicatePathException(path)
+            raise DuplicatePathException(slugs)
         return child
 
     def move(self, child, position=-1, after=None, before=None):
@@ -327,22 +341,24 @@ class NodeBase(models.Model):
         failed = []
         success = []
 
-        def unique_slug(slug):
-            orig_slug = slug
-            count = 0
-            while self.child(slug) is not None:
-                slug = "%s_%d" % (orig_slug, count)
-                count += 1
-            return slug
-
         if copy:
-            origpath = node.tree_path
-            if origpath != '':
-                origbase, slug = origpath.rsplit("/", 1)
-            else:
-                origbase, slug = "", "root"
+            ## slug == id, must be unique anyway
 
-            slug = unique_slug(slug)
+            slug_per_lang = {}
+            for p in node.paths.all():
+                lang, path = p.language, p.path
+
+                if path == "":
+                    slug = "root"
+                else:
+                    base_slug = slug = path.rsplit('/', 1)[1]
+
+                count = 0
+                while self.child(slug, lang):
+                    slug = "copy_%s_of_%s" % (count, base_slug)
+                slug_per_lang[lang] = slug
+
+
             base = self.add(slug)
             if node.content():
                 try:
@@ -360,8 +376,11 @@ class NodeBase(models.Model):
                     if o.tree_path.startswith(f + '/'):
                         break
                 else:
-                    path = self.tree_path + '/' + slug + o.tree_path[len(origpath):]
-                    n, _ = Node.objects.get_or_create(tree_path=path)
+                    ## XXX LANG
+                    slug = o.slug()
+                    n = Node(slug=slug, parent=base)
+                    n.save()
+                    # n, _ = Node.objects.get_or_create(tree_path=path)
                     if o.content():
                         try:
                             o.content().copy(node=n)
