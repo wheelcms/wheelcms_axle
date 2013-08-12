@@ -2,7 +2,8 @@ import re
 import mimetypes
 
 from django import forms
-from wheelcms_axle.node import Node, Paths
+
+from wheelcms_axle.node import Node, Paths, get_language
 
 from wheelcms_axle.models import type_registry, Configuration
 from wheelcms_axle.templates import template_registry
@@ -137,23 +138,24 @@ class BaseForm(forms.ModelForm):
 
         slug = self.data.get('slug', '').strip().lower()
 
-        parent_path = self.parent.path
+
+        ## How to check for language active language?
+        language = get_language()
+        parent_path = self.parent.get_path(language=language)
 
         # import pytest; pytest.set_trace()
         if not slug:
             slug = re.sub("[^%s]+" % Node.ALLOWED_CHARS, "-",
                           self.cleaned_data.get('title', '').lower()
                           )[:Node.MAX_PATHLEN].strip("-")
-            ## Uses active language XXX (implicit)
-            existing = Node.get(path=parent_path + "/" + slug)
+            existing = Node.get(path=parent_path + "/" + slug, language=language)
 
             base_slug = slug[:Node.MAX_PATHLEN-6] ## some space for counter
             count = 1
             while (existing and existing != self.instance.node) or \
                   (slug in self.reserved):
                 slug = base_slug + str(count)
-                ## Uses active language XXX (implicit)
-                existing = Node.get(path=self.parent.path + '/' + slug)
+                existing = Node.get(path=self.parent.path + '/' + slug, language=language)
 
                 count += 1
 
@@ -162,8 +164,7 @@ class BaseForm(forms.ModelForm):
 
         if not Node.validpathre.match(slug):
             raise forms.ValidationError("Only numbers, letters, _-")
-        ## XXX Uses active language (implicit)
-        existing = Node.get(path=parent_path + "/" + slug)
+        existing = Node.get(path=parent_path + "/" + slug, language=language)
         if existing != self.instance.node:
             raise forms.ValidationError("Name in use")
 
