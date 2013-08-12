@@ -2,7 +2,7 @@ import re
 import mimetypes
 
 from django import forms
-from wheelcms_axle.models import Node
+from wheelcms_axle.node import Node, Paths
 
 from wheelcms_axle.models import type_registry, Configuration
 from wheelcms_axle.templates import template_registry
@@ -144,22 +144,16 @@ class BaseForm(forms.ModelForm):
             slug = re.sub("[^%s]+" % Node.ALLOWED_CHARS, "-",
                           self.cleaned_data.get('title', '').lower()
                           )[:Node.MAX_PATHLEN].strip("-")
-            try:
-                existing = Node.objects.filter(path=parent_path
-                                               + "/" + slug).get()
-            except Node.DoesNotExist:
-                existing = None
+            ## Uses active language XXX (implicit)
+            existing = Node.get(path=parent_path + "/" + slug)
 
             base_slug = slug[:Node.MAX_PATHLEN-6] ## some space for counter
             count = 1
             while (existing and existing != self.instance.node) or \
                   (slug in self.reserved):
                 slug = base_slug + str(count)
-                try:
-                    existing = Node.objects.filter(path=self.parent.path
-                                                   + "/" + slug).get()
-                except Node.DoesNotExist:
-                    existing = None
+                ## Uses active language XXX (implicit)
+                existing = Node.get(path=self.parent.path + '/' + slug)
 
                 count += 1
 
@@ -168,13 +162,10 @@ class BaseForm(forms.ModelForm):
 
         if not Node.validpathre.match(slug):
             raise forms.ValidationError("Only numbers, letters, _-")
-        try:
-            existing = Node.objects.filter(path=parent_path + "/" + slug
-                                          ).get()
-            if existing != self.instance.node:
-                raise forms.ValidationError("Name in use")
-        except Node.DoesNotExist:
-            pass
+        ## XXX Uses active language (implicit)
+        existing = Node.get(path=parent_path + "/" + slug)
+        if existing != self.instance.node:
+            raise forms.ValidationError("Name in use")
 
         return slug
 
