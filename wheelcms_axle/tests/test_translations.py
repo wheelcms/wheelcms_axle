@@ -43,7 +43,6 @@ class TestRootNode(object):
         child = root.add("child")
         assert Node.get("/child", language="de") is None
 
-
     def test_default(self, client):
         settings.FALLBACK = 'en'
         root = Node.root()
@@ -231,6 +230,12 @@ class TestNode(object):
         r2.rename("rr2", language="en")
 
         assert list(root.children()) == [r1, r2, r3]
+        assert root.child("rr2", "en") == r2
+        assert root.child("r2", "fr") == r2
+
+        assert root.get("/rr2", "en") == r2
+        assert root.get("/r2", "fr") == r2
+
 
     def test_offspring(self, client):
         pytest.skip("todo")
@@ -255,6 +260,52 @@ class TestNode(object):
         root.remove("r1")
         assert root.get("/r1/r2") is None
 
+    def test_create_map(self, client):
+        root = Node.root()
+        r = root.add(langslugs=dict(fr="fr", en="en", nl="nl"))
+
+        assert Node.get("/fr", language="fr") == \
+               Node.get("/en", language="en") == \
+               Node.get("/nl", language="nl") == r
+
+    def test_move(self, client):
+        ## meteen recursief
+        root = Node.root()
+        src = root.add(langslugs=dict(fr="source", nl="bron", en="src"))
+        src2 = src.add(langslugs=dict(fr="fr", nl="nl", en="en"))
+
+        target = root.add(langslugs=dict(fr="destination",
+                                         nl="doel", en="target"))
+
+        target.paste(src, copy=False)
+
+        assert Node.get("/source", language="fr") is None
+        assert Node.get("/destination/source", language="fr") == src
+        assert Node.get("/destination/source/fr", language="fr") == src2
+        assert Node.get("/doel/bron", language="nl") == src
+        assert Node.get("/doel/bron/nl", language="nl") == src2
+        assert Node.get("/target/src", language="en") == src
+        assert Node.get("/target/src/en", language="en") == src2
+
+    def test_copy(self, client):
+        root = Node.root()
+        src = root.add(langslugs=dict(fr="source", nl="bron", en="src"))
+        src2 = src.add(langslugs=dict(fr="fr", nl="nl", en="en"))
+        target = root.add(langslugs=dict(fr="destination",
+                                         nl="doel", en="target"))
+
+        target.paste(src, copy=True)
+
+        assert Node.get("/source", language="fr") == src
+        assert Node.get("/destination/source", language="fr") is not None
+        assert Node.get("/destination/source/fr", language="fr") is not None
+        assert Node.get("/destination/source", language="fr") != src
+        assert Node.get("/doel/bron", language="nl") is not None
+        assert Node.get("/doel/bron/nl", language="nl") is not None
+        assert Node.get("/doel/bron", language="nl") != src
+        assert Node.get("/target/src", language="en") is not None
+        assert Node.get("/target/src/en", language="en") is not None
+        assert Node.get("/target/src", language="en") != src
 
 class TestContent(object):
     pass

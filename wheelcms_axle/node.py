@@ -289,7 +289,7 @@ class NodeBase(models.Model):
         ## lowercasing is the only normalization we do
         ## path is actually slug
 
-        slugs = [s['slug'].lower() for s in langslugs]
+        slugs = [s.lower() for s in langslugs.values()]
         if path is not None:
             path = path.lower()
             slugs.append(path)
@@ -342,8 +342,6 @@ class NodeBase(models.Model):
         success = []
 
         if copy:
-            ## slug == id, must be unique anyway
-
             slug_per_lang = {}
             for p in node.paths.all():
                 lang, path = p.language, p.path
@@ -359,7 +357,7 @@ class NodeBase(models.Model):
                 slug_per_lang[lang] = slug
 
 
-            base = self.add(slug)
+            base = self.add(langslugs=slug_per_lang)
             if node.content():
                 try:
                     node.content().copy(node=base)
@@ -376,11 +374,9 @@ class NodeBase(models.Model):
                     if o.tree_path.startswith(f + '/'):
                         break
                 else:
-                    ## XXX LANG
-                    slug = o.slug()
-                    n = Node(slug=slug, parent=base)
+                    langslugs = dict((p.language, p.path.rsplit("/", 1)[1]) for  p in o.paths.all())
+                    n = Node(langslugs=langslugs, parent=base)
                     n.save()
-                    # n, _ = Node.objects.get_or_create(tree_path=path)
                     if o.content():
                         try:
                             o.content().copy(node=n)
@@ -472,7 +468,7 @@ class NodeBase(models.Model):
         """ return a specific child by its slug """
         childpath = self.get_path(language) + '/' + slug
 
-        return self.get(childpath)
+        return self.get(childpath, language)
 
     def slug(self, language=None):
         """ last part of self.path """
