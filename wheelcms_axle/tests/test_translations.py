@@ -30,11 +30,19 @@ class TestRootNode(object):
 
         assert root.isroot()
 
+    def test_non_supported_language_root(self, client):
+        """ root is always present, even for unsupported language """
+        translation.activate('de')
+        root = Node.get("")
+        assert root is not None
+
     def test_non_supported_language(self, client):
         """ a non-supported language, no fallback """
         translation.activate('de')
         root = Node.root()
-        assert root is None
+        child = root.add("child")
+        assert Node.get("/child", language="de") is None
+
 
     def test_default(self, client):
         settings.FALLBACK = 'en'
