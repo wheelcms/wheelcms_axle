@@ -115,7 +115,8 @@ class TestMainHandler(object):
         pytest.raises(Redirect, handler.create, type=Type1.get_name(), attach=True)
 
         root = Node.root()
-        assert root.contentbase.title == "Test"
+        # pytest.set_trace()
+        assert root.content().title == "Test"
 
     def test_attached_form(self, client):
         """ The form when attaching should not contain a slug field since it
@@ -139,7 +140,7 @@ class TestMainHandler(object):
         pytest.raises(Redirect, handler.create, type=Type1.get_name())
 
         node = Node.get("/test")
-        assert node.contentbase.title == "Test"
+        assert node.content().title == "Test"
 
     def test_update_post(self, client):
         root = Node.root()
@@ -152,7 +153,7 @@ class TestMainHandler(object):
         pytest.raises(Redirect, handler.update)
 
         root = Node.root()
-        assert root.contentbase.title == "Test"
+        assert root.content().title == "Test"
 
     def test_reserved_default(self, client):
         reserved = MainHandlerTestable.reserved()
@@ -180,7 +181,7 @@ class TestMainHandler(object):
         pytest.raises(Redirect, handler.create, type=Type1.get_name())
 
         node = Node.get("/test")
-        assert node.contentbase.title == u"Testing «ταБЬℓσ»: 1<2 & 4+1>3, now 20% off!"
+        assert node.content().title == u"Testing «ταБЬℓσ»: 1<2 & 4+1>3, now 20% off!"
 
     def test_update_post_unicode(self, client):
         """ update content with unicode with new unicode title """
@@ -194,7 +195,7 @@ class TestMainHandler(object):
         pytest.raises(Redirect, handler.update)
 
         root = Node.root()
-        assert root.contentbase.title == u"TTesting «ταБЬℓσ»: 1<2 & 4+1>3, now 20% off!"
+        assert root.content().title == u"TTesting «ταБЬℓσ»: 1<2 & 4+1>3, now 20% off!"
 
 class TestBreadcrumb(object):
     """ test breadcrumb generation by handler """

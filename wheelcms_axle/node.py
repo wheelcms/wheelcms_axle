@@ -127,10 +127,11 @@ class NodeBase(models.Model):
 
         super(NodeBase, self).__init__(*args, **kw)
 
-    def content(self):
+    def content(self, language=None):
         from .content import Content
+        language = language or get_language()
         try:
-            return self.contentbase.content()
+            return self.contentbase.get(language=language).content()
         except Content.DoesNotExist:
             return None
 
@@ -151,7 +152,7 @@ class NodeBase(models.Model):
             return None
 
 
-    def set(self, content, replace=False):
+    def set(self, content, replace=False, language=None):
         """
             Set content on the node, optionally replacing existing
             content. This is a more friendly way of setting the node
@@ -161,10 +162,12 @@ class NodeBase(models.Model):
         ## subclass
         from .content import Content
         content = content.content()
+        ## can be taken from content? XXX
+        language = language or content.language # language or get_language()
 
         old = None
         try:
-            if self.contentbase:
+            if self.contentbase.get(language=language):
                 if replace:
                     old = self.content()
                     old.node = None
@@ -174,7 +177,7 @@ class NodeBase(models.Model):
         except Content.DoesNotExist:
             pass
 
-        self.contentbase = content #.content_ptr  # XXX is _ptr documented?
+        self.contentbase.add(content) #.content_ptr  # XXX is _ptr documented?
         #content.node = self
         ## avoid updating last_modified
         content.save(update_lm=False)

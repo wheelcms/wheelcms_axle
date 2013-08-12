@@ -34,5 +34,5 @@ class TestOwnership(object):
         pytest.raises(Redirect, handler.create, type=Type1.get_name())
 
         node = Node.get("/test")
-        assert node.contentbase.title == "Test"
-        assert node.contentbase.owner == self.user
+        assert node.content().title == "Test"
+        assert node.content().owner == self.user

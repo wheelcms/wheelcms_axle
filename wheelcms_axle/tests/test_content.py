@@ -14,11 +14,20 @@ class TestContent(object):
     """ Test content / content-node related stuff """
 
     def test_duplicate_content(self, client):
-        """ two content objects cannot point to the same node """
+        """ two content objects for the same language 
+             cannot point to the same node """
         root = Node.root()
         child1 = root.add("n1")
-        Type1(node=child1).save()
-        pytest.raises(IntegrityError, lambda: Type1(node=child1).save())
+        Type1(node=child1, language="nl").save()
+        pytest.raises(NodeInUse, lambda: child1.set(Type1(language="nl").save()))
+
+    def test_duplicate_content_different_languages(self, client):
+        """ two content objects for different languages
+             can point to the same node """
+        root = Node.root()
+        child1 = root.add("n1")
+        Type1(node=child1, language="nl").save()
+        child1.set(Type1(language="fr").save())
 
     def test_node_content(self, client):
         """ get the actual content instance through the node """

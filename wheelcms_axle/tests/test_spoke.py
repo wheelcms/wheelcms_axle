@@ -264,6 +264,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         form = self.type.form(parent=p, data=data, files=self.valid_files(),
                               reserved=["foo"])
 
+        # import pytest; pytest.set_trace()
         assert form.is_valid()
         assert form.cleaned_data['slug'] == 'foo1'
 
