@@ -116,6 +116,7 @@
     <thead>
       <th><input class="toggle-all" type="checkbox"></th>
       <th>Title</th>
+      <th>Translations</th>
       <th>State</th>
       <th></th>
     </thead>
@@ -123,11 +124,11 @@
       {% if not instance.isroot %}
       <tr class="clickrow" data-url="{{instance.parent.get_absolute_url}}list">
         <td><i class="icon-circle-arrow-left"></i></td>
-        <td colspan="3">.. (parent)</td>
+        <td colspan="4">.. (parent)</td>
       </tr>
       {% endif %}
-      {% for child in instance.children %}
-        {% with content=child.content spoke=child.content.spoke %}
+      {% for child in children %}
+        {% with content=child.active.content spoke=child.active.content.spoke %}
           {% if content %}
             <tr class="sortablerow" data-url="{{child.get_absolute_url}}">
               <td><input name="selection" type="checkbox" value="{{child.get_absolute_url}}"
@@ -135,6 +136,16 @@
                    data-title="{{content.title}}"
                    data-type="{{spoke.title}}"></td>
               <td class="clickrow" data-url="{{child.get_absolute_url}}contents"><img src="{{spoke.icon_base}}/{{spoke.icon}}"> {{content.title}}</td>
+              <td>
+              {% for language, langcontent, lang_url in child.translations %}
+                {% if language == content.language %}
+                <strong><a href="{{lang_url}}edit">{{language}}</a></strong>
+                {% else %}
+                <a href="{{lang_url}}edit">{{language}}</a>
+                {% endif %}
+                {% if not forloop.last %}|{%endif%}
+              {% endfor %}
+              </td>
               <td class="clickrow" data-url="{{child.get_absolute_url}}contents">{{spoke.state.label}}</td>
               <td>
                   <a href="{{child.get_absolute_url}}edit"><i class="icon-edit"></i></a>
@@ -149,7 +160,7 @@
             <tr>
               <td></td>
               <td data-url="{{child.get_absolute_url}}" class="clickrow"><i class="icon-magnet"></i>Unattached node {{child.get_absolute_url}}</td>
-              <td data-url="{{child.get_absolute_url}}" class="clickrow">unattached</td>
+              <td data-url="{{child.get_absolute_url}}" class="clickrow" colspan="2">unattached</td>
               <td>
                   <a href="{{child.get_absolute_url}}"><i class="icon-eye-open"></i></a>
                   <a href="#" data-title="Unattached node {{child.get_absolute_url}}"
@@ -161,11 +172,11 @@
         {% endwith %}
       {% empty %}
         <tr>
-          <td colspan="4">No content</td>
+          <td colspan="5">No content</td>
         </tr>
       {% endfor %}
       <tr>
-        <td colspan="4">
+        <td colspan="5">
           <div class="btn-toolbar">
             <div class="btn-group">
               <button id="contents_action_cut" disabled="disabled" name="action" class="btn btn-small toggleaction" value="cut">Cut</button>

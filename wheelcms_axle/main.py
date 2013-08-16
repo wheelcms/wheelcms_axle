@@ -14,6 +14,7 @@ from wheelcms_axle.spoke import FileSpoke
 from wheelcms_axle.toolbar import Toolbar
 
 from wheelcms_axle.base import WheelHandlerMixin
+from wheelcms_axle.utils import get_url_for_language
 
 from .templates import template_registry
 from .actions import action_registry
@@ -503,6 +504,28 @@ class MainHandler(WheelRESTHandler):
         spoke = self.spoke()
 
         self.context['can_paste'] = len(self.request.session.get('clipboard_copy', [])) + len(self.request.session.get('clipboard_cut', []))
+
+        active = self.active_language()
+
+        children = []
+
+        # import pdb; pdb.set_trace()
+        
+        for child in self.instance.children():
+            c = dict(active=None, translations=[])
+            for lang, langtitle in settings.CONTENT_LANGUAGES:
+                langcontent = child.content(language=lang)
+                c["translations"].append((lang, langcontent,
+                                          get_url_for_language(child, lang)))
+                if lang == active:
+                    c["active"] = langcontent
+            if not c['active']:
+                c['active'] = child.primary_content()
+            children.append(c)
+
+        # import pdb; pdb.set_trace()
+        
+        self.context['children'] = children
 
         if spoke:
             return self.template(spoke.list_template())
