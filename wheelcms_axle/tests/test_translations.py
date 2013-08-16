@@ -3,12 +3,10 @@ from django.utils import translation
 from django.conf import settings
 import pytest
 
-##
-## Should CONTENT_LANGUAGES become tuples? ('nl', 'Nederlands') ?
 
 class TestRootNode(object):
     def setup(self):
-        settings.CONTENT_LANGUAGES = ('en', 'nl', 'fr')
+        settings.CONTENT_LANGUAGES = (('en', 'English'), ('nl', 'Nederlands'), ('fr', 'Francais'))
         settings.FALLBACK = False
 
     def test_disabled(self, client):
@@ -53,7 +51,7 @@ class TestRootNode(object):
 class TestNode(object):
     def setup(self):
         from django.conf import settings
-        settings.CONTENT_LANGUAGES = ('en', 'nl', 'fr')
+        settings.CONTENT_LANGUAGES = (('en', 'English'), ('nl', 'Nederlands'), ('fr', 'Francais'))
 
     def test_node(self, client):
         translation.activate('en')

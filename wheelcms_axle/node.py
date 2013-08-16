@@ -38,7 +38,9 @@ def random_path():
 
 def get_language():
     language = translation.get_language()
-    if language not in getattr(settings, 'CONTENT_LANGUAGES', ()) and getattr(settings, 'FALLBACK', None):
+    langids = (l[0] for l in getattr(settings, 'CONTENT_LANGUAGES', ()))
+
+    if language not in langids and getattr(settings, 'FALLBACK', None):
         language = settings.FALLBACK
     return language
 
@@ -133,6 +135,14 @@ class NodeBase(models.Model):
         try:
             return self.contentbase.get(language=language).content()
         except Content.DoesNotExist:
+            return None
+
+    def primary_content(self):
+        """ what determines which language is primary? First one
+            created? A specific language? """
+        try:
+            return self.contentbase.all()[0].content()
+        except IndexError:
             return None
 
     @property
@@ -268,7 +278,7 @@ class NodeBase(models.Model):
 
         ## create paths based on self._slug / self._parent which were passed to __init__
         if not saved:
-            for language in settings.CONTENT_LANGUAGES:
+            for language, langname in settings.CONTENT_LANGUAGES:
                 try:
                     langpath = Paths.objects.get(node=self, language=language)
                 except Paths.DoesNotExist:
@@ -411,7 +421,7 @@ class NodeBase(models.Model):
 
             ## the great renaming
             # import pytest; pytest.set_trace()
-            for language in settings.CONTENT_LANGUAGES:
+            for language, langname in settings.CONTENT_LANGUAGES:
                 try:
                     localized_path = Paths.objects.get(node=node, language=language)
                 except Paths.DoesNotExist:
@@ -483,7 +493,7 @@ class NodeBase(models.Model):
             raise CantRenameRoot()
 
         ## if no language was specified, rename all
-        languages = [language] if language else settings.CONTENT_LANGUAGES
+        languages = [language] if language else [l[0] for l in settings.CONTENT_LANGUAGES]
 
         for testmode in (True, False):
             ## first loop checks if all relevant languages can be renamed, second loop renames

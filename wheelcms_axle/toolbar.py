@@ -1,7 +1,12 @@
+from django.conf import settings
+from django.utils import translation
+
 from wheelcms_axle.content import type_registry
 from wheelcms_axle.node import Node
 from wheelcms_axle.workflows.default import worklist as default_worklist
 from wheelcms_axle import access
+from wheelcms_axle.utils import get_url_for_language
+
 
 class Toolbar(object):
     """
@@ -107,7 +112,7 @@ class Toolbar(object):
         if self.status == "attach":
             return False
 
-        if self.instance and self.instance.content():
+        if self.instance and self.instance.primary_content():
             return False
         return bool(self.instance)
 
@@ -127,10 +132,51 @@ class Toolbar(object):
         clipboard_copy = self.request.session.get('clipboard_copy', [])
         clipboard_cut = self.request.session.get('clipboard_cut', [])
 
-        
         clipboard = clipboard_copy or clipboard_cut
 
         return dict(count=len(clipboard),
                     copy=bool(clipboard_copy),
                     cut=bool(clipboard_cut),
                     items=[Node.get(i).content() for i in clipboard])
+
+    def translations(self):
+        if not self.instance or self.status == "special":
+            return None
+
+        active = None
+        translated = []
+        untranslated = []
+
+        active_language = self.request.REQUEST.get('language',
+                                                   translation.get_language())
+        for (lang, langtitle) in settings.CONTENT_LANGUAGES:
+            option = dict(id=lang, language=langtitle)
+            content = self.instance.content(language=lang)
+
+            ## In view mode toch edit tonen om vertaling te maken!
+            if content:
+                if lang == active_language:
+                    active = option
+                else:
+                    base_url = get_url_for_language(content, lang)
+
+                    if self.status == "edit":
+                        option['action_url'] = base_url + 'edit'
+                    elif self.status == "view":
+                        option['action_url'] = base_url + ''
+                    elif self.status == "list":
+                        option['action_url'] = base_url + 'list'
+                    elif self.status == "create":
+                        option['action_url'] = base_url + 'create?type=' + \
+                                               self.request.GET.get('type')
+
+                    translated.append(option)
+            else:
+                base_url = get_url_for_language(self.instance, lang)
+                option['action_url'] = base_url + 'edit'
+                untranslated.append(option)
+
+        return dict(active=active,
+                    translated=translated,
+                    untranslated=untranslated)
+
