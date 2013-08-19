@@ -9,7 +9,12 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         # Removing unique constraint on 'Content', fields ['node']
-        db.delete_unique(u'wheelcms_axle_content', ['node_id'])
+        if db.backend_name == 'mysql':
+            # http://south.aeracode.org/ticket/466
+            db.drop_foreign_key('wheelcms_axle_content', 'node_id')
+            db.execute('ALTER TABLE wheelcms_axle_content ADD CONSTRAINT node_id_blabla FOREIGN KEY (node_id) REFERENCES wheelcms_axle_node(id)')
+        else:
+            db.delete_unique(u'wheelcms_axle_content', ['node_id'])
 
         # Adding field 'Content.language'
         db.add_column('wheelcms_axle_content', 'language',
