@@ -21,7 +21,7 @@ class MainHandlerTestable(MainHandler):
         """ should result in 'reserved' being a reserved kw """
 
     def foobar(self):
-        """ should not result in a reserved keyworkd """
+        """ should not result in a reserved keyword """
 
     @handler
     def decorated(self):
