@@ -47,15 +47,15 @@
         items: "tr.sortablerow",
         stop: function(event, ui) {
             var target = ui.item;
-            var target_path = target.data('url');
+            var target_path = target.data('ipath');
             var before = target.prev("tr");
             var after = target.next("tr");
 
             if(before.hasClass("sortablerow") && before.data('url')) {
-                $.post("reorder", {rel: "after", target: target_path, ref: before.data('url')})
+                $.post("reorder", {rel: "after", target: target_path, ref: before.data('ipath')})
             }
             else {
-                $.post("reorder", {rel: "before", target: target_path, ref: after.data('url')})
+                $.post("reorder", {rel: "before", target: target_path, ref: after.data('ipath')})
             }
         }
     });
@@ -130,29 +130,34 @@
       {% for child in children %}
         {% with content=child.active.content spoke=child.active.content.spoke %}
           {% if content %}
-            <tr class="sortablerow" data-url="{{child.get_absolute_url}}">
-              <td><input name="selection" type="checkbox" value="{{child.get_absolute_url}}"
-                   data-path="{{child.get_absolute_url}}"
+            <tr class="sortablerow" data-url="{{content.get_absolute_url}}" data-ipath="{{child.ipath}}">
+              <td><input name="selection" type="checkbox" value="{{content.get_absolute_url}}"
+                   data-path="{{content.get_absolute_url}}"
                    data-title="{{content.title}}"
                    data-type="{{spoke.title}}"></td>
-              <td class="clickrow" data-url="{{child.get_absolute_url}}contents"><img src="{{spoke.icon_base}}/{{spoke.icon}}"> {{content.title}}</td>
+              <td class="clickrow" data-url="{{content.get_absolute_url}}contents"><img src="{{spoke.icon_base}}/{{spoke.icon}}"> {{content.title}}</td>
               <td>
               {% for language, langcontent, lang_url in child.translations %}
                 {% if language == content.language %}
                 <strong><a href="{{lang_url}}edit">{{language}}</a></strong>
                 {% else %}
-                <a href="{{lang_url}}edit">{{language}}</a>
+                  {# add color depending on state; untranslated content has no state so no color #}
+                  {% if langcontent %}
+                    <a href="{{lang_url}}edit">{{language}}</a>
+                    {% else %}
+                    <a href="{{lang_url}}edit" class="disabled-content">{{language}}</a>
+                  {% endif %}
                 {% endif %}
                 {% if not forloop.last %}|{%endif%}
               {% endfor %}
               </td>
-              <td class="clickrow" data-url="{{child.get_absolute_url}}contents">{{spoke.state.label}}</td>
+              <td class="clickrow" data-url="{{content.get_absolute_url}}contents">{{spoke.state.label}}</td>
               <td>
-                  <a href="{{child.get_absolute_url}}edit"><i class="icon-edit"></i></a>
-                  <a href="{{child.get_absolute_url}}"><i class="icon-eye-open"></i></a>
+                  <a href="{{content.get_absolute_url}}edit"><i class="icon-edit"></i></a>
+                  <a href="{{content.get_absolute_url}}"><i class="icon-eye-open"></i></a>
                   <a href="#" data-title="{{content.title}}"
                               data-type="{{spoke.title}}"
-                              data-path="{{child.get_absolute_url}}" class="contents_item_remove"><i class="icon-remove"></i></a>
+                              data-path="{{content.get_absolute_url}}" class="contents_item_remove"><i class="icon-remove"></i></a>
               </td>
             </tr>
           {% else %}

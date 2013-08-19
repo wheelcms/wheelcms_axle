@@ -503,16 +503,17 @@ class MainHandler(WheelRESTHandler):
         self.context['breadcrumb'] = self.breadcrumb(operation="Contents")
         spoke = self.spoke()
 
-        self.context['can_paste'] = len(self.request.session.get('clipboard_copy', [])) + len(self.request.session.get('clipboard_cut', []))
+        self.context['can_paste'] = len(self.request.session.get('clipboard_copy', [])) + \
+                                    len(self.request.session.get('clipboard_cut', []))
 
         active = self.active_language()
 
         children = []
 
         # import pdb; pdb.set_trace()
-        
+
         for child in self.instance.children():
-            c = dict(active=None, translations=[])
+            c = dict(active=None, translations=[], ipath=child.tree_path)
             for lang, langtitle in settings.CONTENT_LANGUAGES:
                 langcontent = child.content(language=lang)
                 c["translations"].append((lang, langcontent,
@@ -523,8 +524,6 @@ class MainHandler(WheelRESTHandler):
                 c['active'] = child.primary_content()
             children.append(c)
 
-        # import pdb; pdb.set_trace()
-        
         self.context['children'] = children
 
         if spoke:
@@ -548,8 +547,9 @@ class MainHandler(WheelRESTHandler):
     def handle_reorder(self, rel, target, ref):
         if not self.hasaccess() or not self.post:
             return self.forbidden()
-        targetnode = Node.get(resolve_path(target))
-        referencenode = Node.get(resolve_path(ref))
+        
+        targetnode = Node.objects.get(tree_path=target)
+        referencenode = Node.objects.get(tree_path=ref)
 
         if targetnode is None:
             return self.badrequest()
