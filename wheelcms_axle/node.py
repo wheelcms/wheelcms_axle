@@ -534,7 +534,7 @@ class Paths(models.Model):
         unique_together = (("language", "path"), )
 
     language = models.CharField(max_length=10, blank=False)
-    path = models.CharField(max_length=255, blank=False)
+    path = models.TextField(blank=False)
     node = models.ForeignKey(Node, related_name="paths")
 
     def __unicode__(self):
