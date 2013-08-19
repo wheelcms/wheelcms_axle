@@ -323,3 +323,185 @@ class TestBreadcrumb(object):
                    ('Edit "%s" (%s)' % (child.content().title,
                                         Type1Type.title), '')]
 
+class TestActions(object):
+    """ test cut/copy/paste/delete, reorder and other actions """
+    def test_cut_action(self, client):
+        """ cut should clear the copy clipboard and add to the cut clipboard """
+        root = Node.root()
+        t1 = Type1(node=root.add("t1"), title="t1").save()
+        t2 = Type1(node=root.add("t2"), title="t2").save()
+
+
+        request = superuser_request("/contents_actions_cutcopypaste",
+                                    method="POST", action="cut",
+                                    selection=[t1.node.tree_path,
+                                               t2.node.tree_path])
+
+        ## pretend there's still something in the buffer
+        request.session['clipboard_copy'] = [t1.node.tree_path]
+
+        handler = MainHandlerTestable(request=request, instance=root, post=True)
+
+        pytest.raises(Redirect, handler.handle_contents_actions_cutcopypaste)
+
+        assert request.session['clipboard_copy'] == []
+        assert set(request.session['clipboard_cut']) == \
+               set((t1.node.tree_path, t2.node.tree_path))
+
+    def test_copy_action(self, client):
+        """ copy should clear the cut clipboard and add to the copy clipboard """
+        root = Node.root()
+        t1 = Type1(node=root.add("t1"), title="t1").save()
+        t2 = Type1(node=root.add("t2"), title="t2").save()
+
+
+        request = superuser_request("/contents_actions_cutcopypaste",
+                                    method="POST", action="copy",
+                                    selection=[t1.node.tree_path,
+                                               t2.node.tree_path])
+
+        ## pretend there's still something in the buffer
+        request.session['clipboard_cut'] = [t1.node.tree_path]
+
+        handler = MainHandlerTestable(request=request, instance=root, post=True)
+
+        pytest.raises(Redirect, handler.handle_contents_actions_cutcopypaste)
+
+        assert request.session['clipboard_cut'] == []
+        assert set(request.session['clipboard_copy']) == \
+               set((t1.node.tree_path, t2.node.tree_path))
+
+    def test_paste_copy_action(self, client):
+        """ paste after copy means duplicating content, can be in same
+            node """
+        root = Node.root()
+        t1 = Type1(node=root.add("t1"), title="t1").save()
+        t2 = Type1(node=root.add("t2"), title="t2").save()
+
+
+        request = superuser_request("/contents_actions_cutcopypaste",
+                                    method="POST", action="paste",
+                                    selection=[t1.node.tree_path,
+                                               t2.node.tree_path])
+        request.session['clipboard_copy'] = [t1.node.tree_path]
+
+        handler = MainHandlerTestable(request=request, instance=root, post=True)
+
+        pytest.raises(Redirect, handler.handle_contents_actions_cutcopypaste)
+        assert len(root.children()) == 3
+        assert list(root.children())[-1].content().title == "t1"
+
+    def test_paste_cut_action(self, client):
+        """ paste after cut moves content, must be in different node to have
+            any effect """
+        root = Node.root()
+        target = root.add("target")
+
+        t1 = Type1(node=root.add("t1"), title="t1").save()
+        t2 = Type1(node=root.add("t2"), title="t2").save()
+
+
+        request = superuser_request("/contents_actions_cutcopypaste",
+                                    method="POST", action="paste",
+                                    selection=[t1.node.tree_path,
+                                               t2.node.tree_path])
+        request.session['clipboard_cut'] = [t2.node.tree_path, t1.node.tree_path]
+
+        handler = MainHandlerTestable(request=request, instance=target,
+                                      post=True)
+
+        pytest.raises(Redirect, handler.handle_contents_actions_cutcopypaste)
+        assert len(target.children()) == 2
+        assert set(x.content().title for x in target.children()) == \
+               set(('t1', 't2'))
+        assert len(root.children()) == 1
+        assert root.child('target')
+
+    def test_delete_action(self, client):
+        root = Node.root()
+
+        t1 = Type1(node=root.add("t1"), title="t1").save()
+        t2 = Type1(node=root.add("t2"), title="t2").save()
+
+
+        request = superuser_request("/contents_actions_delete",
+                                    method="POST",
+                                    selection=[t1.node.tree_path,
+                                               t2.node.tree_path])
+        request.session['clipboard_cut'] = [t2.node.tree_path, t1.node.tree_path]
+
+        handler = MainHandlerTestable(request=request, instance=root,
+                                      post=True)
+
+        pytest.raises(Redirect, handler.handle_contents_actions_delete)
+
+        assert len(root.children()) == 0
+        assert Type1.objects.all().count() == 0
+
+
+    def test_reorder_before(self, client):
+        """ move a node to the top """
+        root = Node.root()
+        n1 = root.add("n1")
+        n2 = root.add("n2")
+        n3 = root.add("n3")
+
+        request = superuser_request("/reorder",
+                                    method="POST",
+                                    rel="before",
+                                    target=n3.tree_path,
+                                    ref=n1.tree_path)
+
+        handler = MainHandlerTestable(request=request, instance=root, post=True)
+
+        res = handler.handle_reorder()
+
+        n1 = Node.objects.get(pk=n1.pk)
+        n2 = Node.objects.get(pk=n2.pk)
+        n3 = Node.objects.get(pk=n3.pk)
+
+        assert n3.position < n1.position
+        assert n1.position < n2.position
+
+    def test_reorder_after(self, client):
+        """ move a node to the bottom """
+        root = Node.root()
+        n1 = root.add("n1")
+        n2 = root.add("n2")
+        n3 = root.add("n3")
+
+        request = superuser_request("/reorder",
+                                    method="POST",
+                                    rel="after",
+                                    target=n1.tree_path,
+                                    ref=n3.tree_path)
+
+        handler = MainHandlerTestable(request=request, instance=root, post=True)
+
+        res = handler.handle_reorder()
+
+        n1 = Node.objects.get(pk=n1.pk)
+        n2 = Node.objects.get(pk=n2.pk)
+        n3 = Node.objects.get(pk=n3.pk)
+
+        assert n1.position > n3.position
+        assert n3.position > n2.position
+
+class TestTranslations(object):
+    def test_translated(self, client):
+        """ /a can point to either dutch or english content on different
+            nodes """
+        root = Node.root()
+        n1 = root.add(langslugs=dict(nl="a", en="b"))
+        n2 = root.add(langslugs=dict(en="a", nl="b"))
+
+        from django.utils import translation
+
+        translation.activate('nl')
+        res = MainHandler.coerce(dict(instance="a"))
+        assert res['instance'] == n1
+
+        translation.activate('en')
+        res = MainHandler.coerce(dict(instance="a"))
+        assert res['instance'] == n2
+

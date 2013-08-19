@@ -575,9 +575,7 @@ class MainHandler(WheelRESTHandler):
         raw_selection = self.request.POST.getlist('selection', [])
 
         selection = []
-        for s in raw_selection:
-            # p = resolve_path(s)
-            p = s
+        for p in raw_selection:
             if p and Node.objects.get(tree_path=p):
                 selection.append(p)
 
