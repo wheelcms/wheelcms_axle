@@ -576,8 +576,9 @@ class MainHandler(WheelRESTHandler):
 
         selection = []
         for s in raw_selection:
-            p = resolve_path(s)
-            if p and Node.get(p):
+            # p = resolve_path(s)
+            p = s
+            if p and Node.objects.get(tree_path=p):
                 selection.append(p)
 
         count = len(selection)
@@ -646,8 +647,9 @@ class MainHandler(WheelRESTHandler):
 
         count = 0
         for p in self.request.POST.getlist('selection'):
-            p = resolve_path(p)
-            n = Node.get(p)
+            #p = resolve_path(p)
+            #n = Node.get(p)
+            n = Node.objects.get(tree_path=p)
             ## XXX recursively delete, or not, or detach...
             if n:
                 content = n.content()

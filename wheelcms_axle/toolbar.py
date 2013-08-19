@@ -137,7 +137,7 @@ class Toolbar(object):
         return dict(count=len(clipboard),
                     copy=bool(clipboard_copy),
                     cut=bool(clipboard_cut),
-                    items=[Node.get(i).content() for i in clipboard])
+                    items=[Node.objects.get(tree_path=i).content() for i in clipboard])
 
     def translations(self):
         if not self.instance or self.status == "special":
