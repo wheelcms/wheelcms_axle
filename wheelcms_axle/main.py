@@ -612,7 +612,7 @@ class MainHandler(WheelRESTHandler):
             accum_failure = []
 
             for p in clipboard:
-                n = Node.get(p)
+                n = Node.objects.get(tree_path=p)
                 if n:
                     try:
                         base, success, failure = self.instance.paste(n, copy=copy)
