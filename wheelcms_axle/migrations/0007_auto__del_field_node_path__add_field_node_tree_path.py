@@ -11,12 +11,6 @@ class Migration(SchemaMigration):
         # Deleting field 'Node.path'
         db.delete_column(u'wheelcms_axle_node', 'path')
 
-        # Adding field 'Node.tree_path'
-        db.add_column(u'wheelcms_axle_node', 'tree_path',
-                      self.gf('django.db.models.fields.CharField')(default='0x2cdcf59856880c5f9L', unique=True, max_length=255),
-                      keep_default=False)
-
-
     def backwards(self, orm):
 
         # User chose to not deal with backwards NULL issues for 'Node.path'
