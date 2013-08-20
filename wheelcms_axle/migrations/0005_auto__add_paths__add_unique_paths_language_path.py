@@ -3,6 +3,7 @@ import datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
+from django.conf import settings
 
 
 class Migration(SchemaMigration):
@@ -18,7 +19,12 @@ class Migration(SchemaMigration):
         db.send_create_signal(u'wheelcms_axle', ['Paths'])
 
         # Adding unique constraint on 'Paths', fields ['language', 'path']
+        languages = getattr(settings, 'CONTENT_LANGUAGES', (('en', 'English')))
+
         db.create_unique(u'wheelcms_axle_paths', ['language', 'path'])
+        for node in orm.Node.objects.all():
+            for (langid, language) in languages:
+                orm.Paths.objects.get_or_create(node=node, path=node.path, language=langid)
 
 
     def backwards(self, orm):
