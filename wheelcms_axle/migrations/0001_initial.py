@@ -24,9 +24,19 @@ class Migration(SchemaMigration):
         db.send_create_signal('wheelcms_axle', ['ContentClass'])
 
         # Adding model 'Content'
+        ## We'll be removing the unique constraint later (migration 0008) which cannot be done
+        ## reliably on MySQL. So don't set it at all as a workaround
+        if db.backend_name == 'mysql':
+            node_unique = False
+            node_f = self.gf('django.db.models.fields.related.ForeignKey')
+        else:
+            node_unique = True
+            node_f = self.gf('django.db.models.fields.related.OneToOneField')
+
+
         db.create_table('wheelcms_axle_content', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('node', self.gf('django.db.models.fields.related.OneToOneField')(related_name='contentbase', unique=True, null=True, to=orm['wheelcms_axle.Node'])),
+            ('node', node_f(related_name='contentbase', unique=node_unique, null=True, to=orm['wheelcms_axle.Node'])),
             ('title', self.gf('django.db.models.fields.CharField')(max_length=256)),
             ('description', self.gf('django.db.models.fields.TextField')(default='', blank=True)),
             ('created', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
