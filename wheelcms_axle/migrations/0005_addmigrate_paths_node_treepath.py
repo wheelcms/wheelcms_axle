@@ -22,9 +22,10 @@ class Migration(SchemaMigration):
         languages = getattr(settings, 'CONTENT_LANGUAGES', (('en', 'English')))
 
         db.create_unique(u'wheelcms_axle_paths', ['language', 'path'])
-        for node in orm.Node.objects.all():
-            for (langid, language) in languages:
-                orm.Paths.objects.get_or_create(node=node, path=node.path, language=langid)
+        if not db.dry_run:
+            for node in orm.Node.objects.all():
+                for (langid, language) in languages:
+                    orm.Paths.objects.get_or_create(node=node, path=node.path, language=langid)
 
         # Adding field 'Node.tree_path'
         
