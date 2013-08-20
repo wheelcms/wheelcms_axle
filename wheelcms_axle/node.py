@@ -248,6 +248,11 @@ class NodeBase(models.Model):
 
         ## how to deal with the position? Insert at the bottom?
 
+        from .content import ContentCopyException
+
+        failed = []
+        success = []
+
         def unique_slug(slug):
             orig_slug = slug
             count = 0
@@ -265,22 +270,41 @@ class NodeBase(models.Model):
 
             slug = unique_slug(slug)
             base = self.add(slug)
-            ## copy content
+            if node.content():
+                try:
+                    node.content().copy(node=base)
+                    success.append(node.path)
+                except ContentCopyException:
+                    failed.append((node.path, "Content cannot be copied"))
+                    base.delete()
+                    ## no need to continue
+                    return base, success, failed
 
-            for o in Node.objects.offspring(node):
-                path = self.path + '/' + slug + o.path[len(origpath):]
-                n = Node(path=path).save()
-                ## copy content
-            return base
+            for o in Node.objects.offspring(node).order_by("path"):
+                ## skip all offspring of a failed node
+                for f, reason in failed:
+                    if o.path.startswith(f + '/'):
+                        break
+                else:
+                    path = self.path + '/' + slug + o.path[len(origpath):]
+                    n, _ = Node.objects.get_or_create(path=path)
+                    if o.content():
+                        try:
+                            o.content().copy(node=n)
+                            success.append(o.path)
+                        except ContentCopyException:
+                            n.delete()
+                            failed.append((o.path, "Content cannot be copied"))
+            return base, success, failed
 
         else:
-            if node.is_ancestor(self):
+            if node == self or node.is_ancestor(self):
                 raise CantMoveToOffspring()
             oldpath = node.path
             oldbase, slug = oldpath.rsplit("/", 1)
             if oldbase == self.path:
                 ## pasting into its own parent, nothing to do
-                return node
+                return node, success, failed
 
             slug = unique_slug(slug)
 
@@ -288,12 +312,14 @@ class NodeBase(models.Model):
             for o in Node.objects.offspring(node):
                 o.path = self.path + '/' + slug + o.path[len(oldpath):]
                 o.save()
+                success.append(o.path)
             node.path = self.path + '/' + slug
             ## move to end
             node.position = self.find_position(position=-1)
             node.save()
+            success.append(node.path)
 
-        return node
+        return node, success, failed
 
     def remove(self, childslug):
         """ remove a child, recursively """

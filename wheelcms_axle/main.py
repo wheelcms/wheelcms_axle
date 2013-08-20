@@ -6,7 +6,7 @@ from django.core.urlresolvers import resolve
 
 
 from two.ol.base import RESTLikeHandler, applyrequest, context, json, handler
-from wheelcms_axle.node import Node, NodeNotFound
+from wheelcms_axle.node import Node, NodeNotFound, CantMoveToOffspring
 from wheelcms_axle.content import type_registry, Content, ImageContent
 
 from wheelcms_axle.spoke import FileSpoke
@@ -439,6 +439,9 @@ class MainHandler(WheelRESTHandler):
         self.context['toolbar'] = Toolbar(self.instance, self.request, status="list")
         self.context['breadcrumb'] = self.breadcrumb(operation="Contents")
         spoke = self.spoke()
+
+        self.context['can_paste'] = len(self.request.session.get('clipboard_copy', [])) + len(self.request.session.get('clipboard_cut', []))
+
         if spoke:
             return self.template(spoke.list_template())
 
@@ -477,6 +480,76 @@ class MainHandler(WheelRESTHandler):
         else:  # before
             self.instance.move(targetnode, before=referencenode)
         return dict(result="ok")
+
+    def handle_contents_actions_cutcopypaste(self):
+        """ handle cut/copy/paste of items """
+        if not self.hasaccess() or not self.post:
+            return self.forbidden()
+
+        action = self.request.POST.get('action')
+        raw_selection = self.request.POST.getlist('selection', [])
+
+        selection = []
+        for s in raw_selection:
+            p = resolve_path(s)
+            if p and Node.get(p):
+                selection.append(p)
+
+        count = len(selection)
+
+        if action == "cut":
+            self.request.session['clipboard_copy'] = []
+            self.request.session['clipboard_cut'] = selection
+
+
+            return self.redirect(self.instance.get_absolute_url() + 'list',
+                                 info="%d item(s) added to clipboard for move" % count)
+        elif action == "copy":
+            self.request.session['clipboard_cut'] = []
+            self.request.session['clipboard_copy'] = selection
+            return self.redirect(self.instance.get_absolute_url() + 'list',
+                                 info="%d item(s) added to clipboard for copy" % count)
+        elif action == "paste":
+            copy = False
+            clipboard_copy = self.request.session.get('clipboard_copy', [])
+            clipboard_cut = self.request.session.get('clipboard_cut', [])
+            clipboard = []
+
+            if clipboard_copy:
+                copy = True
+                clipboard = clipboard_copy
+            elif clipboard_cut:
+                copy = False
+                clipboard = clipboard_cut
+
+            accum_success = []
+            accum_failure = []
+
+            for p in clipboard:
+                n = Node.get(p)
+                if n:
+                    try:
+                        base, success, failure = self.instance.paste(n, copy=copy)
+                        accum_success.extend(success)
+                        accum_failure.extend(failure)
+                    except CantMoveToOffspring:
+                        accum_failure.append((p, "Can't move to self or offspring"))
+
+
+            self.request.session['clipboard_copy'] = []
+            self.request.session['clipboard_cut'] = []
+            count = len(accum_success)
+            if copy:
+                info = "%d item(s) copied" % count
+            else:
+                info = "%d item(s) moved" % count
+
+            return self.redirect(self.instance.get_absolute_url() + 'list',
+                                 info=info)
+
+
+
+        return self.redirect(self.instance.get_absolute_url() + 'list')
 
     def handle_contents_actions_delete(self):
         """
