@@ -376,9 +376,11 @@ class MainHandler(WheelRESTHandler):
 
                 ## handle changed slug
                 slug = form.cleaned_data.get('slug', None)
-                
-                if slug and slug != self.instance.slug(language=language):
-                    self.instance.rename(slug, language=language)
+                content_language = form.cleaned_data.get('language', settings.FALLBACK)
+
+
+                if slug and slug != self.instance.slug(language=content_language):
+                    self.instance.rename(slug, language=content_language)
 
                 e = stracks.content(content.id, name=content.title)
                 e.log("? (%s) updated by ?" % content.spoke().title,
