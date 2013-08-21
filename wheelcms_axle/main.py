@@ -87,6 +87,11 @@ def strip_action(s):
         s = s.split("+", 1)[0].rstrip('/')
     return s
 
+def get_active_language(request):
+    if request:
+        return request.REQUEST.get('language', translation.get_language())
+    return translation.get_language()
+
 class MainHandler(WheelRESTHandler):
     model = dict(instance=Node, parent=Node)
     instance = None
@@ -96,7 +101,7 @@ class MainHandler(WheelRESTHandler):
         super(MainHandler, self).update_context(request)
 
     def active_language(self):
-        return self.request.REQUEST.get('language', translation.get_language())
+        return get_active_language(self.request)
 
     @context
     def body_class(self):
@@ -175,10 +180,7 @@ class MainHandler(WheelRESTHandler):
             really need it - <instance>/update works fine, and no instance is
             required for /create
         """
-        if request:
-            language = request.REQUEST.get('language', translation.get_language())
-        else:
-            language = translation.get_language
+        language = get_active_language(request)
 
         d = dict()
 
@@ -312,7 +314,7 @@ class MainHandler(WheelRESTHandler):
 
     def update(self):
         action = self.kw.get('action', '')
-        language = self.request.REQUEST.get('language', translation.get_language())
+        language = self.active_language()
 
         instance = self.instance
 
@@ -374,6 +376,7 @@ class MainHandler(WheelRESTHandler):
 
                 ## handle changed slug
                 slug = form.cleaned_data.get('slug', None)
+                
                 if slug and slug != self.instance.slug(language=language):
                     self.instance.rename(slug, language=language)
 
@@ -451,7 +454,7 @@ class MainHandler(WheelRESTHandler):
 
     def view(self):
         """ frontpage / view """
-        language = self.request.REQUEST.get('language', translation.get_language())
+        language = self.active_language()
         spoke = self.spoke(language=language)
 
         if spoke and not spoke.workflow().is_visible():
@@ -509,8 +512,6 @@ class MainHandler(WheelRESTHandler):
         active = self.active_language()
 
         children = []
-
-        # import pdb; pdb.set_trace()
 
         for child in self.instance.children():
             c = dict(active=None, translations=[], ipath=child.tree_path)
@@ -645,8 +646,6 @@ class MainHandler(WheelRESTHandler):
 
         count = 0
         for p in self.request.POST.getlist('selection'):
-            #p = resolve_path(p)
-            #n = Node.get(p)
             n = Node.objects.get(tree_path=p)
             ## XXX recursively delete, or not, or detach...
             if n:
@@ -839,7 +838,6 @@ class MainHandler(WheelRESTHandler):
 
             if content:
                 ## FileSpoke also includes ImageSpoke
-                # import pdb; pdb.set_trace()
 
                 spoke = content.spoke()
                 addables = [x for x in spoke.addable_children()
