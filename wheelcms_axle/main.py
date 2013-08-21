@@ -89,7 +89,7 @@ def strip_action(s):
 
 def get_active_language(request):
     if request:
-        return request.REQUEST.get('language', translation.get_language())
+        return request.GET.get('language', translation.get_language())
     return translation.get_language()
 
 class MainHandler(WheelRESTHandler):

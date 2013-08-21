@@ -197,6 +197,33 @@ class TestMainHandler(object):
         root = Node.root()
         assert root.content().title == u"TTesting «ταБЬℓσ»: 1<2 & 4+1>3, now 20% off!"
 
+    def test_change_slug_inuse(self, client):
+        root = Node.root()
+        Type1(node=root.add("inuse"), title="InUse").save()
+        other = Type1(node=root.add("other"), title="Other").save()
+        request = superuser_request("/other/update", method="POST",
+                                    title="Other", slug="inuse")
+
+        handler = MainHandlerTestable(request=request, post=True, instance=other.node)
+        handler.update()
+
+        form = handler.context['form']
+        assert not form.is_valid()
+        assert 'slug' in form.errors
+
+    def test_change_slug_available(self, client):
+        root = Node.root()
+        Type1(node=root.add("inuse"), title="InUse").save()
+        other = Type1(node=root.add("other"), title="Other").save()
+        request = superuser_request("/other/update", method="POST",
+                                    title="Other", slug="inuse2")
+
+        handler = MainHandlerTestable(request=request, post=True, instance=other.node)
+        pytest.raises(Redirect, handler.update)
+
+        form = handler.context['form']
+        assert form.is_valid()
+
 class TestBreadcrumb(object):
     """ test breadcrumb generation by handler """
 
@@ -322,6 +349,7 @@ class TestBreadcrumb(object):
                    ('Child', child.get_absolute_url()),
                    ('Edit "%s" (%s)' % (child.content().title,
                                         Type1Type.title), '')]
+
 
 class TestActions(object):
     """ test cut/copy/paste/delete, reorder and other actions """

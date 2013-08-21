@@ -2,8 +2,9 @@ import re
 import mimetypes
 
 from django import forms
+from django.conf import settings
 
-from wheelcms_axle.node import Node, Paths, get_language
+from wheelcms_axle.node import Node
 
 from wheelcms_axle.models import type_registry, Configuration
 from wheelcms_axle.templates import template_registry
@@ -139,11 +140,10 @@ class BaseForm(forms.ModelForm):
         slug = self.data.get('slug', '').strip().lower()
 
 
-        ## How to check for language active language?
-        language = get_language()
+        language = self.data.get('language', settings.FALLBACK)
+
         parent_path = self.parent.get_path(language=language)
 
-        # import pytest; pytest.set_trace()
         if not slug:
             slug = re.sub("[^%s]+" % Node.ALLOWED_CHARS, "-",
                           self.cleaned_data.get('title', '').lower()
@@ -165,7 +165,7 @@ class BaseForm(forms.ModelForm):
         if not Node.validpathre.match(slug):
             raise forms.ValidationError("Only numbers, letters, _-")
         existing = Node.get(path=parent_path + "/" + slug, language=language)
-        if existing != self.instance.node:
+        if existing and existing != self.instance.node:
             raise forms.ValidationError("Name in use")
 
         return slug
