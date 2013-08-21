@@ -3,7 +3,6 @@ from django.conf import settings
 from django.template import loader, Context
 from django.http import HttpResponseServerError, Http404
 from django.core.urlresolvers import resolve
-from django.utils import translation
 
 from two.ol.base import RESTLikeHandler, applyrequest, context, json, handler
 from wheelcms_axle.node import Node, NodeNotFound, CantMoveToOffspring
@@ -15,6 +14,7 @@ from wheelcms_axle.toolbar import Toolbar
 
 from wheelcms_axle.base import WheelHandlerMixin
 from wheelcms_axle.utils import get_url_for_language
+from wheelcms_axle.utils import get_active_language
 
 from .templates import template_registry
 from .actions import action_registry
@@ -87,10 +87,6 @@ def strip_action(s):
         s = s.split("+", 1)[0].rstrip('/')
     return s
 
-def get_active_language(request):
-    if request:
-        return request.GET.get('language', translation.get_language())
-    return translation.get_language()
 
 class MainHandler(WheelRESTHandler):
     model = dict(instance=Node, parent=Node)
@@ -966,4 +962,18 @@ class MainHandler(WheelRESTHandler):
         return dict(status="error",
                     errors=dict(storage=self.form.errors['storage'].pop()))
 
+
+    @applyrequest
+    def handle_switch_admin_language(self, language, path=None, rest=""):
+        if not self.hasaccess():
+            return self.forbidden()
+
+        self.request.session['admin_language'] = language
+        if path:
+            node = Node.objects.get(tree_path=path)
+        else:
+            node = self.instance
+
+        return self.redirect(node.get_absolute_url(language=language) + rest,
+                             info="Switched to %s" % language)
 

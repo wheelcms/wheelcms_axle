@@ -8,3 +8,8 @@ def get_url_for_language(o, language):
     translation.activate(old)
     return url
 
+def get_active_language(request):
+    if request:
+        admin_language = request.session.get('admin_language')
+        return admin_language or request.GET.get('language', translation.get_language())
+    return translation.get_language()
