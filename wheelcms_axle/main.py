@@ -403,7 +403,7 @@ class MainHandler(WheelRESTHandler):
     def breadcrumb(self, operation="", details=""):
         """ generate breadcrumb path. """
         language = self.active_language()
-        
+
         base = self.instance or self.parent
         if not base:
             ## parent
@@ -431,7 +431,9 @@ class MainHandler(WheelRESTHandler):
                     path = ""
 
             if node.isroot():
-                if content:
+                if primary_content and not content:
+                    title = "Home (untranslated)"
+                elif content:
                     title = "Home"
                 else:
                     title = "Unattached rootnode"
