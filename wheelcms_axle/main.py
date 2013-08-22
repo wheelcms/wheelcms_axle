@@ -341,7 +341,7 @@ class MainHandler(WheelRESTHandler):
             typeinfo = type_registry.get(typename)
             create_translation = True
         else:
-            typename = instance.content().get_name()
+            typename = content.get_name()
             typeinfo = type_registry.get(typename)
 
         parent = instance.parent()
