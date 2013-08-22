@@ -148,12 +148,72 @@ class TestMainHandler(object):
         request = superuser_request("/edit", method="POST",
                                       title="Test",
                                       slug="")
-        root = Node.root()
         handler = MainHandler(request=request, post=True, instance=root)
         pytest.raises(Redirect, handler.update)
 
         root = Node.root()
         assert root.content().title == "Test"
+
+    def test_create_translation_root_get(self, client):
+        """ test case where root has content but current language
+            is not translated """
+        root = Node.root()
+        Type1(node=root, title="Hello", language="en").save()
+        request = superuser_request("/edit", method="GET",
+                                    language="nl")
+        handler = MainHandler(request=request, post=False, instance=root)
+        handler.update()
+
+        assert 'slug' not in handler.context['form'].fields
+
+    def test_create_translation_root_post(self, client):
+        """ test case where root has content but current language
+            is not translated """
+        root = Node.root()
+        Type1(node=root, title="Hello", language="en").save()
+        request = superuser_request("/edit", method="POST",
+                                    title="hello",
+                                    language="nl")
+        request.session['admin_language'] = 'nl'
+
+        handler = MainHandler(request=request, post=True, instance=root)
+        pytest.raises(Redirect, handler.update)
+
+        assert root.content(language='nl')
+        assert root.content(language='en')
+        assert root.content(language='nl') != root.content(language='en')
+
+    def test_create_translation_content_get(self, client):
+        """ test case where root has content but current language
+            is not translated """
+        root = Node.root()
+        node = root.add("content")
+        Type1(node=node, title="Hello", language="en").save()
+        request = superuser_request("/edit", method="GET",
+                                    language="nl")
+        handler = MainHandler(request=request, post=False, instance=node)
+        handler.update()
+
+        assert 'slug' in handler.context['form'].fields
+
+    def test_create_translation_content_post(self, client):
+        """ test case where root has content but current language
+            is not translated """
+        root = Node.root()
+        node = root.add("content")
+        Type1(node=node, title="Hello", language="en").save()
+        request = superuser_request("/edit", method="POST",
+                                    title="hello",
+                                    language="nl")
+        request.session['admin_language'] = 'nl'
+
+        root = Node.root()
+        handler = MainHandler(request=request, post=True, instance=node)
+        pytest.raises(Redirect, handler.update)
+
+        assert node.content(language='nl')
+        assert node.content(language='en')
+        assert node.content(language='nl') != node.content(language='en')
 
     def test_reserved_default(self, client):
         reserved = MainHandlerTestable.reserved()

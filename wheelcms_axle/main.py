@@ -355,7 +355,8 @@ class MainHandler(WheelRESTHandler):
 
         if self.post:
             args = dict(parent=parent, data=self.request.POST,
-                        reserved=self.reserved())
+                        reserved=self.reserved(),
+                        skip_slug=self.instance.isroot())
             if content:
                 args['instance'] = content
 
@@ -383,7 +384,7 @@ class MainHandler(WheelRESTHandler):
                       stracks.user(self.user()), action=stracks.edit())
                 return self.redirect(instance.get_absolute_url(), success="Updated")
         else:
-            args = dict(parent=parent,initial=dict(slug=slug, language=language))
+            args = dict(parent=parent,initial=dict(slug=slug, language=language), skip_slug=self.instance.isroot())
             if content:
                 args['instance'] = content
             self.context['form'] = formclass(**args)
@@ -454,8 +455,6 @@ class MainHandler(WheelRESTHandler):
 
     def view(self):
         """ frontpage / view """
-        # import pdb; pdb.set_trace()
-        
         language = self.active_language()
         spoke = self.spoke(language=language)
 

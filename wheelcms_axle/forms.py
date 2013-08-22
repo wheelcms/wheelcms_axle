@@ -70,7 +70,7 @@ class BaseForm(forms.ModelForm):
     # important = forms.Field(required=True)
 
     def __init__(self, parent, attach=False, enlarge=True, reserved=(),
-                 *args, **kwargs):
+                 skip_slug=False, *args, **kwargs):
         """
             Django will put the extra slug field at the bottom, below
             all model fields. I want it just after the title field
@@ -97,7 +97,7 @@ class BaseForm(forms.ModelForm):
         self.fields['state'] = forms.ChoiceField(choices=self.workflow_choices(),
                                                  initial=self.workflow_default(),
                                                  required=False)
-        if self.instance and self.instance.node and self.instance.node.isroot():
+        if skip_slug: #  or (self.instance and self.instance.node and self.instance.node.isroot()):
             self.fields.pop("slug")
 
         if enlarge:
