@@ -160,8 +160,7 @@ class Toolbar(object):
                 if lang == active_language:
                     active = option
                 else:
-
-                    if self.status == "edit":
+                    if self.status == "update":
                         option['action_url'] = base_url + '&rest=edit'
                     elif self.status == "view":
                         option['action_url'] = base_url + ''

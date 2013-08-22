@@ -306,7 +306,7 @@ class TestTranslations(BaseToolbarTest):
         request = create_request("GET", "/")
 
         translation.activate("en")
-        toolbar = Toolbar(n, request, "edit")
+        toolbar = Toolbar(n, request, "update")
         translations = toolbar.translations()
 
         assert translations['active']['id'] == 'en'
