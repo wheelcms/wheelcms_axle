@@ -10,7 +10,7 @@ def get_url_for_language(o, language):
     return url
 
 def get_active_language(request=None):
-    if settings.FORCE_LANGUAGE:
+    if hasattr(settings, 'FORCE_LANGUAGE'):
         return settings.FORCE_LANGUAGE
 
     if request:
