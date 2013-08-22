@@ -9,7 +9,7 @@ def get_url_for_language(o, language):
     translation.activate(old)
     return url
 
-def get_active_language(request):
+def get_active_language(request=None):
     if settings.FORCE_LANGUAGE:
         return settings.FORCE_LANGUAGE
 
