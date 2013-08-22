@@ -291,9 +291,9 @@ class TestTranslations(BaseToolbarTest):
         ## Do some matching magic using endswith to work around language / base prefixing.
         ## We're mosly interested in create/view/edit actions anyway
         assert translations['translated'][0]['id'] == "nl"
-        assert translations['translated'][0]['action_url'].endswith(n.get_path('nl') + '/')
+        assert translations['translated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=nl')
         assert translations['untranslated'][0]['id'] == 'fr'
-        assert translations['untranslated'][0]['action_url'].endswith(n.get_path('fr') + '/edit')
+        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=fr&rest=edit')
 
     def test_translations_edit(self, client):
         root = Node.root()
@@ -314,9 +314,9 @@ class TestTranslations(BaseToolbarTest):
         ## Do some matching magic using endswith to work around language / base prefixing.
         ## We're mosly interested in create/view/edit actions anyway
         assert translations['translated'][0]['id'] == "nl"
-        assert translations['translated'][0]['action_url'].endswith(n.get_path('nl') + '/edit')
+        assert translations['translated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=nl&rest=edit')
         assert translations['untranslated'][0]['id'] == 'fr'
-        assert translations['untranslated'][0]['action_url'].endswith(n.get_path('fr') + '/edit')
+        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=fr&rest=edit')
 
     def test_translations_list(self, client):
         root = Node.root()
@@ -337,9 +337,10 @@ class TestTranslations(BaseToolbarTest):
         ## Do some matching magic using endswith to work around language / base prefixing.
         ## We're mosly interested in create/view/edit actions anyway
         assert translations['translated'][0]['id'] == "nl"
-        assert translations['translated'][0]['action_url'].endswith(n.get_path('nl') + '/list')
+        assert translations['translated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=nl&rest=list')
         assert translations['untranslated'][0]['id'] == 'fr'
-        assert translations['untranslated'][0]['action_url'].endswith(n.get_path('fr') + '/edit')
+        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=fr&rest=edit')
+
     def test_translations_create(self, client):
         root = Node.root()
 
@@ -356,9 +357,11 @@ class TestTranslations(BaseToolbarTest):
 
         assert translations['active']['id'] == 'en'
 
+        import urllib2
+
         ## Do some matching magic using endswith to work around language / base prefixing.
         ## We're mosly interested in create/view/edit actions anyway
         assert translations['translated'][0]['id'] == "nl"
-        assert translations['translated'][0]['action_url'].endswith(n.get_path('nl') + '/create?type=sometype')
+        assert translations['translated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=nl&rest=' + urllib2.quote('create?type=sometype'))
         assert translations['untranslated'][0]['id'] == 'fr'
-        assert translations['untranslated'][0]['action_url'].endswith(n.get_path('fr') + '/edit')
+        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=fr&rest=edit')

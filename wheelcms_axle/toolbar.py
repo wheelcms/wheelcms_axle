@@ -1,3 +1,5 @@
+import urllib2
+
 from django.conf import settings
 
 from wheelcms_axle.content import type_registry
@@ -164,11 +166,9 @@ class Toolbar(object):
                     elif self.status == "view":
                         option['action_url'] = base_url + ''
                     elif self.status == "list":
-                        option['action_url'] = base_url + 'l&rest=ist'
+                        option['action_url'] = base_url + '&rest=list'
                     elif self.status == "create":
-                        ## XXX werkt natuurlijk niet, qua 'rest'
-                        option['action_url'] = base_url + '&rest=create?type=' + \
-                                               self.request.GET.get('type')
+                        option['action_url'] = base_url + '&rest=' + urllib2.quote('create?type=' + self.request.GET.get('type'))
 
                     translated.append(option)
             else:

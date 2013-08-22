@@ -452,6 +452,8 @@ class MainHandler(WheelRESTHandler):
 
     def view(self):
         """ frontpage / view """
+        # import pdb; pdb.set_trace()
+        
         language = self.active_language()
         spoke = self.spoke(language=language)
 
@@ -489,6 +491,9 @@ class MainHandler(WheelRESTHandler):
             return self.template(spoke.view_template())
         elif self.instance.primary_content():
             """ attached but untranslated """
+            if self.hasaccess():
+                return self.redirect(self.instance.get_absolute_url(language=language) + "edit",
+                    info="This content is not available in this language")
             return self.notfound()
 
         return self.template("wheelcms_axle/nospoke.html")
