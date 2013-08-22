@@ -156,20 +156,19 @@ class Toolbar(object):
 
             ## In view mode toch edit tonen om vertaling te maken!
             base_url = "switch_admin_language?path=" + self.instance.tree_path + "&language=" + lang
-            if content:
-                if lang == active_language:
-                    active = option
-                else:
-                    if self.status == "update":
-                        option['action_url'] = base_url + '&rest=edit'
-                    elif self.status == "view":
-                        option['action_url'] = base_url + ''
-                    elif self.status == "list":
-                        option['action_url'] = base_url + '&rest=list'
-                    elif self.status == "create":
-                        option['action_url'] = base_url + '&rest=' + urllib2.quote('create?type=' + self.request.GET.get('type'))
+            if lang == active_language:
+                active = option
+            elif content:
+                if self.status == "update":
+                    option['action_url'] = base_url + '&rest=edit'
+                elif self.status == "view":
+                    option['action_url'] = base_url + ''
+                elif self.status == "list":
+                    option['action_url'] = base_url + '&rest=list'
+                elif self.status == "create":
+                    option['action_url'] = base_url + '&rest=' + urllib2.quote('create?type=' + self.request.GET.get('type'))
 
-                    translated.append(option)
+                translated.append(option)
             else:
                 option['action_url'] = base_url + '&rest=edit'
                 untranslated.append(option)
