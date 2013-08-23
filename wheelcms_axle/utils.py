@@ -10,10 +10,22 @@ def get_url_for_language(o, language):
     return url
 
 def get_active_language(request=None):
-    if hasattr(settings, 'FORCE_LANGUAGE') and settings.FORCE_LANGUAGE:
-        return settings.FORCE_LANGUAGE
+    """
+        The active language is either forced in settings,
+        set in the session (for admin), a GET argument or
+        the translation default
+    """
+    lang = getattr(settings, 'FORCE_LANGUAGE')
 
     if request:
         admin_language = request.session.get('admin_language')
-        return admin_language or request.GET.get('language', translation.get_language())
-    return translation.get_language()
+        lang = admin_language or request.GET.get('language')
+
+    if not lang:
+        lang = translation.get_language()
+
+    langids = (l[0] for l in getattr(settings, 'CONTENT_LANGUAGES', ()))
+
+    if lang not in langids and getattr(settings, 'FALLBACK', None):
+        lang = settings.FALLBACK
+    return lang

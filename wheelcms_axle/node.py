@@ -5,7 +5,7 @@ from django.db import models, IntegrityError
 from django.core.urlresolvers import reverse
 from django.conf import settings
 
-
+from wheelcms_axle.utils import get_active_language
 
 class NodeException(Exception):
     """ Base class for all Node exceptions """
@@ -36,13 +36,10 @@ import random
 def random_path():
     return hex(random.randrange(0, 10**20))
 
-def get_language():
-    language = translation.get_language()
-    langids = (l[0] for l in getattr(settings, 'CONTENT_LANGUAGES', ()))
 
-    if language not in langids and getattr(settings, 'FALLBACK', None):
-        language = settings.FALLBACK
-    return language
+def get_language():
+    return get_active_language()
+
 
 class NodeQuerySet(QuerySet):
     def children(self, node):
@@ -113,6 +110,7 @@ class NodeBase(models.Model):
         self._slug = kw.get('slug', None)
         self._parent = kw.get('parent', None)
         self._langslugs = kw.get('langslugs', {})
+        self.preferred_language = None
 
         try:
             del kw['slug']
@@ -131,7 +129,7 @@ class NodeBase(models.Model):
 
     def content(self, language=None):
         from .content import Content
-        language = language or get_language()
+        language = language or self.preferred_language or get_language()
         try:
             return self.contentbase.get(language=language).content()
         except Content.DoesNotExist:
