@@ -41,6 +41,19 @@ def get_language():
     return get_active_language()
 
 
+def node_proxy_factory(base, language):
+    class LanguageProxy(base):
+        class Meta:
+            proxy = True
+
+        preferred_language = language
+
+        def __eq__(self, other):
+            return self.pk == other.pk and self.preferred_language == other.preferred_language
+
+    return LanguageProxy
+
+
 class NodeQuerySet(QuerySet):
     def children(self, node):
         """ only return direct children """
@@ -103,6 +116,8 @@ class NodeBase(models.Model):
 
     objects = NodeManager()
 
+    preferred_language = None
+
     class Meta:
         abstract = True
 
@@ -110,7 +125,7 @@ class NodeBase(models.Model):
         self._slug = kw.get('slug', None)
         self._parent = kw.get('parent', None)
         self._langslugs = kw.get('langslugs', {})
-        self.preferred_language = None
+        self.preferred_language = self.preferred_language or None
 
         try:
             del kw['slug']
@@ -145,6 +160,7 @@ class NodeBase(models.Model):
 
     @property
     def path(self):
+        ## self.preferred_language? XXX
         return self.get_path()
 
     @classmethod
@@ -152,11 +168,13 @@ class NodeBase(models.Model):
         """ retrieve node directly by path. Returns None if not found """
         language = language or get_language()
         try:
-            return Paths.objects.get(path=path, language=language).node
+            n = Paths.objects.get(path=path, language=language).node
+            n.preferred_language = language
+            return n
         except Paths.DoesNotExist:
             ## the root may not yet have been created
             if path == "":
-                return cls.root()
+                return cls.root(language=language)
             return None
 
 
@@ -194,13 +212,14 @@ class NodeBase(models.Model):
         return old
 
     @classmethod
-    def root(cls):
+    def root(cls, language=None):
         try:
-            return cls.objects.get(tree_path=cls.ROOT_PATH)
+            root = cls.objects.get(tree_path=cls.ROOT_PATH)
         except Node.DoesNotExist:
             root = Node(parent=None, slug="")
             root.save()
-            return root
+        root.preferred_language = language
+        return root
 
 
     def isroot(self):
@@ -470,7 +489,8 @@ class NodeBase(models.Model):
 
     def childrenq(self, order="position", **kw):
         """ return the raw query for children """
-        return self.__class__.objects.children(self).order_by(order).filter(**kw)
+
+        return node_proxy_factory(self.__class__, self.preferred_language).objects.children(self).order_by(order).filter(**kw)
 
     def children(self, order="position"):
         return self.childrenq(order=order)
