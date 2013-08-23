@@ -150,22 +150,13 @@ class MainHandler(WheelRESTHandler):
 
     def formclass(self, data=None, instance=None):
         """
-            Find and initialize the appropriate form for the current
-            instance. Not consistently used XXX
+            Invoked by dispatcher to initialize this handler's form.
+            But since we need more context to properly initialize, don't
+            do it here and return None in stead. If you need a form instance,
+            create it explicitly
         """
-        if not self.instance or not self.instance.primary_content():
-            ## there's no instance, or it's not attached to content
-            return None
 
-        typename = self.instance.primary_content().get_name()
-
-        typeinfo = type_registry.get(typename)
-        parent = self.instance.parent()
-        try:
-            content = instance.content()
-        except Content.DoesNotExist:
-            content = None
-        return typeinfo.form(parent=parent, data=data, instance=content)
+        return None
 
     @classmethod
     def coerce_with_request(cls, i, request=None):
