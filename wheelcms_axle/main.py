@@ -112,10 +112,11 @@ class MainHandler(WheelRESTHandler):
         return ""
 
     @context
-    def page_title(self):
+    def page_title(self, language=None):
         """ return the content title, if any """
+        language = language or self.active_language()
         if self.instance:
-            content = self.instance.content()
+            content = self.instance.content(language=language)
             if content:
                 return content.title
         return "Unattached node"
@@ -123,6 +124,7 @@ class MainHandler(WheelRESTHandler):
     @context
     def spoke(self, language=None):
         """ return type info for the current content, if any """
+        language = language or self.active_language()
         model = self.instance.content(language=language)
         if model:
             return model.spoke()
