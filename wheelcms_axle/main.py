@@ -102,7 +102,7 @@ class MainHandler(WheelRESTHandler):
     @context
     def body_class(self):
         if self.instance:
-            model = self.instance.content()
+            model = self.instance.primary_content()
 
             if model:
                 typename = model.get_name()
@@ -153,11 +153,11 @@ class MainHandler(WheelRESTHandler):
             Find and initialize the appropriate form for the current
             instance. Not consistently used XXX
         """
-        if not self.instance or not self.instance.content():
+        if not self.instance or not self.instance.primary_content():
             ## there's no instance, or it's not attached to content
             return None
 
-        typename = self.instance.content().get_name()
+        typename = self.instance.primary_content().get_name()
 
         typeinfo = type_registry.get(typename)
         parent = self.instance.parent()
