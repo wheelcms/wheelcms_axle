@@ -166,15 +166,15 @@ class NodeBase(models.Model):
     @classmethod
     def get(cls, path, language=None):
         """ retrieve node directly by path. Returns None if not found """
-        language = language or get_language()
+        detect_or_prefer_language = language or get_language()
         try:
-            n = Paths.objects.get(path=path, language=language).node
+            n = Paths.objects.get(path=path, language=detect_or_prefer_language).node
             n.preferred_language = language
             return n
         except Paths.DoesNotExist:
             ## the root may not yet have been created
             if path == "":
-                return cls.root(language=language)
+                return cls.root(language=detect_or_prefer_language)
             return None
 
 
@@ -426,7 +426,7 @@ class NodeBase(models.Model):
                 return node, success, failed
 
             ## XXX somehow batch/transaction this
-            for o in Node.objects.offspring(node):
+            for o in node_proxy_factory(Node, self.preferred_language).objects.offspring(node):
                 o.tree_path = self.tree_path + o.tree_path[len(oldbase):]
                 o.save()
                 success.append(o.tree_path)
@@ -476,7 +476,7 @@ class NodeBase(models.Model):
 
         if child is None:
             raise NodeNotFound(self.tree_path + '/' + childslug)
-        Node.objects.offspring(child).delete()
+        node_proxy_factory(Node, self.preferred_language).objects.offspring(child).delete()
         child.delete()
 
     def parent(self):
@@ -484,13 +484,13 @@ class NodeBase(models.Model):
         if self.isroot():
             return self
         parentpath, mypath = self.tree_path.rsplit("/", 1)
-        parent = self.__class__.objects.get(tree_path=parentpath)
+        parent = node_proxy_factory(self.__class__, self.preferred_language).objects.get(tree_path=parentpath)
         return parent
 
     def childrenq(self, order="position", **kw):
         """ return the raw query for children """
 
-        return node_proxy_factory(self.__class__, self.preferred_language).objects.children(self).order_by(order).filter(**kw)
+        return node_proxy_factory(node_proxy_factory(self.__class__, self.preferred_language), self.preferred_language).objects.children(self).order_by(order).filter(**kw)
 
     def children(self, order="position"):
         return self.childrenq(order=order)
