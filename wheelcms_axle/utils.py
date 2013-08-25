@@ -15,7 +15,7 @@ def get_active_language(request=None):
         set in the session (for admin), a GET argument or
         the translation default
     """
-    lang = getattr(settings, 'FORCE_LANGUAGE')
+    lang = getattr(settings, 'FORCE_LANGUAGE', None)
 
     if not lang and request:
         admin_language = request.session.get('admin_language')
