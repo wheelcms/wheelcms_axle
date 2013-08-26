@@ -191,6 +191,19 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
 
         assert form.is_valid()
 
+    def test_slug_generate_dashes(self, client):
+        """ test slug generation """
+        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        p = Node.root()
+        data = self.valid_data()
+        data['title'] = 'a -- b  -  c'
+        data['template'] = 'foo/bar'
+
+        form = self.type.form(parent=p, data=data, files=self.valid_files())
+
+        assert form.is_valid()
+        assert form.cleaned_data['slug'] == "a-b-c"
+
     def test_slug_generate_complex(self, client):
         """ test slug generation """
         self.reg.register(self.type, "foo/bar", "foo bar", default=False)
@@ -264,7 +277,6 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         form = self.type.form(parent=p, data=data, files=self.valid_files(),
                               reserved=["foo"])
 
-        # import pytest; pytest.set_trace()
         assert form.is_valid()
         assert form.cleaned_data['slug'] == 'foo1'
 

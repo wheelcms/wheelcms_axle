@@ -148,6 +148,7 @@ class BaseForm(forms.ModelForm):
             slug = re.sub("[^%s]+" % Node.ALLOWED_CHARS, "-",
                           self.cleaned_data.get('title', '').lower()
                           )[:Node.MAX_PATHLEN].strip("-")
+            slug = re.sub("-+", "-", slug)
             existing = Node.get(path=parent_path + "/" + slug, language=language)
 
             base_slug = slug[:Node.MAX_PATHLEN-6] ## some space for counter
