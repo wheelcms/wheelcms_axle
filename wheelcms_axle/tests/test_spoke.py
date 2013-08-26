@@ -196,13 +196,55 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         self.reg.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
         data = self.valid_data()
-        data['title'] = 'a -- b  -  c'
+        data['title'] = 'foo -- bar  -  cccc'
         data['template'] = 'foo/bar'
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
         assert form.is_valid()
-        assert form.cleaned_data['slug'] == "a-b-c"
+        assert form.cleaned_data['slug'] == "foo-bar-cccc"
+
+    def test_slug_generate_stopwords(self, client):
+        """ test slug generation """
+        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        p = Node.root()
+        data = self.valid_data()
+        data['title'] = 'a world the are'
+        data['template'] = 'foo/bar'
+        data['language'] = 'en' ## use english stopwords
+
+        form = self.type.form(parent=p, data=data, files=self.valid_files())
+
+        assert form.is_valid()
+        assert form.cleaned_data['slug'] == "world"
+
+    def test_slug_generate_stopwords_empty(self, client):
+        """ test slug generation - only stopwords """
+        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        p = Node.root()
+        data = self.valid_data()
+        data['title'] = 'are'
+        data['template'] = 'foo/bar'
+        data['language'] = 'en' ## use english stopwords
+
+        form = self.type.form(parent=p, data=data, files=self.valid_files())
+
+        assert form.is_valid()
+        assert form.cleaned_data['slug']
+
+    def test_slug_generate_stopwords_empty_dashes(self, client):
+        """ test slug generation - only stopwords """
+        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        p = Node.root()
+        data = self.valid_data()
+        data['title'] = 'are - a - they'
+        data['template'] = 'foo/bar'
+        data['language'] = 'en' ## use english stopwords
+
+        form = self.type.form(parent=p, data=data, files=self.valid_files())
+
+        assert form.is_valid()
+        assert form.cleaned_data['slug']
 
     def test_slug_generate_complex(self, client):
         """ test slug generation """
