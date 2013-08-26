@@ -38,6 +38,7 @@ class ContentClass(models.Model):
     def __unicode__(self):
         return "Content class %s" % self.name
 
+
 class ContentBase(models.Model):
     CLASSES = ()
 

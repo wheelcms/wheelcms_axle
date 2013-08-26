@@ -488,6 +488,9 @@ class MainHandler(WheelRESTHandler):
             if self.hasaccess():
                 return self.redirect(self.instance.get_absolute_url(language=language) + "edit",
                     info="This content is not available in this language")
+            elif self.instance.isroot():
+                return self.template("wheelcms_axle/notranslation.html")
+                
             return self.notfound()
 
         return self.template("wheelcms_axle/nospoke.html")
