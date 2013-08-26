@@ -49,7 +49,7 @@ def node_proxy_factory(base, language):
         preferred_language = language
 
         def __eq__(self, other):
-            return other and self.pk == other.pk and self.preferred_language == other.preferred_language
+            return isinstance(other, NodeBase) and self.pk == other.pk and self.preferred_language == other.preferred_language
 
     return LanguageProxy
 
