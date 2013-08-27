@@ -132,11 +132,13 @@ class TestNode(object):
 
         r1.rename("rr1")
 
-        assert r1.paths.count() == 3
+        assert r1.paths.count() == 4  ## "any" gets added implicitly
         assert r1.path == "/rr1"
         translation.activate('nl')
         assert r1.path == "/rr1"
         translation.activate('fr')
+        assert r1.path == "/rr1"
+        translation.activate('any')
         assert r1.path == "/rr1"
 
     def test_rename_default_recursive(self, client):
@@ -149,11 +151,13 @@ class TestNode(object):
 
         r1.rename("rr1")
 
-        assert r2.paths.count() == 3
+        assert r2.paths.count() == 4  ## "any" gets added implicitly
         assert r2.path == "/rr1/sub"
         translation.activate('nl')
         assert r2.path == "/rr1/sub"
         translation.activate('fr')
+        assert r2.path == "/rr1/sub"
+        translation.activate('any')
         assert r2.path == "/rr1/sub"
 
     def test_rename_duplicate(self, client):
@@ -272,6 +276,7 @@ class TestNode(object):
         src = root.add(langslugs=dict(fr="source", nl="bron", en="src"))
         src2 = src.add(langslugs=dict(fr="fr", nl="nl", en="en"))
 
+        # import pytest;pytest.set_trace()
         target = root.add(langslugs=dict(fr="destination",
                                          nl="doel", en="target"))
 

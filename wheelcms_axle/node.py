@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 
 from wheelcms_axle.utils import get_active_language
+from wheelcms_axle import translate
 
 class NodeException(Exception):
     """ Base class for all Node exceptions """
@@ -169,9 +170,7 @@ class NodeBase(models.Model):
         from .content import Content
         language = language or self.preferred_language or get_language()
 
-        langs = [language]
-        if language != "any":
-            langs.append("any")
+        langs = translate.fallback_languages(language)
 
         for l in langs:
             try:
@@ -325,13 +324,14 @@ class NodeBase(models.Model):
 
         ## create paths based on self._slug / self._parent which were passed to __init__
         if not saved:
-            for language, langname in settings.CONTENT_LANGUAGES:
+            for language, langname in translate.languages():
                 try:
                     langpath = Paths.objects.get(node=self, language=language)
                 except Paths.DoesNotExist:
                     langpath = Paths(node=self, language=language)
 
-                langslug = self._langslugs.get(language, self._slug)
+                langslug = translate.language_slug(self._langslugs, self._slug, language)
+                # langslug = self._langslugs.get(language, self._slug)
 
                 if not self._parent:
                     path = '' # '/' + str(self.id) -- be consistent with 'old' behavior, for now
@@ -353,7 +353,7 @@ class NodeBase(models.Model):
         if path is not None:
             path = path.lower()
             slugs.append(path)
-            
+
         ## no path specified?
         for slug in slugs:
             if not self.validpathre.match(slug):
@@ -468,7 +468,7 @@ class NodeBase(models.Model):
 
             ## the great renaming
             # import pytest; pytest.set_trace()
-            for language, langname in settings.CONTENT_LANGUAGES:
+            for language, langname in translate.languages():
                 try:
                     localized_path = Paths.objects.get(node=node, language=language)
                 except Paths.DoesNotExist:
@@ -541,7 +541,7 @@ class NodeBase(models.Model):
             raise CantRenameRoot()
 
         ## if no language was specified, rename all
-        languages = [language] if language else [l[0] for l in settings.CONTENT_LANGUAGES]
+        languages = [language] if language else [l[0] for l in translate.languages()]
 
         for testmode in (True, False):
             ## first loop checks if all relevant languages can be renamed, second loop renames

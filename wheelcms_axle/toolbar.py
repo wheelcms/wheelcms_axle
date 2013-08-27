@@ -7,6 +7,7 @@ from wheelcms_axle.node import Node
 from wheelcms_axle.workflows.default import worklist as default_worklist
 from wheelcms_axle import access
 from wheelcms_axle.utils import get_url_for_language, get_active_language
+from wheelcms_axle import translate
 
 
 class Toolbar(object):
@@ -150,7 +151,7 @@ class Toolbar(object):
 
         active_language = get_active_language(self.request)
 
-        for (lang, langtitle) in settings.CONTENT_LANGUAGES:
+        for (lang, langtitle) in translate.languages():
             option = dict(id=lang, language=langtitle)
             content = self.instance.content(language=lang)
 

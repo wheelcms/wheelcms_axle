@@ -15,6 +15,7 @@ from wheelcms_axle.toolbar import Toolbar
 from wheelcms_axle.base import WheelHandlerMixin
 from wheelcms_axle.utils import get_url_for_language
 from wheelcms_axle.utils import get_active_language
+from wheelcms_axle import translate
 
 from .templates import template_registry
 from .actions import action_registry
@@ -307,7 +308,7 @@ class MainHandler(WheelRESTHandler):
 
         instance = self.instance
 
-        supported_languages = (l[0] for l in settings.CONTENT_LANGUAGES)
+        supported_languages = (l[0] for l in translate.languages())
         if language not in supported_languages:
             return self.redirect(instance.get_absolute_url(),
                                  error="Unsupported Language")
@@ -490,7 +491,7 @@ class MainHandler(WheelRESTHandler):
                     info="This content is not available in this language")
             elif self.instance.isroot():
                 return self.template("wheelcms_axle/notranslation.html")
-                
+
             return self.notfound()
 
         return self.template("wheelcms_axle/nospoke.html")
@@ -515,7 +516,7 @@ class MainHandler(WheelRESTHandler):
 
         for child in self.instance.children():
             c = dict(active=None, translations=[], ipath=child.tree_path)
-            for lang, langtitle in settings.CONTENT_LANGUAGES:
+            for lang, langtitle in translate.languages():
                 langcontent = child.content(language=lang)
                 c["translations"].append((lang, langcontent,
                                           get_url_for_language(child, lang)))
