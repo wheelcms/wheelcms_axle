@@ -596,3 +596,45 @@ class TestNodeCopyPaste(object):
 
         assert res.path == "/src/target/root"
         assert res != src
+
+class TestNodeTranslation(object):
+    """ test translation related stuff """
+    def test_preferred_language_child(self, client):
+        root = Node.root()
+        sub = root.add("sub")
+        sub_pref = root.child("sub", language="en")
+        assert sub_pref.preferred_language == "en"
+        sub_pref = root.child("sub", language="nl")
+        assert sub_pref.preferred_language == "nl"
+
+    def test_preferred_language_children(self, client):
+        root = Node.root()
+        sub = root.add("sub")
+
+        root = Node.root(language="nl")
+        child = root.children()[0]
+        assert child.preferred_language == "nl"
+
+    def test_preferred_language_content(self, client):
+        root = Node.root()
+        sub = root.add("sub")
+        from .models import Type1
+
+        en = Type1(title="EN", node=sub, language="en").save()
+        nl = Type1(title="NL", node=sub, language="nl").save()
+
+        assert root.child("sub", language="nl").content() == nl
+        assert root.child("sub", language="en").content() == en
+
+    def test_node_equality(self, client):
+        root = Node.root()
+        sub = root.add("sub")
+        sub_nl = Node.root(language="nl").children()[0]
+        sub_en = Node.root(language="en").children()[0]
+
+        assert sub_nl != sub_en
+        assert sub_nl != sub
+
+        sub.preferred_language = "nl"
+        assert sub == sub_nl
+

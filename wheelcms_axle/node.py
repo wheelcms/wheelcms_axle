@@ -41,17 +41,38 @@ def get_language():
     return get_active_language()
 
 
-def node_proxy_factory(base, language):
-    class LanguageProxy(base):
-        class Meta:
-            proxy = True
+def node_proxy_factory(base, l):
+    """
+        Create a proxy model based on the base (usually Node or some derivative)
+        and language 'l', with 'l' bound as preferred language to that proxy.
+        We need to use type() here in stead of defining a class locally because it
+        will need to be uniquely named (per language). A generick "LanguageProxy"
+        would be cached by django and simply not work.
+    """
 
-        preferred_language = language
+    class Meta:
+        proxy = True
 
-        def __eq__(self, other):
-            return isinstance(other, NodeBase) and \
-                   self.pk == other.pk and \
-                   self.preferred_language == other.preferred_language
+    def __eq__(self, other):
+        return isinstance(other, NodeBase) and \
+               self.pk == other.pk and \
+               self.preferred_language == other.preferred_language
+
+    def __unicode__(self):
+        """ readable representation """
+        return u"path %s pos %d %s" % (self.tree_path or '/', self.position,
+                                       self.preferred_language)
+
+    attrs = dict(Meta=Meta,
+                 __module__=base.__module__,
+                 __eq__=__eq__,
+                 __unicode__=__unicode__,
+                   preferred_language=l)
+
+    lang = l.upper() if l else ""
+    LanguageProxy = type(str("Node" + lang),
+                         (base,),
+                         attrs)
 
     return LanguageProxy
 
@@ -499,7 +520,7 @@ class NodeBase(models.Model):
     def childrenq(self, order="position", **kw):
         """ return the raw query for children """
 
-        return node_proxy_factory(node_proxy_factory(self.__class__, self.preferred_language), self.preferred_language).objects.children(self).order_by(order).filter(**kw)
+        return node_proxy_factory(self.__class__, self.preferred_language).objects.children(self).order_by(order).filter(**kw)
 
     def children(self, order="position"):
         return self.childrenq(order=order)
