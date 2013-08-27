@@ -169,7 +169,7 @@ class Toolbar(object):
                 elif self.status == "create":
                     option['action_url'] = base_url + '&rest=' + urllib2.quote('create?type=' + self.request.GET.get('type'))
 
-                if content:
+                if content and self.status != 'create':
                     translated.append(option)
                 else:
                     untranslated.append(option)

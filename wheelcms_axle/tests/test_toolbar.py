@@ -361,7 +361,10 @@ class TestTranslations(BaseToolbarTest):
 
         ## Do some matching magic using endswith to work around language / base prefixing.
         ## We're mosly interested in create/view/edit actions anyway
-        assert translations['translated'][0]['id'] == "nl"
-        assert translations['translated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=nl&rest=' + urllib2.quote('create?type=sometype'))
-        assert translations['untranslated'][0]['id'] == 'fr'
-        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=fr&rest=' + urllib2.quote('create?type=sometype'))
+        assert len(translations['translated']) == 0
+        assert len(translations['untranslated']) == 3  ## all languages incl 'any', active lang excluded
+
+        for ut in translations['untranslated']:
+            l = ut['id']
+            assert l in ('nl', 'fr', 'en', 'any')
+            assert ut['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=' + l + '&rest=' + urllib2.quote('create?type=sometype'))
