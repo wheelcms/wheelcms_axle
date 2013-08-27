@@ -575,7 +575,13 @@ class TestActions(object):
         assert n1.position > n3.position
         assert n3.position > n2.position
 
+from django.conf import settings
+
 class TestTranslations(object):
+    def setup(self):
+        settings.CONTENT_LANGUAGES = (('en', 'English'), ('nl', 'Nederlands'))
+        settings.FALLBACK = 'en'
+
     def test_translated(self, client):
         """ /a can point to either dutch or english content on different
             nodes """

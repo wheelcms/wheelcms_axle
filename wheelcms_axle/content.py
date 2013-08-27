@@ -45,7 +45,7 @@ class ContentBase(models.Model):
     copyable = True
 
     node = models.ForeignKey(Node, related_name="contentbase", null=True)
-    language = models.CharField(max_length=10, choices=settings.CONTENT_LANGUAGES, blank=True)
+    language = models.CharField(max_length=10, choices=(("any", "Any"),) + settings.CONTENT_LANGUAGES, blank=True)
     title = models.CharField(max_length=256, blank=False)
     description = models.TextField(blank=True, default="")
     created = models.DateTimeField(blank=True, null=True)

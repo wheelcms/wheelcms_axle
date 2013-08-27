@@ -9,9 +9,13 @@ from wheelcms_axle.content import Content, ContentCopyFailed
 from wheelcms_axle.content import ContentCopyNotSupported
 from wheelcms_axle.tests.models import Type1, Type2, TypeM2M, TypeUnique
 
+from django.conf import settings
 
 class TestContent(object):
     """ Test content / content-node related stuff """
+    def setup(self):
+        settings.CONTENT_LANGUAGES = (('en', 'English'), ('nl', 'Nederlands'), ('fr', 'Francais'))
+        settings.FALLBACK = 'en'
 
     def test_duplicate_content(self, client):
         """ two content objects for the same language 
@@ -236,3 +240,46 @@ class TestContent(object):
         assert Node.get(sub2.path + "/c1/subunique") is None
         assert len(success) == 2
         assert len(failed) == 1
+
+    ## translation tests
+    def test_translations(self, client):
+        root = Node.root()
+        sub = root.add("sub")
+        Type1(title="EN content on sub", node=sub, language="en").save()
+        Type1(title="NL content on sub", node=sub, language="nl").save()
+
+        assert sub.content(language="en").title == "EN content on sub"
+        assert sub.content(language="nl").title == "NL content on sub"
+        assert sub.primary_content()
+        assert not sub.content(language="fr")
+
+    def test_translation_any(self, client):
+        root = Node.root()
+        sub = root.add("sub")
+        Type1(title="Any content on sub", node=sub, language="any").save()
+
+        assert sub.content(language="en").title == "Any content on sub"
+        assert sub.content(language="nl").title == "Any content on sub"
+        assert sub.primary_content()
+
+    def test_translation_specific_with_any(self, client):
+        """ a specific match and an any match """
+        root = Node.root()
+        sub = root.add("sub")
+        Type1(title="NL content on sub", node=sub, language="nl").save()
+        Type1(title="Any content on sub", node=sub, language="any").save()
+
+        assert sub.content(language="en").title == "Any content on sub"
+        assert sub.content(language="nl").title == "NL content on sub"
+        assert sub.primary_content()
+
+    def xtest_translations_duplicate(self, client):
+        root = Node.root()
+        sub = root.add("sub")
+        Type1(title="EN content on sub", node=sub, language="en").save()
+        Type1(title="NL content on sub", node=sub, language="en").save()
+
+        assert sub.content(language="en").title == "EN content on sub"
+        assert sub.content(language="nl").title == "NL content on sub"
+        assert sub.primary_content()
+        assert not sub.content(langauge="fr")

@@ -49,7 +49,9 @@ def node_proxy_factory(base, language):
         preferred_language = language
 
         def __eq__(self, other):
-            return isinstance(other, NodeBase) and self.pk == other.pk and self.preferred_language == other.preferred_language
+            return isinstance(other, NodeBase) and \
+                   self.pk == other.pk and \
+                   self.preferred_language == other.preferred_language
 
     return LanguageProxy
 
@@ -145,10 +147,17 @@ class NodeBase(models.Model):
     def content(self, language=None):
         from .content import Content
         language = language or self.preferred_language or get_language()
-        try:
-            return self.contentbase.get(language=language).content()
-        except Content.DoesNotExist:
-            return None
+
+        langs = [language]
+        if language != "any":
+            langs.append("any")
+
+        for l in langs:
+            try:
+                return self.contentbase.get(language=l).content()
+            except Content.DoesNotExist:
+                pass
+        return None
 
     def primary_content(self):
         """ what determines which language is primary? First one
