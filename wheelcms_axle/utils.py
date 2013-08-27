@@ -1,6 +1,8 @@
 from django.utils import translation
 from django.conf import settings
 
+from wheelcms_axle import translate
+
 def get_url_for_language(o, language):
     """ assumes 'o' has a get_absolute_url """
     old = translation.get_language()
@@ -24,7 +26,7 @@ def get_active_language(request=None):
     if not lang:
         lang = translation.get_language()
 
-    langids = (l[0] for l in getattr(settings, 'CONTENT_LANGUAGES', ()))
+    langids = (l[0] for l in translate.languages())
 
     if lang not in langids and getattr(settings, 'FALLBACK', None):
         lang = settings.FALLBACK

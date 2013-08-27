@@ -159,7 +159,7 @@ class Toolbar(object):
             base_url = "switch_admin_language?path=" + self.instance.tree_path + "&language=" + lang
             if lang == active_language:
                 active = option
-            elif content:
+            else:
                 if self.status == "update":
                     option['action_url'] = base_url + '&rest=edit'
                 elif self.status == "view":
@@ -169,10 +169,10 @@ class Toolbar(object):
                 elif self.status == "create":
                     option['action_url'] = base_url + '&rest=' + urllib2.quote('create?type=' + self.request.GET.get('type'))
 
-                translated.append(option)
-            else:
-                option['action_url'] = base_url + '&rest=edit'
-                untranslated.append(option)
+                if content:
+                    translated.append(option)
+                else:
+                    untranslated.append(option)
 
         return dict(active=active,
                     translated=translated,

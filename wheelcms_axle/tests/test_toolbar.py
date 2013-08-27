@@ -293,7 +293,7 @@ class TestTranslations(BaseToolbarTest):
         assert translations['translated'][0]['id'] == "nl"
         assert translations['translated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=nl')
         assert translations['untranslated'][0]['id'] == 'fr'
-        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=fr&rest=edit')
+        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=fr')
 
     def test_translations_edit(self, client):
         root = Node.root()
@@ -339,7 +339,7 @@ class TestTranslations(BaseToolbarTest):
         assert translations['translated'][0]['id'] == "nl"
         assert translations['translated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=nl&rest=list')
         assert translations['untranslated'][0]['id'] == 'fr'
-        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=fr&rest=edit')
+        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=fr&rest=list')
 
     def test_translations_create(self, client):
         root = Node.root()
@@ -364,4 +364,4 @@ class TestTranslations(BaseToolbarTest):
         assert translations['translated'][0]['id'] == "nl"
         assert translations['translated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=nl&rest=' + urllib2.quote('create?type=sometype'))
         assert translations['untranslated'][0]['id'] == 'fr'
-        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=fr&rest=edit')
+        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=fr&rest=' + urllib2.quote('create?type=sometype'))
