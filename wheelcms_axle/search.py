@@ -8,6 +8,7 @@ from haystack.forms import SearchForm as BaseForm
 from haystack.query import SearchQuerySet
 
 from wheelcms_axle.base import WheelHandlerMixin
+from wheelcms_axle import utils
 
 class SearchForm(BaseForm):
     pass
@@ -19,6 +20,10 @@ class SearchHandler(FormHandler, WheelHandlerMixin):
     @applyrequest(page=int)
     def index(self, page=1):
         sqs = SearchQuerySet()
+        language = utils.get_active_language(self.request)
+
+        sqs = sqs.filter(language__in=(language, "any"))
+
         if not self.hasaccess():
             sqs = sqs.filter(state__in=("visible", "published"))
 
