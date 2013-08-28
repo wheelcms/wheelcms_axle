@@ -381,9 +381,16 @@ class MainHandler(WheelRESTHandler):
                       stracks.user(self.user()), action=stracks.edit())
                 return self.redirect(instance.get_absolute_url(), success="Updated")
         else:
-            args = dict(parent=parent,initial=dict(slug=slug), skip_slug=self.instance.isroot())
+            args = dict(parent=parent,
+                        initial=dict(slug=slug),
+                        skip_slug=self.instance.isroot())
             if content:
+                # updating existing content
                 args['instance'] = content
+            else:
+                # translating new content. Make sure its language is set to the active
+                # language
+                args['initial']['language'] = language
             self.context['form'] = formclass(**args)
 
         self.context['toolbar'].status = 'update'

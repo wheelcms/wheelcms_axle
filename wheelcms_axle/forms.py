@@ -127,7 +127,8 @@ class BaseForm(forms.ModelForm):
                    not self.node.content(language=lpair[0], fallback=False):
                     c.append(lpair)
             self.fields['language'].choices = c
-        self.fields['language'].initial = 'any'
+        else:
+            self.fields['language'].choices = translate.languages()
 
         for e in type_registry.extenders(self.Meta.model):
             e.extend_form(self, *args, **kwargs)

@@ -605,3 +605,20 @@ class TestTranslations(object):
         res = MainHandler.coerce(dict(instance="a"))
         assert res['instance'] == n2
 
+    def test_create_translation(self, client):
+        root = Node.root()
+        Type1(node=root, language="en").save()
+        request = superuser_request("/edit", method="POST", type=Type1.get_name())
+        request.session = {'admin_language':'nl'}
+
+        instance = MainHandlerTestable.coerce(dict(instance=""))
+        handler = MainHandlerTestable(request=request, instance=instance)
+        update = handler.update()
+        assert update['path'] == "wheelcms_axle/update.html"
+        assert 'form' in update['context']
+        f = update['context']['form']
+
+        assert f.initial['language'] == 'nl'
+
+
+
