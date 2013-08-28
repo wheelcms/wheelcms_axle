@@ -10,6 +10,8 @@ from wheelcms_axle.models import type_registry, Configuration
 from wheelcms_axle.templates import template_registry
 from wheelcms_axle.stopwords import stopwords
 
+from wheelcms_axle import translate
+
 from tinymce.widgets import TinyMCE as BaseTinyMCE
 
 from taggit.utils import parse_tags
@@ -70,7 +72,8 @@ class BaseForm(forms.ModelForm):
     # just an experiment, to have a required field in the advanced section
     # important = forms.Field(required=True)
 
-    def __init__(self, parent, attach=False, enlarge=True, reserved=(),
+    def __init__(self, parent, node=None, attach=False, enlarge=True,
+                 reserved=(),
                  skip_slug=False, *args, **kwargs):
         """
             Django will put the extra slug field at the bottom, below
@@ -80,6 +83,7 @@ class BaseForm(forms.ModelForm):
         slug = self.fields.pop('slug')
         titlepos = self.fields.keyOrder.index('title')
         self.fields.insert(titlepos+1, 'slug', slug)
+        self.node = node
         self.parent = parent
         self.attach = attach
         self.reserved = reserved
@@ -112,6 +116,16 @@ class BaseForm(forms.ModelForm):
         if 'tags' in self.fields:
             self.fields['tags'].widget.attrs['class'] = "tagManager"
             self.fields['tags'].required = False
+
+        if self.node:
+            ## construct allowed languages
+            current = self.instance.language if self.instance else None
+            c = []
+            for lpair in translate.languages():
+                if current == lpair[0] or not self.node.content(language=lpair[0], fallback=False):
+                    c.append(lpair)
+            self.fields['language'].choices = c
+        self.fields['language'].initial = 'any'
 
         for e in type_registry.extenders(self.Meta.model):
             e.extend_form(self, *args, **kwargs)
@@ -162,7 +176,7 @@ class BaseForm(forms.ModelForm):
 
             base_slug = slug[:Node.MAX_PATHLEN-6] ## some space for counter
             count = 1
-            while (existing and existing != self.instance.node) or \
+            while (existing and existing != self.node) or \
                   (slug in self.reserved):
                 slug = base_slug + str(count)
                 existing = Node.get(path=self.parent.path + '/' + slug, language=language)
@@ -175,7 +189,7 @@ class BaseForm(forms.ModelForm):
         if not Node.validpathre.match(slug):
             raise forms.ValidationError("Only numbers, letters, _-")
         existing = Node.get(path=parent_path + "/" + slug, language=language)
-        if existing and existing != self.instance.node:
+        if existing and existing != self.node:
             raise forms.ValidationError("Name in use")
 
         return slug

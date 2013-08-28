@@ -166,11 +166,14 @@ class NodeBase(models.Model):
 
         super(NodeBase, self).__init__(*args, **kw)
 
-    def content(self, language=None):
+    def content(self, language=None, fallback=True):
         from .content import Content
         language = language or self.preferred_language or get_language()
 
-        langs = translate.fallback_languages(language)
+        if fallback:
+            langs = translate.fallback_languages(language)
+        else:
+            langs = [language]
 
         for l in langs:
             try:

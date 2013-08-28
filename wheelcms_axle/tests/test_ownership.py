@@ -25,7 +25,8 @@ class TestOwnership(object):
         """ The handler *can* set the user """
         request = create_request("POST", "/create",
                                  data=dict(title="Test",
-                                           slug="test"))
+                                           slug="test",
+                                           language="en"))
         request.user = self.user
 
         root = Node.root()

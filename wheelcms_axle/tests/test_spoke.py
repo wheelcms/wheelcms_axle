@@ -143,9 +143,19 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
     def test_form_validation_fail(self, client):
         """ Only registered templates are allowed """
         self.reg.register(self.type, "foo/bar", "foo bar", default=False)
-        form = self.type.form(parent=self.root, data={'template':"bar/foo"})
+        form = self.type.form(parent=self.root, data={'template':"bar/foo",
+                                                      'language':'en'})
         assert not form.is_valid()
         assert 'template' in form.errors
+
+    def test_form_validation_language(self, client):
+        """ language is required """
+        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        data = self.valid_data()
+        data['template'] = 'foo/bar'
+        form = self.type.form(parent=self.root, data=data)
+        assert not form.is_valid()
+        assert 'language' in form.errors
 
     def test_form_validation_success(self, client):
         """ In the end it should succeed """
@@ -157,6 +167,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         data['slug'] = 's'
         data['title'] = 't'
         data['template'] = 'foo/bar3'
+        data['language'] = 'en'
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
@@ -172,6 +183,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         data['slug'] = 'foo'
         data['title'] = 't'
         data['template'] = 'foo/bar'
+        data['language'] = 'en'
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
@@ -186,6 +198,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         data = self.valid_data()
         data['title'] = 'Hello World'
         data['template'] = 'foo/bar'
+        data['language'] = 'en'
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
@@ -198,6 +211,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         data = self.valid_data()
         data['title'] = 'foo -- bar  -  cccc'
         data['template'] = 'foo/bar'
+        data['language'] = 'en'
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
@@ -254,6 +268,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         data['title'] = 'Hello World, What\'s up?'
         data['slug'] = ''
         data['template'] = 'foo/bar'
+        data['language'] = 'en'
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
@@ -269,6 +284,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         data['slug'] = ''
         data['title'] = 'foo'
         data['template'] = 'foo/bar'
+        data['language'] = 'en'
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
@@ -285,6 +301,8 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         data['slug'] = 'foobar'
         data['title'] = 'foo'
         data['template'] = 'foo/bar'
+        data['language'] = 'en'
+
         form = self.type.form(parent=p, data=data, files=self.valid_files(),
             reserved=["foobar"])
 
@@ -302,6 +320,8 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         data['slug'] = 'foobar1'
         data['title'] = 'foo'
         data['template'] = 'foo/bar'
+        data['language'] = 'en'
+
         form = self.type.form(parent=p, data=data, files=self.valid_files(),
             reserved=["foobar"])
 
@@ -315,6 +335,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         data['slug'] = ''
         data['title'] = 'foo'
         data['template'] = 'foo/bar'
+        data['language'] = 'en'
 
         form = self.type.form(parent=p, data=data, files=self.valid_files(),
                               reserved=["foo"])
@@ -332,6 +353,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         data['slug'] = ''
         data['title'] = 'foo'
         data['template'] = 'foo/bar'
+        data['language'] = 'en'
 
         form = self.type.form(parent=p, data=data, files=self.valid_files(),
                               reserved=["foo1"])

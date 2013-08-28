@@ -108,7 +108,7 @@ class TestMainHandler(object):
     def test_create_attach_post(self, client):
         """ post the form for attaching content """
         request = superuser_request("/create", method="POST",
-                                      title="Test")
+                                      title="Test", language="en")
         root = Node.root()
         handler = MainHandler(request=request, post=True,
                               instance=dict(instance=root))
@@ -133,7 +133,8 @@ class TestMainHandler(object):
     def test_create_post(self, client):
         request = superuser_request("/create", method="POST",
                                       title="Test",
-                                      slug="test")
+                                      slug="test",
+                                      language="en")
         root = Node.root()
         handler = MainHandler(request=request, post=True,
                               instance=dict(instance=root))
@@ -147,7 +148,8 @@ class TestMainHandler(object):
         Type1(node=root, title="Hello").save()
         request = superuser_request("/edit", method="POST",
                                       title="Test",
-                                      slug="")
+                                      slug="",
+                                      language="en")
         handler = MainHandler(request=request, post=True, instance=root)
         pytest.raises(Redirect, handler.update)
 
@@ -234,7 +236,8 @@ class TestMainHandler(object):
         """ issue #693 - unicode enoding issue """
         request = superuser_request("/create", method="POST",
                            title=u"Testing «ταБЬℓσ»: 1<2 & 4+1>3, now 20% off!",
-                           slug="test")
+                           slug="test",
+                           language="en")
         root = Node.root()
         handler = MainHandler(request=request, post=True,
                               instance=dict(instance=root))
@@ -249,7 +252,8 @@ class TestMainHandler(object):
         Type1(node=root, title=u"Testing «ταБЬℓσ»: 1<2 & 4+1>3, now 20% off!").save()
         request = superuser_request("/edit", method="POST",
                                       title="TTesting «ταБЬℓσ»: 1<2 & 4+1>3, now 20% off!",
-                                      slug="")
+                                      slug="",
+                                      language="en")
         root = Node.root()
         handler = MainHandler(request=request, post=True, instance=root)
         pytest.raises(Redirect, handler.update)
@@ -262,7 +266,8 @@ class TestMainHandler(object):
         Type1(node=root.add("inuse"), title="InUse").save()
         other = Type1(node=root.add("other"), title="Other").save()
         request = superuser_request("/other/update", method="POST",
-                                    title="Other", slug="inuse")
+                                    title="Other", slug="inuse",
+                                    language="en")
 
         handler = MainHandlerTestable(request=request, post=True, instance=other.node)
         handler.update()
@@ -276,7 +281,8 @@ class TestMainHandler(object):
         Type1(node=root.add("inuse"), title="InUse").save()
         other = Type1(node=root.add("other"), title="Other").save()
         request = superuser_request("/other/update", method="POST",
-                                    title="Other", slug="inuse2")
+                                    title="Other", slug="inuse2",
+                                    language="en")
 
         handler = MainHandlerTestable(request=request, post=True, instance=other.node)
         pytest.raises(Redirect, handler.update)

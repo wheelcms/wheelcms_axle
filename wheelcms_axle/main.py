@@ -350,7 +350,8 @@ class MainHandler(WheelRESTHandler):
         if self.post:
             args = dict(parent=parent, data=self.request.POST,
                         reserved=self.reserved(),
-                        skip_slug=self.instance.isroot())
+                        skip_slug=self.instance.isroot(),
+                        node=self.instance)
             if content:
                 args['instance'] = content
 
