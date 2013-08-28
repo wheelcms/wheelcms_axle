@@ -286,7 +286,9 @@ class MainHandler(WheelRESTHandler):
                     self.context['error_message'] = "An error occured " \
                             "while saving: %s" % str(e)
         else:
-            self.context['form'] = formclass(parent=parent, attach=attach, initial=dict(language=language))
+            default_language = typeinfo.default_language
+
+            self.context['form'] = formclass(parent=parent, attach=attach, initial=dict(language=default_language or language))
         ## Get spoke model
         self.context['type'] = type
 
@@ -379,7 +381,7 @@ class MainHandler(WheelRESTHandler):
                       stracks.user(self.user()), action=stracks.edit())
                 return self.redirect(instance.get_absolute_url(), success="Updated")
         else:
-            args = dict(parent=parent,initial=dict(slug=slug, language=language), skip_slug=self.instance.isroot())
+            args = dict(parent=parent,initial=dict(slug=slug), skip_slug=self.instance.isroot())
             if content:
                 args['instance'] = content
             self.context['form'] = formclass(**args)

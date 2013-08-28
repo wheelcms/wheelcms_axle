@@ -95,6 +95,11 @@ class Spoke(object):
 
     serializer = WheelSerializer
 
+    ## default language - None to let the system decide,
+    ## or an explicit language (usually 'any') to provide an overriding
+    ## default
+    default_language = None
+
     document_fields = ('title', 'description')
 
     ## index this type of content?
