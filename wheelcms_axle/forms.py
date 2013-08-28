@@ -102,7 +102,7 @@ class BaseForm(forms.ModelForm):
         self.fields['state'] = forms.ChoiceField(choices=self.workflow_choices(),
                                                  initial=self.workflow_default(),
                                                  required=False)
-        if skip_slug: #  or (self.instance and self.instance.node and self.instance.node.isroot()):
+        if skip_slug:
             self.fields.pop("slug")
 
         if enlarge:
@@ -118,11 +118,13 @@ class BaseForm(forms.ModelForm):
             self.fields['tags'].required = False
 
         if self.node:
-            ## construct allowed languages
+            ## construct allowed languages. Exclude any language for which
+            ## the node already has content
             current = self.instance.language if self.instance else None
             c = []
             for lpair in translate.languages():
-                if current == lpair[0] or not self.node.content(language=lpair[0], fallback=False):
+                if current == lpair[0] or \
+                   not self.node.content(language=lpair[0], fallback=False):
                     c.append(lpair)
             self.fields['language'].choices = c
         self.fields['language'].initial = 'any'
