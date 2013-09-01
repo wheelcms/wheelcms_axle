@@ -13,7 +13,6 @@ from wheelcms_axle.spoke import FileSpoke
 from wheelcms_axle.toolbar import Toolbar
 
 from wheelcms_axle.base import WheelHandlerMixin
-from wheelcms_axle.utils import get_url_for_language
 from wheelcms_axle.utils import get_active_language
 from wheelcms_axle import translate
 
@@ -513,12 +512,14 @@ class MainHandler(WheelRESTHandler):
     def handle_list(self):
         if not self.hasaccess():
             return self.forbidden()
-        self.context['toolbar'] = Toolbar(self.instance, self.request, status="list")
+        self.context['toolbar'] = Toolbar(self.instance, self.request,
+                                          status="list")
         self.context['breadcrumb'] = self.breadcrumb(operation="Contents")
         spoke = self.spoke()
 
-        self.context['can_paste'] = len(self.request.session.get('clipboard_copy', [])) + \
-                                    len(self.request.session.get('clipboard_cut', []))
+        self.context['can_paste'] = \
+            len(self.request.session.get('clipboard_copy', [])) + \
+            len(self.request.session.get('clipboard_cut', []))
 
         active = self.active_language()
 
@@ -529,7 +530,7 @@ class MainHandler(WheelRESTHandler):
             for lang, langtitle in translate.languages():
                 langcontent = child.content(language=lang)
                 c["translations"].append((lang, langcontent,
-                                          get_url_for_language(child, lang)))
+                                          "switch_admin_language?path=" + child.tree_path + "&language=" + lang + "&rest=edit"))
                 if lang == active:
                     c["active"] = langcontent
             if not c['active']:

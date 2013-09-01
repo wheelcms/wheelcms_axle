@@ -1,12 +1,10 @@
 import urllib2
 
-from django.conf import settings
-
 from wheelcms_axle.content import type_registry
 from wheelcms_axle.node import Node
 from wheelcms_axle.workflows.default import worklist as default_worklist
 from wheelcms_axle import access
-from wheelcms_axle.utils import get_url_for_language, get_active_language
+from wheelcms_axle.utils import get_active_language
 from wheelcms_axle import translate
 
 

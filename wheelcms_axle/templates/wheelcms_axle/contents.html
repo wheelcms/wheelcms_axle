@@ -139,14 +139,10 @@
               <td>
               {% for language, langcontent, lang_url in child.translations %}
                 {% if language == content.language %}
-                <strong><a href="{{lang_url}}edit">{{language}}</a></strong>
+                <strong><a href="{{lang_url}}">{{language}}</a></strong>
                 {% else %}
                   {# add color depending on state; untranslated content has no state so no color #}
-                  {% if langcontent %}
-                    <a href="{{lang_url}}edit">{{language}}</a>
-                    {% else %}
-                    <a href="{{lang_url}}edit" class="disabled-content">{{language}}</a>
-                  {% endif %}
+                  <a href="{{lang_url}}" {% if not langcontent %}class="disabled-content"{% endif %}>{{language}}</a>
                 {% endif %}
                 {% if not forloop.last %}|{%endif%}
               {% endfor %}
