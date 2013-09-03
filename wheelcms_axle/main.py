@@ -325,10 +325,15 @@ class MainHandler(WheelRESTHandler):
             self.context['form'] = form = formclass(parent=parent,
                                                     data=self.request.POST,
                                                     reserved=self.reserved(),
-                                                    instance=content)
+                                                    instance=content,
+                                                    files=self.request.FILES)
 
             if form.is_valid():
-                form.save()
+                try:
+                    form.save()
+                except OSError, e:
+                    self.context['error_message'] = "An error occured " \
+                            "while saving: %s" % str(e)
                 ## handle changed slug
                 slug = form.cleaned_data.get('slug', None)
                 if slug and slug != self.instance.slug():
