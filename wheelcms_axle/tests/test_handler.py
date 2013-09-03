@@ -325,9 +325,20 @@ class TestBreadcrumb(object):
 
 
 from .test_spoke import filedata, filedata2
-from .models import TestImage
+from .models import TestImage, TestImageType
+
+from wheelcms_axle.content import TypeRegistry, type_registry
 
 class TestImageCreateUpdate(object):
+    def setup(self):
+        self.registry = TypeRegistry()
+        self.old_registry = type_registry.wrapped
+        type_registry.set(self.registry)
+        self.registry.register(TestImageType)
+
+    def teardown(self):
+        type_registry.set(self.old_registry)
+        
     def test_create_image(self, client):
         request = superuser_request("/create", method="POST",
                                       title="Test",
@@ -343,7 +354,7 @@ class TestImageCreateUpdate(object):
         filedata.seek(0)
         assert node.content().storage.read() == filedata.read()
 
-    def test_update_post(self, client):
+    def test_update_image(self, client):
         root = Node.root()
         node = root.add("test")
         TestImage(node=node, title="image", storage=filedata).save()
