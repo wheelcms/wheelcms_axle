@@ -958,6 +958,8 @@ class MainHandler(WheelRESTHandler):
         if self.form.is_valid():
             ## form validation should handle slug uniqueness (?)
             p = self.form.save(commit=False)
+            if not p.language:
+                p.language = 'any'
             if self.user().is_authenticated():
                 p.owner = self.user()
             try:
