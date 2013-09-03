@@ -620,5 +620,37 @@ class TestTranslations(object):
 
         assert f.initial['language'] == 'nl'
 
+from .test_spoke import filedata, filedata2
+from .models import TestImage
 
+class TestImageCreateUpdate(object):
+    def test_create_image(self, client):
+        request = superuser_request("/create", method="POST",
+                                      title="Test",
+                                      slug="test",
+                                      language="en",
+                                      storage=filedata)
+        root = Node.root()
+        handler = MainHandler(request=request, post=True,
+                              instance=dict(instance=root))
+        pytest.raises(Redirect, handler.create, type=TestImage.get_name())
 
+        node = Node.get("/test")
+        filedata.seek(0)
+        assert node.content().storage.read() == filedata.read()
+
+    def test_update_post(self, client):
+        root = Node.root()
+        node = root.add("test")
+        TestImage(node=node, title="image", storage=filedata).save()
+        request = superuser_request("/test/edit", method="POST",
+                                      title="Test",
+                                      slug="",
+                                      language="en",
+                                      storage=filedata2)
+        handler = MainHandler(request=request, post=True, instance=node)
+        pytest.raises(Redirect, handler.update)
+
+        node = Node.get("/test")
+        filedata2.seek(0)
+        assert node.content().storage.read() == filedata2.read()

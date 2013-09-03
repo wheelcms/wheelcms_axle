@@ -352,14 +352,19 @@ class MainHandler(WheelRESTHandler):
             args = dict(parent=parent, data=self.request.POST,
                         reserved=self.reserved(),
                         skip_slug=self.instance.isroot(),
-                        node=self.instance)
+                        node=self.instance,
+                        files=self.request.FILES)
             if content:
                 args['instance'] = content
 
             self.context['form'] = form = formclass(**args)
 
             if form.is_valid():
-                content = form.save()
+                try:
+                    content = form.save()
+                except OSError, e:
+                    self.context['error_message'] = "An error occured " \
+                            "while saving: %s" % str(e)
 
                 if create_translation:
                     if self.user().is_authenticated():

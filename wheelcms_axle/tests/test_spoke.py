@@ -24,6 +24,10 @@ filedata = SimpleUploadedFile("foo.png",
            'GIF87a\x01\x00\x01\x00\x80\x01\x00\x00\x00\x00ccc,\x00'
            '\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;')
 
+filedata2 = SimpleUploadedFile("foo2.png",
+           'GIF87a\x01\x00\x01\x00\x80\x01\x00\x00\x00\x00ccc,\x00'
+           '\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02E\x01\x00;')
+
 class BaseLocalRegistry(object):
     """
         Make sure registries are local to the test
