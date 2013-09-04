@@ -272,6 +272,22 @@ class TestTranslations(BaseToolbarTest):
         settings.CONTENT_LANGUAGES = (('en', 'English'), ('nl', 'Nederlands'), ('fr', 'Francais'))
         settings.FALLBACK = False
 
+    def test_show_translate(self, client):
+        root = Node.root()
+
+        n = root.add(langslugs=dict(en="en", nl="nl", fr="fr"))
+        t_nl = Type1(node=n, language="nl", title="NL").save()
+        translation.activate("en")
+        request = create_request("GET", "/")
+        toolbar = Toolbar(n, request, "view")
+
+        assert toolbar.show_translate()
+        assert not toolbar.show_update()
+        translation.activate("nl")
+        assert not toolbar.show_translate()
+        assert toolbar.show_update()
+
+
     def test_translations_view(self, client):
         root = Node.root()
 

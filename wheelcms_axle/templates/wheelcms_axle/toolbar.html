@@ -55,6 +55,9 @@
                   {% endfor %}
                 </ul>
                 {% endif %}
+                {% if toolbar.show_translate %}
+                <a class="btn btn-info" href="{{instance.get_absolute_url}}edit"><i class="icon-edit"></i> Translate</a>
+                {% endif %}
                 {% if toolbar.show_update %}
                 <a class="btn btn-info" href="{{instance.get_absolute_url}}edit"><i class="icon-edit"></i> Edit</a>
                 {% endif %}

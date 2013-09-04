@@ -87,6 +87,21 @@ class Toolbar(object):
             return False
         return True
 
+    def show_translate(self):
+        if self.status == 'special':  ## special page
+            return False
+
+        ## do not show when creating or updating
+        if self.status in ("update", "create"):
+            return False
+        active_language = get_active_language(self.request)
+
+        ## there's an instance, it has (primary) content but not in the
+        ## active language
+        if self.instance and self.instance.primary_content() and not self.instance.content(language=active_language):
+            return True
+        return False
+
     def show_list(self):
         if self.status == 'special':  ## special page
             return False
