@@ -1,7 +1,7 @@
 from django import forms
 from django.conf import settings
 from django.template import loader, Context
-from django.http import HttpResponseServerError, Http404
+from django.http import HttpResponseServerError, HttpResponseNotFound, Http404
 from django.core.urlresolvers import resolve
 
 from two.ol.base import RESTLikeHandler, applyrequest, context, json, handler
@@ -68,7 +68,7 @@ def wheel_404(request):
     """ alternative 404 page """
     t = loader.get_template("wheelcms_axle/404.html")
 
-    return HttpResponseServerError(t.render(wheel_error_context(request)))
+    return HttpResponseNotFound(t.render(wheel_error_context(request)))
 
 
 def wheel_500(request):
