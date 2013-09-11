@@ -24,6 +24,10 @@ filedata = SimpleUploadedFile("foo.png",
            'GIF87a\x01\x00\x01\x00\x80\x01\x00\x00\x00\x00ccc,\x00'
            '\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;')
 
+filedata2 = SimpleUploadedFile("foo2.png",
+           'GIF87a\x01\x00\x01\x00\x80\x01\x00\x00\x00\x00ccc,\x00'
+           '\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02E\x01\x00;')
+
 class BaseLocalRegistry(object):
     """
         Make sure registries are local to the test
@@ -143,9 +147,19 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
     def test_form_validation_fail(self, client):
         """ Only registered templates are allowed """
         self.reg.register(self.type, "foo/bar", "foo bar", default=False)
-        form = self.type.form(parent=self.root, data={'template':"bar/foo"})
+        form = self.type.form(parent=self.root, data={'template':"bar/foo",
+                                                      'language':'en'})
         assert not form.is_valid()
         assert 'template' in form.errors
+
+    def test_form_validation_language(self, client):
+        """ language is required """
+        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        data = self.valid_data()
+        data['template'] = 'foo/bar'
+        form = self.type.form(parent=self.root, data=data)
+        assert not form.is_valid()
+        assert 'language' in form.errors
 
     def test_form_validation_success(self, client):
         """ In the end it should succeed """
@@ -157,6 +171,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         data['slug'] = 's'
         data['title'] = 't'
         data['template'] = 'foo/bar3'
+        data['language'] = 'en'
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
@@ -172,6 +187,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         data['slug'] = 'foo'
         data['title'] = 't'
         data['template'] = 'foo/bar'
+        data['language'] = 'en'
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
@@ -186,10 +202,67 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         data = self.valid_data()
         data['title'] = 'Hello World'
         data['template'] = 'foo/bar'
+        data['language'] = 'en'
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
         assert form.is_valid()
+
+    def test_slug_generate_dashes(self, client):
+        """ test slug generation """
+        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        p = Node.root()
+        data = self.valid_data()
+        data['title'] = 'foo -- bar  -  cccc'
+        data['template'] = 'foo/bar'
+        data['language'] = 'en'
+
+        form = self.type.form(parent=p, data=data, files=self.valid_files())
+
+        assert form.is_valid()
+        assert form.cleaned_data['slug'] == "foo-bar-cccc"
+
+    def test_slug_generate_stopwords(self, client):
+        """ test slug generation """
+        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        p = Node.root()
+        data = self.valid_data()
+        data['title'] = 'a world the are'
+        data['template'] = 'foo/bar'
+        data['language'] = 'en' ## use english stopwords
+
+        form = self.type.form(parent=p, data=data, files=self.valid_files())
+
+        assert form.is_valid()
+        assert form.cleaned_data['slug'] == "world"
+
+    def test_slug_generate_stopwords_empty(self, client):
+        """ test slug generation - only stopwords """
+        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        p = Node.root()
+        data = self.valid_data()
+        data['title'] = 'are'
+        data['template'] = 'foo/bar'
+        data['language'] = 'en' ## use english stopwords
+
+        form = self.type.form(parent=p, data=data, files=self.valid_files())
+
+        assert form.is_valid()
+        assert form.cleaned_data['slug']
+
+    def test_slug_generate_stopwords_empty_dashes(self, client):
+        """ test slug generation - only stopwords """
+        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        p = Node.root()
+        data = self.valid_data()
+        data['title'] = 'are - a - they'
+        data['template'] = 'foo/bar'
+        data['language'] = 'en' ## use english stopwords
+
+        form = self.type.form(parent=p, data=data, files=self.valid_files())
+
+        assert form.is_valid()
+        assert form.cleaned_data['slug']
 
     def test_slug_generate_complex(self, client):
         """ test slug generation """
@@ -199,6 +272,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         data['title'] = 'Hello World, What\'s up?'
         data['slug'] = ''
         data['template'] = 'foo/bar'
+        data['language'] = 'en'
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
@@ -214,6 +288,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         data['slug'] = ''
         data['title'] = 'foo'
         data['template'] = 'foo/bar'
+        data['language'] = 'en'
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
@@ -230,6 +305,8 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         data['slug'] = 'foobar'
         data['title'] = 'foo'
         data['template'] = 'foo/bar'
+        data['language'] = 'en'
+
         form = self.type.form(parent=p, data=data, files=self.valid_files(),
             reserved=["foobar"])
 
@@ -247,6 +324,8 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         data['slug'] = 'foobar1'
         data['title'] = 'foo'
         data['template'] = 'foo/bar'
+        data['language'] = 'en'
+
         form = self.type.form(parent=p, data=data, files=self.valid_files(),
             reserved=["foobar"])
 
@@ -260,6 +339,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         data['slug'] = ''
         data['title'] = 'foo'
         data['template'] = 'foo/bar'
+        data['language'] = 'en'
 
         form = self.type.form(parent=p, data=data, files=self.valid_files(),
                               reserved=["foo"])
@@ -277,6 +357,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         data['slug'] = ''
         data['title'] = 'foo'
         data['template'] = 'foo/bar'
+        data['language'] = 'en'
 
         form = self.type.form(parent=p, data=data, files=self.valid_files(),
                               reserved=["foo1"])

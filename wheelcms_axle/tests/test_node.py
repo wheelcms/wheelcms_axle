@@ -28,6 +28,7 @@ class TestNode(object):
         root = Node.root()
         child = root.add("child")
         child2 = child.add("child")
+        # import pytest; pytest.set_trace()
         assert child.child('child') == child2
 
     def test_nonroot_child_notfound(self, client):
@@ -92,6 +93,11 @@ class TestNode(object):
         py.test.raises(InvalidPathException, root.add, "child.")
         py.test.raises(InvalidPathException, root.add,
                        "x" * (Node.MAX_PATHLEN+1))
+
+    def test_add_empty(self, client):
+        """ a path or langslug map must be provided """
+        root = Node.root()
+        py.test.raises(InvalidPathException, root.add)
 
     def test_implicit_position(self, client):
         """ childs are returned in order they were added """
@@ -487,6 +493,7 @@ class TestNodeCopyPaste(object):
         target = root.add("target")
         target_src = target.add("src")
 
+        # import pytest; pytest.set_trace()
         res, success, failed = target.paste(src)
 
         assert Node.get('/target/src') == target_src
@@ -519,7 +526,6 @@ class TestNodeCopyPaste(object):
         src_c = src.add("child")
         target = root.add("target")
 
-        # import pytest; pytest.set_trace()
         target.paste(src, copy=True)
 
         ## it has been copied and is not the original
@@ -590,3 +596,45 @@ class TestNodeCopyPaste(object):
 
         assert res.path == "/src/target/root"
         assert res != src
+
+class TestNodeTranslation(object):
+    """ test translation related stuff """
+    def test_preferred_language_child(self, client):
+        root = Node.root()
+        sub = root.add("sub")
+        sub_pref = root.child("sub", language="en")
+        assert sub_pref.preferred_language == "en"
+        sub_pref = root.child("sub", language="nl")
+        assert sub_pref.preferred_language == "nl"
+
+    def test_preferred_language_children(self, client):
+        root = Node.root()
+        sub = root.add("sub")
+
+        root = Node.root(language="nl")
+        child = root.children()[0]
+        assert child.preferred_language == "nl"
+
+    def test_preferred_language_content(self, client):
+        root = Node.root()
+        sub = root.add("sub")
+        from .models import Type1
+
+        en = Type1(title="EN", node=sub, language="en").save()
+        nl = Type1(title="NL", node=sub, language="nl").save()
+
+        assert root.child("sub", language="nl").content() == nl
+        assert root.child("sub", language="en").content() == en
+
+    def test_node_equality(self, client):
+        root = Node.root()
+        sub = root.add("sub")
+        sub_nl = Node.root(language="nl").children()[0]
+        sub_en = Node.root(language="en").children()[0]
+
+        assert sub_nl != sub_en
+        assert sub_nl != sub
+
+        sub.preferred_language = "nl"
+        assert sub == sub_nl
+

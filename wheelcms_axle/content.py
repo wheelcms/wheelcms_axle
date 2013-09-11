@@ -7,6 +7,7 @@ from two.ol.util import classproperty
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.db import models, IntegrityError
+from django.conf import settings
 
 from taggit.managers import TaggableManager
 
@@ -37,12 +38,14 @@ class ContentClass(models.Model):
     def __unicode__(self):
         return "Content class %s" % self.name
 
+
 class ContentBase(models.Model):
     CLASSES = ()
 
     copyable = True
 
-    node = models.OneToOneField(Node, related_name="contentbase", null=True)
+    node = models.ForeignKey(Node, related_name="contentbase", null=True)
+    language = models.CharField(max_length=10, choices=(("any", "Any"),) + settings.CONTENT_LANGUAGES, blank=False)
     title = models.CharField(max_length=256, blank=False)
     description = models.TextField(blank=True, default="")
     created = models.DateTimeField(blank=True, null=True)
@@ -80,6 +83,11 @@ class ContentBase(models.Model):
     def save(self, update_lm=True, *a, **b):
         mytype = self.__class__.__name__.lower()
         self.meta_type = mytype
+
+        ## default does not seem to work as expected?
+        if not self.language:
+            self.language = settings.FALLBACK
+
         if update_lm or self.modified is None:
             self.modified = timezone.now()
         if self.created is None:

@@ -43,6 +43,8 @@ def indexfactory(spoke):
                               model_attr='searchable_text')
         title = indexes.CharField(stored=True, indexed=False,
                                   model_attr="title")
+        language = indexes.CharField(stored=True, indexed=True,
+                                  model_attr="language")
         description = indexes.CharField(stored=True, indexed=False,
                               model_attr='description')
         state = indexes.CharField(stored=True, indexed=True,
@@ -94,6 +96,11 @@ class Spoke(object):
     discussable = False
 
     serializer = WheelSerializer
+
+    ## default language - None to let the system decide,
+    ## or an explicit language (usually 'any') to provide an overriding
+    ## default
+    default_language = None
 
     document_fields = ('title', 'description')
 

@@ -47,15 +47,15 @@
         items: "tr.sortablerow",
         stop: function(event, ui) {
             var target = ui.item;
-            var target_path = target.data('url');
+            var target_path = target.data('ipath');
             var before = target.prev("tr");
             var after = target.next("tr");
 
             if(before.hasClass("sortablerow") && before.data('url')) {
-                $.post("reorder", {rel: "after", target: target_path, ref: before.data('url')})
+                $.post("reorder", {rel: "after", target: target_path, ref: before.data('ipath')})
             }
             else {
-                $.post("reorder", {rel: "before", target: target_path, ref: after.data('url')})
+                $.post("reorder", {rel: "before", target: target_path, ref: after.data('ipath')})
             }
         }
     });
@@ -116,6 +116,7 @@
     <thead>
       <th><input class="toggle-all" type="checkbox"></th>
       <th>Title</th>
+      <th>Translations</th>
       <th>State</th>
       <th></th>
     </thead>
@@ -123,25 +124,36 @@
       {% if not instance.isroot %}
       <tr class="clickrow" data-url="{{instance.parent.get_absolute_url}}list">
         <td><i class="icon-circle-arrow-left"></i></td>
-        <td colspan="3">.. (parent)</td>
+        <td colspan="4">.. (parent)</td>
       </tr>
       {% endif %}
-      {% for child in instance.children %}
-        {% with content=child.content spoke=child.content.spoke %}
+      {% for child in children %}
+        {% with content=child.active.content spoke=child.active.content.spoke %}
           {% if content %}
-            <tr class="sortablerow" data-url="{{child.get_absolute_url}}">
-              <td><input name="selection" type="checkbox" value="{{child.get_absolute_url}}"
-                   data-path="{{child.get_absolute_url}}"
+            <tr class="sortablerow" data-url="{{content.get_absolute_url}}" data-ipath="{{child.ipath}}">
+              <td><input name="selection" type="checkbox" value="{{child.ipath}}"
+                   data-path="{{child.ipath}}"
                    data-title="{{content.title}}"
                    data-type="{{spoke.title}}"></td>
-              <td class="clickrow" data-url="{{child.get_absolute_url}}contents"><img src="{{spoke.icon_base}}/{{spoke.icon}}"> {{content.title}}</td>
-              <td class="clickrow" data-url="{{child.get_absolute_url}}contents">{{spoke.state.label}}</td>
+              <td class="clickrow" data-url="{{content.get_absolute_url}}contents"><img src="{{spoke.icon_base}}/{{spoke.icon}}"> {{content.title}}</td>
               <td>
-                  <a href="{{child.get_absolute_url}}edit"><i class="icon-edit"></i></a>
-                  <a href="{{child.get_absolute_url}}"><i class="icon-eye-open"></i></a>
+              {% for language, langcontent, lang_url in child.translations %}
+                {% if language == content.language %}
+                <strong><a href="{{lang_url}}">{{language}}</a></strong>
+                {% else %}
+                  {# add color depending on state; untranslated content has no state so no color #}
+                  <a href="{{lang_url}}" {% if not langcontent %}class="disabled-content"{% endif %}>{{language}}</a>
+                {% endif %}
+                {% if not forloop.last %}|{%endif%}
+              {% endfor %}
+              </td>
+              <td class="clickrow" data-url="{{content.get_absolute_url}}contents">{{spoke.state.label}}</td>
+              <td>
+                  <a href="{{content.get_absolute_url}}edit"><i class="icon-edit"></i></a>
+                  <a href="{{content.get_absolute_url}}"><i class="icon-eye-open"></i></a>
                   <a href="#" data-title="{{content.title}}"
                               data-type="{{spoke.title}}"
-                              data-path="{{child.get_absolute_url}}" class="contents_item_remove"><i class="icon-remove"></i></a>
+                              data-path="{{child.ipath}}" class="contents_item_remove"><i class="icon-remove"></i></a>
               </td>
             </tr>
           {% else %}
@@ -149,29 +161,29 @@
             <tr>
               <td></td>
               <td data-url="{{child.get_absolute_url}}" class="clickrow"><i class="icon-magnet"></i>Unattached node {{child.get_absolute_url}}</td>
-              <td data-url="{{child.get_absolute_url}}" class="clickrow">unattached</td>
+              <td data-url="{{child.get_absolute_url}}" class="clickrow" colspan="2">unattached</td>
               <td>
                   <a href="{{child.get_absolute_url}}"><i class="icon-eye-open"></i></a>
                   <a href="#" data-title="Unattached node {{child.get_absolute_url}}"
                               data-type="Node"
-                              data-path="{{child.get_absolute_url}}" class="contents_item_remove"><i class="icon-remove"></i></a>
+                              data-path="{{child.ipath}}" class="contents_item_remove"><i class="icon-remove"></i></a>
               </td>
             </tr>
           {% endif %}
         {% endwith %}
       {% empty %}
         <tr>
-          <td colspan="4">No content</td>
+          <td colspan="5">No content</td>
         </tr>
       {% endfor %}
       <tr>
-        <td colspan="4">
+        <td colspan="5">
           <div class="btn-toolbar">
             <div class="btn-group">
               <button id="contents_action_cut" disabled="disabled" name="action" class="btn btn-small toggleaction" value="cut">Cut</button>
               <button id="contents_action_copy" disabled="disabled" name="action" class="btn btn-small toggleaction" value="copy">Copy</button>
               <button id="contents_action_paste" name="action" class="btn btn-small" {% if not can_paste %} disabled="disabled" {% endif %} value="paste">Paste</button>
-              <button id="contents_action_delete" disabled="disabled" class="btn btn-small toggelaction">Delete</button>
+              <button id="contents_action_delete" disabled="disabled" class="btn btn-small toggleaction">Delete</button>
             </div>
           </div>
         </td>

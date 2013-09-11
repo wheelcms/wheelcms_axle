@@ -4,7 +4,6 @@ from django.template import loader, Context
 from django.http import HttpResponseServerError, HttpResponseNotFound, Http404
 from django.core.urlresolvers import resolve
 
-
 from two.ol.base import RESTLikeHandler, applyrequest, context, json, handler
 from wheelcms_axle.node import Node, NodeNotFound, CantMoveToOffspring
 from wheelcms_axle.content import type_registry, Content, ImageContent
@@ -14,6 +13,8 @@ from wheelcms_axle.spoke import FileSpoke
 from wheelcms_axle.toolbar import Toolbar
 
 from wheelcms_axle.base import WheelHandlerMixin
+from wheelcms_axle.utils import get_active_language
+from wheelcms_axle import translate
 
 from .templates import template_registry
 from .actions import action_registry
@@ -86,6 +87,7 @@ def strip_action(s):
         s = s.split("+", 1)[0].rstrip('/')
     return s
 
+
 class MainHandler(WheelRESTHandler):
     model = dict(instance=Node, parent=Node)
     instance = None
@@ -94,10 +96,13 @@ class MainHandler(WheelRESTHandler):
     def update_context(self, request):
         super(MainHandler, self).update_context(request)
 
+    def active_language(self):
+        return get_active_language(self.request)
+
     @context
     def body_class(self):
         if self.instance:
-            model = self.instance.content()
+            model = self.instance.primary_content()
 
             if model:
                 typename = model.get_name()
@@ -107,18 +112,20 @@ class MainHandler(WheelRESTHandler):
         return ""
 
     @context
-    def page_title(self):
+    def page_title(self, language=None):
         """ return the content title, if any """
+        language = language or self.active_language()
         if self.instance:
-            content = self.instance.content()
+            content = self.instance.content(language=language)
             if content:
                 return content.title
         return "Unattached node"
 
     @context
-    def spoke(self):
+    def spoke(self, language=None):
         """ return type info for the current content, if any """
-        model = self.instance.content()
+        language = language or self.active_language()
+        model = self.instance.content(language=language)
         if model:
             return model.spoke()
         return None
@@ -133,34 +140,26 @@ class MainHandler(WheelRESTHandler):
         return json.dumps(tags)
 
     @context
-    def content(self):
+    def content(self, language=None):
         """ return the actual content for the node / spoke """
-        modelinstance = self.instance.content()
+        language = language or self.active_language()
+        modelinstance = self.instance.content(language=language)
         if modelinstance:
             return modelinstance
         return None
 
     def formclass(self, data=None, instance=None):
         """
-            Find and initialize the appropriate form for the current
-            instance. Not consistently used XXX
+            Invoked by dispatcher to initialize this handler's form.
+            But since we need more context to properly initialize, don't
+            do it here and return None in stead. If you need a form instance,
+            create it explicitly
         """
-        if not self.instance or not self.instance.content():
-            ## there's no instance, or it's not attached to content
-            return None
 
-        typename = self.instance.content().get_name()
-
-        typeinfo = type_registry.get(typename)
-        parent = self.instance.parent()
-        try:
-            content = instance.content()
-        except Content.DoesNotExist:
-            content = None
-        return typeinfo.form(parent=parent, data=data, instance=content)
+        return None
 
     @classmethod
-    def coerce(cls, i):
+    def coerce_with_request(cls, i, request=None):
         """
             coerce either a parent and instance, a parent or an instance.
             If there's both a parent and an instance, the instance is relative
@@ -170,6 +169,8 @@ class MainHandler(WheelRESTHandler):
             really need it - <instance>/update works fine, and no instance is
             required for /create
         """
+        language = get_active_language(request)
+
         d = dict()
 
         parent_path = ""
@@ -177,7 +178,7 @@ class MainHandler(WheelRESTHandler):
             parent_path = i['parent']
             if parent_path:
                 parent_path = '/' + parent_path
-            parent = d['parent'] = Node.get(parent_path)
+            parent = d['parent'] = Node.get(parent_path, language=language)
             if parent is None:
                 return cls.notfound()
 
@@ -188,17 +189,22 @@ class MainHandler(WheelRESTHandler):
             else:
                 path = parent_path + "/" + instance_path
 
-            d['instance'] = instance = Node.get(path)
+            d['instance'] = instance = Node.get(path, language=language)
 
             if instance is None:
                 return cls.notfound()
         return d
+
+    ## XXX something should be deprecated here. Tests still depend
+    ## on requestless coerce()
+    coerce = coerce_with_request
 
     @classmethod
     def reserved(cls):
         return set(["create", "update", "list"] + \
                [x[7:] for x in dir(cls) if x.startswith("handle_")] + \
                [x for x in dir(cls) if getattr(getattr(cls, x), "ishandler", False)])
+
 
     @handler
     @applyrequest
@@ -223,6 +229,8 @@ class MainHandler(WheelRESTHandler):
               /..parent../create
             where ..parent.. is available as self.instance
         """
+        language = self.active_language()
+
         if type is None:
             return self.badrequest()
 
@@ -277,7 +285,9 @@ class MainHandler(WheelRESTHandler):
                     self.context['error_message'] = "An error occured " \
                             "while saving: %s" % str(e)
         else:
-            self.context['form'] = formclass(parent=parent, attach=attach)
+            default_language = typeinfo.default_language
+
+            self.context['form'] = formclass(parent=parent, attach=attach, initial=dict(language=default_language or language))
         ## Get spoke model
         self.context['type'] = type
 
@@ -295,6 +305,15 @@ class MainHandler(WheelRESTHandler):
 
     def update(self):
         action = self.kw.get('action', '')
+        language = self.active_language()
+
+        instance = self.instance
+
+        supported_languages = (l[0] for l in translate.languages())
+        if language not in supported_languages:
+            return self.redirect(instance.get_absolute_url(),
+                                 error="Unsupported Language")
+
         if action:
             ## match against path, not get_absolute_url which is configuration specific
             action_handler = action_registry.get(action, self.instance.path,
@@ -308,59 +327,104 @@ class MainHandler(WheelRESTHandler):
             return self.forbidden()
 
 
-        instance = self.instance
-        content = instance.content()
+        content = instance.content(language=language)
+        create_translation = False
+
+        if content is None:
+            pcontent = instance.primary_content()
+            typename = pcontent.get_name()
+            typeinfo = type_registry.get(typename)
+            create_translation = True
+        else:
+            typename = content.get_name()
+            typeinfo = type_registry.get(typename)
+
         parent = instance.parent()
 
         self.context['redirect_cancel'] = self.instance.get_absolute_url() + \
                                           "?info=Update+cancelled"
         self.context['toolbar'] = Toolbar(self.instance, self.request, status="edit")
 
-        typename = instance.content().get_name()
-        typeinfo = type_registry.get(typename)
         formclass =  typeinfo.form
-        slug = instance.slug()
+        slug = instance.slug(language=language)
 
         if self.post:
-            self.context['form'] = form = formclass(parent=parent,
-                                                    data=self.request.POST,
-                                                    reserved=self.reserved(),
-                                                    instance=content)
+            args = dict(parent=parent, data=self.request.POST,
+                        reserved=self.reserved(),
+                        skip_slug=self.instance.isroot(),
+                        node=self.instance,
+                        files=self.request.FILES)
+            if content:
+                args['instance'] = content
+
+            self.context['form'] = form = formclass(**args)
 
             if form.is_valid():
-                form.save()
+                try:
+                    content = form.save()
+                except OSError, e:
+                    self.context['error_message'] = "An error occured " \
+                            "while saving: %s" % str(e)
+
+                if create_translation:
+                    if self.user().is_authenticated():
+                        content.user = self.user()
+                    content.node = self.instance
+                    content.save()
+
                 ## handle changed slug
                 slug = form.cleaned_data.get('slug', None)
-                if slug and slug != self.instance.slug():
-                    self.instance.rename(slug)
+                content_language = form.cleaned_data.get('language', settings.FALLBACK)
+
+
+                if slug and slug != self.instance.slug(language=content_language):
+                    self.instance.rename(slug, language=content_language)
 
                 e = stracks.content(content.id, name=content.title)
                 e.log("? (%s) updated by ?" % content.spoke().title,
                       stracks.user(self.user()), action=stracks.edit())
                 return self.redirect(instance.get_absolute_url(), success="Updated")
         else:
-            self.context['form'] = formclass(parent=parent,
-                             initial=dict(slug=slug), instance=instance.content())
+            args = dict(parent=parent,
+                        initial=dict(slug=slug),
+                        skip_slug=self.instance.isroot())
+            if content:
+                # updating existing content
+                args['instance'] = content
+            else:
+                # translating new content. Make sure its language is set to the active
+                # language
+                args['initial']['language'] = language
+            self.context['form'] = formclass(**args)
 
         self.context['toolbar'].status = 'update'
-        self.context['breadcrumb'] = self.breadcrumb(operation="Edit", details=' "%s" (%s)' % (content.title, typeinfo.title))
+        if create_translation:
+            primary_content = self.instance.primary_content()
+            ## there must be primary content, else the node would be unattached
+            title = primary_content.title
+            self.context['breadcrumb'] = self.breadcrumb(operation="Translate", details=' "%s" (%s)' % (title, typeinfo.title))
+        else:
+            self.context['breadcrumb'] = self.breadcrumb(operation="Edit", details=' "%s" (%s)' % (content.title, typeinfo.title))
         return self.template("wheelcms_axle/update.html")
 
 
     @context
     def breadcrumb(self, operation="", details=""):
         """ generate breadcrumb path. """
+        language = self.active_language()
+
         base = self.instance or self.parent
         if not base:
             ## parent
             return []
 
-        parts = base.path.split("/")
+        parts = base.get_path(language=language).split("/")
         res = []
         for i in range(len(parts)):
             subpath = "/".join(parts[:i+1])
-            node = Node.get(subpath)
-            content = node.content()
+            node = Node.get(subpath, language=language)
+            content = node.content(language=language)
+            primary_content = node.primary_content()
 
             ## If we're in "contents" mode, link to the node's
             ## contents view.
@@ -376,13 +440,20 @@ class MainHandler(WheelRESTHandler):
                     path = ""
 
             if node.isroot():
-                if content:
+                if primary_content and not content:
+                    title = "Home (untranslated)"
+                elif content:
                     title = "Home"
                 else:
                     title = "Unattached rootnode"
             else:
-                title = content.title if content \
-                                      else "Unattached node %s" % (subpath or '/')
+                if primary_content and not content:
+                    title = 'Untranslated content "%s"' % primary_content.title
+                elif not content:
+                    title = "Unattached node %s" % (subpath or '/')
+                else:
+                    title = content.title
+
             res.append((title, path))
 
         if operation:
@@ -392,7 +463,8 @@ class MainHandler(WheelRESTHandler):
 
     def view(self):
         """ frontpage / view """
-        spoke = self.spoke()
+        language = self.active_language()
+        spoke = self.spoke(language=language)
 
         if spoke and not spoke.workflow().is_visible():
             if not self.hasaccess():
@@ -411,7 +483,7 @@ class MainHandler(WheelRESTHandler):
 
         if self.hasaccess():
             self.context['toolbar'] = Toolbar(self.instance, self.request)
-        ## experimental
+
         if spoke:
             ## update the context with addtional data from the spoke
             self.context.update(spoke.context(self, self.request, self.instance))
@@ -420,13 +492,22 @@ class MainHandler(WheelRESTHandler):
             if ctx:
                 self.context.update(ctx(self, self.request, self.instance))
 
-        if spoke:
             stracks.content(spoke.instance.id,
                             name=spoke.instance.title
                            ).log("? (%s) viewed by ?" % spoke.title,
                                  stracks.user(self.user()),
                                  action=stracks.view())
             return self.template(spoke.view_template())
+        elif self.instance.primary_content():
+            """ attached but untranslated """
+            if self.hasaccess():
+                return self.redirect(self.instance.get_absolute_url(language=language) + "edit",
+                    info="This content is not available in this language")
+            elif self.instance.isroot():
+                return self.template("wheelcms_axle/notranslation.html")
+
+            return self.notfound()
+
         return self.template("wheelcms_axle/nospoke.html")
 
     def list(self):
@@ -436,11 +517,32 @@ class MainHandler(WheelRESTHandler):
     def handle_list(self):
         if not self.hasaccess():
             return self.forbidden()
-        self.context['toolbar'] = Toolbar(self.instance, self.request, status="list")
+        self.context['toolbar'] = Toolbar(self.instance, self.request,
+                                          status="list")
         self.context['breadcrumb'] = self.breadcrumb(operation="Contents")
         spoke = self.spoke()
 
-        self.context['can_paste'] = len(self.request.session.get('clipboard_copy', [])) + len(self.request.session.get('clipboard_cut', []))
+        self.context['can_paste'] = \
+            len(self.request.session.get('clipboard_copy', [])) + \
+            len(self.request.session.get('clipboard_cut', []))
+
+        active = self.active_language()
+
+        children = []
+
+        for child in self.instance.children():
+            c = dict(active=None, translations=[], ipath=child.tree_path)
+            for lang, langtitle in translate.languages():
+                langcontent = child.content(language=lang)
+                c["translations"].append((lang, langcontent,
+                                          "switch_admin_language?path=" + child.tree_path + "&language=" + lang + "&rest=edit"))
+                if lang == active:
+                    c["active"] = langcontent
+            if not c['active']:
+                c['active'] = child.primary_content()
+            children.append(c)
+
+        self.context['children'] = children
 
         if spoke:
             return self.template(spoke.list_template())
@@ -463,8 +565,9 @@ class MainHandler(WheelRESTHandler):
     def handle_reorder(self, rel, target, ref):
         if not self.hasaccess() or not self.post:
             return self.forbidden()
-        targetnode = Node.get(resolve_path(target))
-        referencenode = Node.get(resolve_path(ref))
+        
+        targetnode = Node.objects.get(tree_path=target)
+        referencenode = Node.objects.get(tree_path=ref)
 
         if targetnode is None:
             return self.badrequest()
@@ -490,9 +593,8 @@ class MainHandler(WheelRESTHandler):
         raw_selection = self.request.POST.getlist('selection', [])
 
         selection = []
-        for s in raw_selection:
-            p = resolve_path(s)
-            if p and Node.get(p):
+        for p in raw_selection:
+            if p and Node.objects.get(tree_path=p):
                 selection.append(p)
 
         count = len(selection)
@@ -526,7 +628,7 @@ class MainHandler(WheelRESTHandler):
             accum_failure = []
 
             for p in clipboard:
-                n = Node.get(p)
+                n = Node.objects.get(tree_path=p)
                 if n:
                     try:
                         base, success, failure = self.instance.paste(n, copy=copy)
@@ -561,8 +663,7 @@ class MainHandler(WheelRESTHandler):
 
         count = 0
         for p in self.request.POST.getlist('selection'):
-            p = resolve_path(p)
-            n = Node.get(p)
+            n = Node.objects.get(tree_path=p)
             ## XXX recursively delete, or not, or detach...
             if n:
                 content = n.content()
@@ -754,7 +855,6 @@ class MainHandler(WheelRESTHandler):
 
             if content:
                 ## FileSpoke also includes ImageSpoke
-                # import pdb; pdb.set_trace()
 
                 spoke = content.spoke()
                 addables = [x for x in spoke.addable_children()
@@ -863,6 +963,8 @@ class MainHandler(WheelRESTHandler):
         if self.form.is_valid():
             ## form validation should handle slug uniqueness (?)
             p = self.form.save(commit=False)
+            if not p.language:
+                p.language = 'any'
             if self.user().is_authenticated():
                 p.owner = self.user()
             try:
@@ -881,4 +983,18 @@ class MainHandler(WheelRESTHandler):
         return dict(status="error",
                     errors=dict(storage=self.form.errors['storage'].pop()))
 
+
+    @applyrequest
+    def handle_switch_admin_language(self, language, path=None, rest=""):
+        if not self.hasaccess():
+            return self.forbidden()
+
+        self.request.session['admin_language'] = language
+        if path:
+            node = Node.objects.get(tree_path=path)
+        else:
+            node = self.instance
+
+        return self.redirect(node.get_absolute_url(language=language) + rest,
+                             info="Switched to %s" % language)
 

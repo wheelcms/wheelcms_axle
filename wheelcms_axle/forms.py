@@ -2,10 +2,15 @@ import re
 import mimetypes
 
 from django import forms
-from wheelcms_axle.models import Node
+from django.conf import settings
+
+from wheelcms_axle.node import Node
 
 from wheelcms_axle.models import type_registry, Configuration
 from wheelcms_axle.templates import template_registry
+from wheelcms_axle.stopwords import stopwords
+
+from wheelcms_axle import translate
 
 from tinymce.widgets import TinyMCE as BaseTinyMCE
 
@@ -67,8 +72,9 @@ class BaseForm(forms.ModelForm):
     # just an experiment, to have a required field in the advanced section
     # important = forms.Field(required=True)
 
-    def __init__(self, parent, attach=False, enlarge=True, reserved=(),
-                 *args, **kwargs):
+    def __init__(self, parent, node=None, attach=False, enlarge=True,
+                 reserved=(),
+                 skip_slug=False, *args, **kwargs):
         """
             Django will put the extra slug field at the bottom, below
             all model fields. I want it just after the title field
@@ -77,6 +83,7 @@ class BaseForm(forms.ModelForm):
         slug = self.fields.pop('slug')
         titlepos = self.fields.keyOrder.index('title')
         self.fields.insert(titlepos+1, 'slug', slug)
+        self.node = node
         self.parent = parent
         self.attach = attach
         self.reserved = reserved
@@ -95,7 +102,7 @@ class BaseForm(forms.ModelForm):
         self.fields['state'] = forms.ChoiceField(choices=self.workflow_choices(),
                                                  initial=self.workflow_default(),
                                                  required=False)
-        if self.instance and self.instance.node and self.instance.node.isroot():
+        if skip_slug:
             self.fields.pop("slug")
 
         if enlarge:
@@ -109,6 +116,21 @@ class BaseForm(forms.ModelForm):
         if 'tags' in self.fields:
             self.fields['tags'].widget.attrs['class'] = "tagManager"
             self.fields['tags'].required = False
+
+        ## lightforms don't have a language field
+        if 'language' in self.fields:
+            if self.node:
+                ## construct allowed languages. Exclude any language for which
+                ## the node already has content
+                current = self.instance.language if self.instance else None
+                c = []
+                for lpair in translate.languages():
+                    if current == lpair[0] or \
+                       not self.node.content(language=lpair[0], fallback=False):
+                        c.append(lpair)
+                self.fields['language'].choices = c
+            else:
+                self.fields['language'].choices = translate.languages()
 
         for e in type_registry.extenders(self.Meta.model):
             e.extend_form(self, *args, **kwargs)
@@ -137,29 +159,32 @@ class BaseForm(forms.ModelForm):
 
         slug = self.data.get('slug', '').strip().lower()
 
-        parent_path = self.parent.path
 
-        # import pytest; pytest.set_trace()
+        language = self.data.get('language', settings.FALLBACK)
+
+        ## XXX move the whole slug generation / stopwords stuff to separate method
+        title = self.cleaned_data.get('title', '').lower()
+        title_no_sw = " ".join(x for x in title.split() if x not in set(stopwords.get(language, [])))
+
+        parent_path = self.parent.get_path(language=language)
+
         if not slug:
             slug = re.sub("[^%s]+" % Node.ALLOWED_CHARS, "-",
-                          self.cleaned_data.get('title', '').lower()
+                          title_no_sw,
                           )[:Node.MAX_PATHLEN].strip("-")
-            try:
-                existing = Node.objects.filter(path=parent_path
-                                               + "/" + slug).get()
-            except Node.DoesNotExist:
-                existing = None
+            slug = re.sub("-+", "-", slug)
+
+            ## slug may be empty now by all space/stopwords/dash removal
+            if not slug:    
+                slug = "node"
+            existing = Node.get(path=parent_path + "/" + slug, language=language)
 
             base_slug = slug[:Node.MAX_PATHLEN-6] ## some space for counter
             count = 1
-            while (existing and existing != self.instance.node) or \
+            while (existing and existing != self.node) or \
                   (slug in self.reserved):
                 slug = base_slug + str(count)
-                try:
-                    existing = Node.objects.filter(path=self.parent.path
-                                                   + "/" + slug).get()
-                except Node.DoesNotExist:
-                    existing = None
+                existing = Node.get(path=self.parent.path + '/' + slug, language=language)
 
                 count += 1
 
@@ -168,13 +193,9 @@ class BaseForm(forms.ModelForm):
 
         if not Node.validpathre.match(slug):
             raise forms.ValidationError("Only numbers, letters, _-")
-        try:
-            existing = Node.objects.filter(path=parent_path + "/" + slug
-                                          ).get()
-            if existing != self.instance.node:
-                raise forms.ValidationError("Name in use")
-        except Node.DoesNotExist:
-            pass
+        existing = Node.get(path=parent_path + "/" + slug, language=language)
+        if existing and existing != self.node:
+            raise forms.ValidationError("Name in use")
 
         return slug
 

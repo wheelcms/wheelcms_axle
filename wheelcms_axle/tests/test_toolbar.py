@@ -13,16 +13,18 @@ from wheelcms_axle.spoke import Spoke
 from .test_handler import superuser_request
 from twotest.util import create_request
 
-class TestToolbar(object):
-    """
-        Test toolbar child restrictions, context buttons
-    """
+class BaseToolbarTest(object):
     def setup(self):
         self.registry = TestTypeRegistry()
         type_registry.set(self.registry)
         self.registry.register(Type1Type)
         self.registry.register(Type2Type)
 
+
+class TestToolbar(BaseToolbarTest):
+    """
+        Test toolbar child restrictions, context buttons
+    """
     def allchildren(self, children):
         """ match against all registered children """
         return set(x['name'] for x in children) == \
@@ -220,4 +222,165 @@ class TestToolbar(object):
         toolbar = Toolbar(Node.root(), superuser_request("/"), "view")
         assert toolbar.primary() is None
 
+    def test_clipboard_empty(self, client):
+        toolbar = Toolbar(Node.root(), superuser_request("/"), "view")
+        clipboard = toolbar.clipboard()
+        assert clipboard['count'] == 0
+        assert not clipboard['copy']
+        assert not clipboard['cut']
+        assert clipboard['items'] == []
 
+    def test_clipboard_cut(self, client):
+        root = Node.root()
+
+        t1 = Type1(node=root.add("t1"), title="t1").save()
+        t2 = Type1(node=root.add("t2"), title="t2").save()
+
+        request = create_request("GET", "/")
+        request.session['clipboard_cut'] = [t2.node.tree_path, t1.node.tree_path]
+
+        toolbar = Toolbar(Node.root(), request, "view")
+        clipboard = toolbar.clipboard()
+        assert clipboard['count'] == 2
+        assert not clipboard['copy']
+        assert clipboard['cut']
+        assert set(clipboard['items']) == set((t1, t2))
+
+    def test_clipboard_copy(self, client):
+        root = Node.root()
+
+        t1 = Type1(node=root.add("t1"), title="t1").save()
+        t2 = Type1(node=root.add("t2"), title="t2").save()
+
+        request = create_request("GET", "/")
+        request.session['clipboard_copy'] = [t2.node.tree_path, t1.node.tree_path]
+
+        toolbar = Toolbar(Node.root(), request, "view")
+        clipboard = toolbar.clipboard()
+        assert clipboard['count'] == 2
+        assert clipboard['copy']
+        assert not clipboard['cut']
+        assert set(clipboard['items']) == set((t1, t2))
+
+from django.utils import translation
+from django.conf import settings
+
+class TestTranslations(BaseToolbarTest):
+    def setup(self):
+        super(TestTranslations, self).setup()
+
+        settings.CONTENT_LANGUAGES = (('en', 'English'), ('nl', 'Nederlands'), ('fr', 'Francais'))
+        settings.FALLBACK = False
+
+    def test_show_translate(self, client):
+        root = Node.root()
+
+        n = root.add(langslugs=dict(en="en", nl="nl", fr="fr"))
+        t_nl = Type1(node=n, language="nl", title="NL").save()
+        translation.activate("en")
+        request = create_request("GET", "/")
+        toolbar = Toolbar(n, request, "view")
+
+        assert toolbar.show_translate()
+        assert not toolbar.show_update()
+        translation.activate("nl")
+        assert not toolbar.show_translate()
+        assert toolbar.show_update()
+
+
+    def test_translations_view(self, client):
+        root = Node.root()
+
+        n = root.add(langslugs=dict(en="en", nl="nl", fr="fr"))
+        t_nl = Type1(node=n, language="nl", title="NL").save()
+        t_en = Type1(node=n, language="en", title="EN").save()
+
+
+        request = create_request("GET", "/")
+
+        translation.activate("en")
+        toolbar = Toolbar(n, request, "view")
+        translations = toolbar.translations()
+
+        assert translations['active']['id'] == 'en'
+
+        ## Do some matching magic using endswith to work around language / base prefixing.
+        ## We're mosly interested in create/view/edit actions anyway
+        assert translations['translated'][0]['id'] == "nl"
+        assert translations['translated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=nl')
+        assert translations['untranslated'][0]['id'] == 'fr'
+        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=fr')
+
+    def test_translations_edit(self, client):
+        root = Node.root()
+
+        n = root.add(langslugs=dict(en="en", nl="nl", fr="fr"))
+        t_nl = Type1(node=n, language="nl", title="NL").save()
+        t_en = Type1(node=n, language="en", title="EN").save()
+
+
+        request = create_request("GET", "/")
+
+        translation.activate("en")
+        toolbar = Toolbar(n, request, "update")
+        translations = toolbar.translations()
+
+        assert translations['active']['id'] == 'en'
+
+        ## Do some matching magic using endswith to work around language / base prefixing.
+        ## We're mosly interested in create/view/edit actions anyway
+        assert translations['translated'][0]['id'] == "nl"
+        assert translations['translated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=nl&rest=edit')
+        assert translations['untranslated'][0]['id'] == 'fr'
+        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=fr&rest=edit')
+
+    def test_translations_list(self, client):
+        root = Node.root()
+
+        n = root.add(langslugs=dict(en="en", nl="nl", fr="fr"))
+        t_nl = Type1(node=n, language="nl", title="NL").save()
+        t_en = Type1(node=n, language="en", title="EN").save()
+
+
+        request = create_request("GET", "/")
+
+        translation.activate("en")
+        toolbar = Toolbar(n, request, "list")
+        translations = toolbar.translations()
+
+        assert translations['active']['id'] == 'en'
+
+        ## Do some matching magic using endswith to work around language / base prefixing.
+        ## We're mosly interested in create/view/edit actions anyway
+        assert translations['translated'][0]['id'] == "nl"
+        assert translations['translated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=nl&rest=list')
+        assert translations['untranslated'][0]['id'] == 'fr'
+        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=fr&rest=list')
+
+    def test_translations_create(self, client):
+        root = Node.root()
+
+        n = root.add(langslugs=dict(en="en", nl="nl", fr="fr"))
+        t_nl = Type1(node=n, language="nl", title="NL").save()
+        t_en = Type1(node=n, language="en", title="EN").save()
+
+
+        request = create_request("GET", "/create", data=dict(type="sometype"))
+
+        translation.activate("en")
+        toolbar = Toolbar(n, request, "create")
+        translations = toolbar.translations()
+
+        assert translations['active']['id'] == 'en'
+
+        import urllib2
+
+        ## Do some matching magic using endswith to work around language / base prefixing.
+        ## We're mosly interested in create/view/edit actions anyway
+        assert len(translations['translated']) == 0
+        assert len(translations['untranslated']) == 3  ## all languages incl 'any', active lang excluded
+
+        for ut in translations['untranslated']:
+            l = ut['id']
+            assert l in ('nl', 'fr', 'en', 'any')
+            assert ut['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=' + l + '&rest=' + urllib2.quote('create?type=sometype'))

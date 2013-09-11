@@ -25,7 +25,8 @@ class TestOwnership(object):
         """ The handler *can* set the user """
         request = create_request("POST", "/create",
                                  data=dict(title="Test",
-                                           slug="test"))
+                                           slug="test",
+                                           language="en"))
         request.user = self.user
 
         root = Node.root()
@@ -34,5 +35,5 @@ class TestOwnership(object):
         pytest.raises(Redirect, handler.create, type=Type1.get_name())
 
         node = Node.get("/test")
-        assert node.contentbase.title == "Test"
-        assert node.contentbase.owner == self.user
+        assert node.content().title == "Test"
+        assert node.content().owner == self.user

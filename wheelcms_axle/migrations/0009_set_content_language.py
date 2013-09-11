@@ -1,106 +1,29 @@
 # -*- coding: utf-8 -*-
 import datetime
 from south.db import db
-from south.v2 import SchemaMigration
+from south.v2 import DataMigration
 from django.db import models
+from django.conf import settings
 
-
-class Migration(SchemaMigration):
+class Migration(DataMigration):
 
     def forwards(self, orm):
-        # Adding model 'Node'
-        db.create_table('wheelcms_axle_node', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('path', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255)),
-            ('position', self.gf('django.db.models.fields.IntegerField')(default=0)),
-        ))
-        db.send_create_signal('wheelcms_axle', ['Node'])
+        """ Set the content language to some sensible default """
+        language = getattr(settings, 'FALLBACK', None)
+        if not language:
+            try:
+                ## first value (language id) of first language, if available
+                language = getattr(settings, 'CONTENT_LANGUAGES', ())[0][0]
+            except IndexError:
+                language = 'en'
 
-        # Adding model 'ContentClass'
-        db.create_table('wheelcms_axle_contentclass', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=256)),
-        ))
-        db.send_create_signal('wheelcms_axle', ['ContentClass'])
-
-        # Adding model 'Content'
-        ## We'll be removing the unique constraint later (migration 0008) which cannot be done
-        ## reliably on MySQL. So don't set it at all as a workaround
-        if db.backend_name == 'mysql':
-            node_unique = False
-            node_f = self.gf('django.db.models.fields.related.ForeignKey')
-        else:
-            node_unique = True
-            node_f = self.gf('django.db.models.fields.related.OneToOneField')
-
-
-        db.create_table('wheelcms_axle_content', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('node', node_f(related_name='contentbase', unique=node_unique, null=True, to=orm['wheelcms_axle.Node'])),
-            ('title', self.gf('django.db.models.fields.CharField')(max_length=256)),
-            ('description', self.gf('django.db.models.fields.TextField')(default='', blank=True)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-            ('publication', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, null=True, blank=True)),
-            ('expire', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime(2033, 5, 2, 0, 0), null=True, blank=True)),
-            ('state', self.gf('django.db.models.fields.CharField')(max_length=30, blank=True)),
-            ('template', self.gf('django.db.models.fields.CharField')(default='', max_length=255, blank=True)),
-            ('navigation', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('meta_type', self.gf('django.db.models.fields.CharField')(max_length=20)),
-            ('owner', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'], null=True)),
-        ))
-        db.send_create_signal('wheelcms_axle', ['Content'])
-
-        # Adding M2M table for field classes on 'Content'
-        db.create_table('wheelcms_axle_content_classes', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('content', models.ForeignKey(orm['wheelcms_axle.content'], null=False)),
-            ('contentclass', models.ForeignKey(orm['wheelcms_axle.contentclass'], null=False))
-        ))
-        db.create_unique('wheelcms_axle_content_classes', ['content_id', 'contentclass_id'])
-
-        # Adding model 'WheelProfile'
-        db.create_table('wheelcms_axle_wheelprofile', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('mugshot', self.gf('django.db.models.fields.files.ImageField')(max_length=100, blank=True)),
-            ('privacy', self.gf('django.db.models.fields.CharField')(default='registered', max_length=15)),
-            ('language', self.gf('django.db.models.fields.CharField')(default='en', max_length=5)),
-            ('inform', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('user', self.gf('django.db.models.fields.related.OneToOneField')(related_name='my_profile', unique=True, to=orm['auth.User'])),
-        ))
-        db.send_create_signal('wheelcms_axle', ['WheelProfile'])
-
-        # Adding model 'Configuration'
-        db.create_table('wheelcms_axle_configuration', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('title', self.gf('django.db.models.fields.CharField')(default='', max_length=256, blank=True)),
-            ('description', self.gf('django.db.models.fields.TextField')(default='', blank=True)),
-            ('theme', self.gf('django.db.models.fields.CharField')(default='default', max_length=256, blank=True)),
-            ('analytics', self.gf('django.db.models.fields.CharField')(default='', max_length=50, blank=True)),
-            ('head', self.gf('django.db.models.fields.TextField')(default='', blank=True)),
-        ))
-        db.send_create_signal('wheelcms_axle', ['Configuration'])
+        for content in orm.Content.objects.all():
+            content.language = language
+            content.save()
 
 
     def backwards(self, orm):
-        # Deleting model 'Node'
-        db.delete_table('wheelcms_axle_node')
-
-        # Deleting model 'ContentClass'
-        db.delete_table('wheelcms_axle_contentclass')
-
-        # Deleting model 'Content'
-        db.delete_table('wheelcms_axle_content')
-
-        # Removing M2M table for field classes on 'Content'
-        db.delete_table('wheelcms_axle_content_classes')
-
-        # Deleting model 'WheelProfile'
-        db.delete_table('wheelcms_axle_wheelprofile')
-
-        # Deleting model 'Configuration'
-        db.delete_table('wheelcms_axle_configuration')
-
+        """ leave it as is """
 
     models = {
         'auth.group': {
@@ -158,20 +81,25 @@ class Migration(SchemaMigration):
             'description': ('django.db.models.fields.TextField', [], {'default': "''", 'blank': 'True'}),
             'head': ('django.db.models.fields.TextField', [], {'default': "''", 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'mailto': ('django.db.models.fields.EmailField', [], {'default': "''", 'max_length': '100', 'blank': 'True'}),
+            'sender': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '100', 'blank': 'True'}),
+            'sendermail': ('django.db.models.fields.EmailField', [], {'default': "''", 'max_length': '100', 'blank': 'True'}),
             'theme': ('django.db.models.fields.CharField', [], {'default': "'default'", 'max_length': '256', 'blank': 'True'}),
             'title': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '256', 'blank': 'True'})
         },
         'wheelcms_axle.content': {
             'Meta': {'object_name': 'Content'},
-            'classes': ('django.db.models.fields.related.ManyToManyField', [], {'related_name': "'content'", 'symmetrical': 'False', 'to': "orm['wheelcms_axle.ContentClass']"}),
+            'classes': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'content'", 'blank': 'True', 'to': "orm['wheelcms_axle.ContentClass']"}),
             'created': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {'default': "''", 'blank': 'True'}),
-            'expire': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2033, 5, 2, 0, 0)', 'null': 'True', 'blank': 'True'}),
+            'discussable': ('django.db.models.fields.NullBooleanField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
+            'expire': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2033, 8, 23, 0, 0)', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'language': ('django.db.models.fields.CharField', [], {'max_length': '10', 'blank': 'True'}),
             'meta_type': ('django.db.models.fields.CharField', [], {'max_length': '20'}),
             'modified': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'navigation': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'node': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'contentbase'", 'unique': 'True', 'null': 'True', 'to': "orm['wheelcms_axle.Node']"}),
+            'node': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'contentbase'", 'null': 'True', 'to': "orm['wheelcms_axle.Node']"}),
             'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True'}),
             'publication': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'null': 'True', 'blank': 'True'}),
             'state': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
@@ -186,8 +114,15 @@ class Migration(SchemaMigration):
         'wheelcms_axle.node': {
             'Meta': {'object_name': 'Node'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'path': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
-            'position': ('django.db.models.fields.IntegerField', [], {'default': '0'})
+            'position': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
+            'tree_path': ('django.db.models.fields.CharField', [], {'default': "'0x2baf1c57f6e3b014fL'", 'unique': 'True', 'max_length': '255'})
+        },
+        'wheelcms_axle.paths': {
+            'Meta': {'unique_together': "(('language', 'path'),)", 'object_name': 'Paths'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'language': ('django.db.models.fields.CharField', [], {'max_length': '10'}),
+            'node': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'paths'", 'to': "orm['wheelcms_axle.Node']"}),
+            'path': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         },
         'wheelcms_axle.wheelprofile': {
             'Meta': {'object_name': 'WheelProfile'},
@@ -201,3 +136,4 @@ class Migration(SchemaMigration):
     }
 
     complete_apps = ['wheelcms_axle']
+    symmetrical = True
