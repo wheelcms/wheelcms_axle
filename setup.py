@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import os
 
-version = '1.0'
+version = '0.8'
 
 setup(name='wheelcms_axle',
       version=version,
