@@ -570,6 +570,8 @@ class NodeBase(models.Model):
 
     def get_absolute_url(self, language=None):
         ## strip any leading / since django will add that as well
+        language = language or self.preferred_language
+
         return reverse('wheel_main', kwargs={'instance':self.get_path(language).lstrip('/')})
 
     def __unicode__(self):

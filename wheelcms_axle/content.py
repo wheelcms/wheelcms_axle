@@ -149,7 +149,7 @@ class ContentBase(models.Model):
     def get_absolute_url(self):
         if self.node is None:
             return None
-        return self.node.get_absolute_url()
+        return self.node.get_absolute_url(self.language)
 
     def __unicode__(self):
         try:
