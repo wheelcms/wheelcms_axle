@@ -1,0 +1,4 @@
+The django migrations have been reset at version 0.8. If you're one of the
+very few pre-0.8 users, you will need to reset your south migration as follows:
+
+manage.py migrate wheelcms_axle 0001 --fake --delete-ghost-migrations
