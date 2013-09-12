@@ -154,6 +154,11 @@ class MainHandler(WheelRESTHandler):
         if not self.instance:
             return None
 
+        ## If there is not more that one language defined, don't show
+        ## a selector
+        if len(settings.LANGUAGES) <= 1:
+            return None
+
         res = []
         ld = getattr(settings, 'LANGUAGE_DOMAINS', {})
         current_language = self.active_language()
