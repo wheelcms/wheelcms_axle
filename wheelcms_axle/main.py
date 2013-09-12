@@ -151,6 +151,9 @@ class MainHandler(WheelRESTHandler):
     @context
     def languages(self):
         """ return language switch options """
+        if not self.instance:
+            return None
+
         res = []
         ld = getattr(settings, 'LANGUAGE_DOMAINS', {})
         current_language = self.active_language()
