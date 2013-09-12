@@ -96,7 +96,6 @@ class WheelSerializer(object):
         model.tags.add(*tags)
 
     def serialize(self, spoke):
-        # import pytest; pytest.set_trace()
         o = spoke.instance
 
         files = []
@@ -120,8 +119,6 @@ class WheelSerializer(object):
                 if isinstance(field, FileField):
                     files.append(value)
 
-        #if 'rogramming' in o.title:
-        #    import pdb; pdb.set_trace()
         for e in self.extra:
             handler = getattr(self, "serialize_extra_%s" % e, None)
             if handler:
@@ -199,19 +196,24 @@ class Exporter(object):
         # import pdb; pdb.set_trace()
         files = []
 
-        try:
-            spoke = node.content().spoke()
-        except AttributeError:
-            spoke = None
 
-        xmlcontent = SubElement(parent, "content",
-                                dict(slug=node.slug(),
-                                type=spoke.model.get_name()))
-        if spoke:
+        nodetag = SubElement(parent, "node",
+                             dict(id=str(node.pk), tree_path=node.tree_path))
+
+        for content in node.contentbase.all():
+            ## transform the baseclass into the actual instance
+            content = content.content()
+
+            spoke = content.spoke()
+            type = spoke.model.get_name()
+
+            xmlcontent = SubElement(nodetag, "content",
+                                    dict(slug=node.slug(content.language),
+                                    type=type))
             contentxml, files = spoke.serializer().serialize(spoke)
             xmlcontent.append(contentxml)
 
-        children = SubElement(xmlcontent, "children")
+        children = SubElement(nodetag, "children")
         for child in node.children():
             files += self.export_node(children, child)
 
