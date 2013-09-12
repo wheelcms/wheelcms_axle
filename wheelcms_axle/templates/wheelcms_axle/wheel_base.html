@@ -1,5 +1,6 @@
 {% extends "two.bootstrap/base.html" %}
 {% load url from future %}
+{% load i18n %}
 {% load topnav %}
 {% load fragments %}
 {% load staticfiles %}
@@ -102,6 +103,24 @@
       </li>
     </ul>
     {% endif %}
+    {# language selection #}
+    {% with langdata=languages %}
+      {% if langdata %}
+      <ul class="nav">
+        <li class="dropdown">
+            <a href="/" data-target="#" class="dropdown-toggle" data-toggle="dropdown"> {% trans "language_switch_language" %}: {{ langdata.current.label }} <b class="caret"></b></a>
+            <ul class="dropdown-menu" role="menu">
+               {% for lang in langdata.languages %}
+                 {% if not lang.is_current %}
+                   <li><a href="{{lang.url}}">{{lang.label}}</a>
+                 {% endif %}
+               {% endfor %}
+            </ul>
+        </li>
+      </ul>
+      {% endif %}
+    {% endwith %}
+
     {% endblock %}
   </div>
 </div>
