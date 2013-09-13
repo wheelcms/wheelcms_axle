@@ -204,12 +204,28 @@ class TestImporter(object):
      </content>
      <children>
       <node id="3" tree_path="/2/3">
-       <content slug="c1_1" type="tests.type2">
+       <content slug="c1_1_en" type="tests.type2">
         <fields>
+         <field name="language">en</field>
          <field name="publication">2013-02-11T15:58:46.012434+00:00</field>
          <field name="created">2013-02-11T15:58:46.012483+00:00</field>
          <field name="meta_type">type2</field>
-         <field name="title">I'm c1/c1_1</field>
+         <field name="title">I'm c1/c1_1 EN</field>
+         <field name="modified">2013-02-11T15:58:46.012478+00:00</field>
+         <field name="state">private</field>
+         <field name="expire">2033-02-14T15:58:46.012443+00:00</field>
+         <field name="template" />
+         <field name="owner" />
+         <field name="navigation">False</field>
+        </fields>
+       </content>
+       <content slug="c1_1_nl" type="tests.type2">
+        <fields>
+         <field name="language">nl</field>
+         <field name="publication">2013-02-11T15:58:46.012434+00:00</field>
+         <field name="created">2013-02-11T15:58:46.012483+00:00</field>
+         <field name="meta_type">type2</field>
+         <field name="title">I'm c1/c1_1 NL</field>
          <field name="modified">2013-02-11T15:58:46.012478+00:00</field>
          <field name="state">private</field>
          <field name="expire">2033-02-14T15:58:46.012443+00:00</field>
@@ -246,19 +262,31 @@ class TestImporter(object):
         child0_content = child0.content()
 
         assert len(child0.children()) == 1
+        # import pytest; pytest.set_trace()
+        child0_0_nl = child0.child("c1_1_nl", language="nl")
+        child0_0_en = child0.child("c1_1_en", language="en")
+
+
         assert child0.path == "/c1"
         assert child0_content.title == "I'm c1"
         assert child0_content.navigation
         assert child0_content.state == "published"
 
-        child0_0 = child0.children()[0]
-        child0_0_content = child0_0.content()
+        child0_0_nl_content = child0_0_nl.content()
 
-        assert len(child0_0.children()) == 0
-        assert child0_0.path == "/c1/c1_1"
-        assert child0_0_content.title == "I'm c1/c1_1"
-        assert not child0_0_content.navigation
-        assert child0_0_content.state == "private"
+        assert len(child0_0_nl.children()) == 0
+        assert child0_0_nl.path == "/c1/c1_1_nl"
+        assert child0_0_nl_content.title == "I'm c1/c1_1 NL"
+        assert not child0_0_nl_content.navigation
+        assert child0_0_nl_content.state == "private"
+
+        child0_0_en_content = child0_0_en.content()
+
+        assert len(child0_0_en.children()) == 0
+        assert child0_0_en.path == "/c1/c1_1_en"
+        assert child0_0_en_content.title == "I'm c1/c1_1 EN"
+        assert not child0_0_en_content.navigation
+        assert child0_0_en_content.state == "private"
 
     def test_base(self, client):
         """ import a recursive structure with different types """

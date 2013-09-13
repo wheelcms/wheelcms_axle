@@ -312,7 +312,7 @@ class NodeBase(models.Model):
         return position
 
     def get_path(self, language=None):
-        language = language or get_language()
+        language = language or self.preferred_language or get_language()
         return Paths.objects.get(node=self, language=language).path
 
     def save(self, *args, **kw):

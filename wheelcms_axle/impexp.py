@@ -267,19 +267,43 @@ class Importer(object):
         self.update_lm = update_lm
 
     def import_node(self, node, tree):
+        
+        # import pytest;pytest.set_trace()
+        paths = {}
+        contents = []
         for content in tree.findall("content"):
             typename = content.attrib['type']
             slug = content.attrib['slug']
             spoke = type_registry.get(typename)
             fields = content.find("fields")
 
+            language = None
+            for field in fields.findall("field"):
+                if field.attrib.get('name') == 'language':
+                    language = field.text
+
             s, delays = spoke.serializer(self.basenode, update_lm=self.update_lm
                                         ).deserialize(spoke, fields)
-            if slug == "":
+            paths[language] = slug
+            contents.append((language, s.instance))
+
+            #if slug == "":
+            #    n = node
+            #else:
+            #    n = node.add(slug)
+            #n.set(s.instance, language=language)
+
+        if contents:
+            ## Add on root on stead of new node
+            if paths.values()[0] == "":
                 n = node
+            elif paths.keys()[0] is None:
+                n = node.add(paths[None])
             else:
-                n = node.add(slug)
-            n.set(s.instance)
+                n = node.add(langslugs=paths)
+
+            for lang, cont in contents:
+                n.set(cont, language=lang)
 
         if tree.find("children") is not None:
             for child in tree.find("children"):
