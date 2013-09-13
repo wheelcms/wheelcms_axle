@@ -21,13 +21,19 @@ def language_slug(slugs, slug, language):
     """
         slugs is a mapping of lang->slug,
         slug is a default slug,
-        language is the language you want the slug for
+        
+        Try to get the appropriate slug from the mapping first,
+        else use the provided slug. If neither are present, return
+        *any* slug from the mapping 
+        (XXX we might try settings.LANGUAGE first)
     """
     lslug = slugs.get(language, slug)
     if lslug is None and language == any_lang[0]:
         ## Use fallback? XXX
         return slugs.values()[0]  # any
 
+    if lslug is None:
+        return slugs.values()[0]  # any
     ## may still be None, let caller fail, for now
     return lslug
 
