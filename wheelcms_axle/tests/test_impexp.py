@@ -97,7 +97,6 @@ class TestExporter(object):
         root_children_content = root_children.findall('node')  # 2 childs
         assert len(root_children_content) == 2
 
-        # import pytest; pytest.set_trace()
         c1node = root_children_content[0]
         c1 = c1node.find("content")
         assert c1.tag == "content"
@@ -122,6 +121,38 @@ class TestExporter(object):
         assert c2_1.attrib['slug'] == "c2_1"
         assert c2_1.attrib['type'] == Type1.get_name()
 
+    def test_multilang(self, client):
+        """ verify content is exported recursively """
+        root = Node.root()
+        Type1(node=root, state="published", title="EN Export Test", language="en").save()
+        Type1(node=root, state="published", title="NL Export Test", language="nl").save()
+
+        exporter = Exporter()
+        xml, files = exporter.run(root)
+        assert xml
+        nodes = [x for x in xml if x.tag == "node"]
+        assert len(nodes) == 1
+        root = nodes[0]
+
+        ## containing two translations
+        contents = [x for x in root if x.tag == "content"]
+        assert len(contents) == 2
+
+        content_nl = [c for c in contents
+                      if find_attribute(c.find("fields"),
+                                        "field",
+                                        "name", "language").text == "nl"][0]
+        assert content_nl
+        assert find_attribute(content_nl.find("fields"),
+                 "field", "name", "title").text == "NL Export Test"
+
+        content_en = [c for c in contents
+                      if find_attribute(c.find("fields"),
+                                        "field",
+                                        "name", "language").text == "en"][0]
+        assert content_en
+        assert find_attribute(content_en.find("fields"),
+                 "field", "name", "title").text == "EN Export Test"
 
 class TestImporter(object):
     """
@@ -134,59 +165,65 @@ class TestImporter(object):
     """
     xml = """
 <site base="" version="1">
- <content slug="" type="tests.type1">
-  <fields>
-   <field name="publication">2013-02-11T15:58:46.004222+00:00</field>
-   <field name="created">2013-02-11T15:58:46.004279+00:00</field>
-   <field name="meta_type">type1</field>
-   <field name="title">Export Test</field>
-   <field name="modified">2013-02-11T15:58:46.004275+00:00</field>
-   <field name="state">published</field>
-   <field name="expire">2033-02-14T15:58:46.004232+00:00</field>
-   <field name="t1field">None</field>
-   <field name="template" />
-   <field name="owner" />
-   <field name="navigation">False</field>
-   <tags>
-     <tag>hello</tag>
-     <tag>world</tag>
-   </tags>
-  </fields>
-  <children>
-   <content slug="c1" type="tests.type1">
+ <node id="1" tree_path="">
+   <content slug="" type="tests.type1">
     <fields>
-     <field name="publication">2013-02-11T15:58:46.006591+00:00</field>
-     <field name="created">2013-02-11T15:58:46.006646+00:00</field>
+     <field name="publication">2013-02-11T15:58:46.004222+00:00</field>
+     <field name="created">2013-02-11T15:58:46.004279+00:00</field>
      <field name="meta_type">type1</field>
-     <field name="title">I'm c1</field>
-     <field name="modified">2013-02-11T15:58:46.006642+00:00</field>
+     <field name="title">Export Test</field>
+     <field name="modified">2013-02-11T15:58:46.004275+00:00</field>
      <field name="state">published</field>
-     <field name="expire">2033-02-14T15:58:46.006600+00:00</field>
+     <field name="expire">2033-02-14T15:58:46.004232+00:00</field>
      <field name="t1field">None</field>
      <field name="template" />
      <field name="owner" />
-     <field name="navigation">True</field>
+     <field name="navigation">False</field>
+     <tags>
+       <tag>hello</tag>
+       <tag>world</tag>
+     </tags>
     </fields>
-    <children>
-     <content slug="c1_1" type="tests.type2">
+   </content>
+   <children>
+    <node id="2" tree_path="/2">
+     <content slug="c1" type="tests.type1">
       <fields>
-       <field name="publication">2013-02-11T15:58:46.012434+00:00</field>
-       <field name="created">2013-02-11T15:58:46.012483+00:00</field>
-       <field name="meta_type">type2</field>
-       <field name="title">I'm c1/c1_1</field>
-       <field name="modified">2013-02-11T15:58:46.012478+00:00</field>
-       <field name="state">private</field>
-       <field name="expire">2033-02-14T15:58:46.012443+00:00</field>
+       <field name="publication">2013-02-11T15:58:46.006591+00:00</field>
+       <field name="created">2013-02-11T15:58:46.006646+00:00</field>
+       <field name="meta_type">type1</field>
+       <field name="title">I'm c1</field>
+       <field name="modified">2013-02-11T15:58:46.006642+00:00</field>
+       <field name="state">published</field>
+       <field name="expire">2033-02-14T15:58:46.006600+00:00</field>
+       <field name="t1field">None</field>
        <field name="template" />
        <field name="owner" />
-       <field name="navigation">False</field>
+       <field name="navigation">True</field>
       </fields>
-      <children />
      </content>
-    </children>
-   </content>
-  </children>
- </content>
+     <children>
+      <node id="3" tree_path="/2/3">
+       <content slug="c1_1" type="tests.type2">
+        <fields>
+         <field name="publication">2013-02-11T15:58:46.012434+00:00</field>
+         <field name="created">2013-02-11T15:58:46.012483+00:00</field>
+         <field name="meta_type">type2</field>
+         <field name="title">I'm c1/c1_1</field>
+         <field name="modified">2013-02-11T15:58:46.012478+00:00</field>
+         <field name="state">private</field>
+         <field name="expire">2033-02-14T15:58:46.012443+00:00</field>
+         <field name="template" />
+         <field name="owner" />
+         <field name="navigation">False</field>
+        </fields>
+       </content>
+       <children />
+      </node>
+     </children>
+    </node>
+   </children>
+ </node>
 </site>"""
     def test_recursive(self, client):
         """ import a recursive structure with different types """

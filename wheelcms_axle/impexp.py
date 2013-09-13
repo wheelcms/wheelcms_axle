@@ -267,18 +267,19 @@ class Importer(object):
         self.update_lm = update_lm
 
     def import_node(self, node, tree):
-        typename = tree.attrib['type']
-        slug = tree.attrib['slug']
-        spoke = type_registry.get(typename)
-        fields = tree.find("fields")
+        for content in tree.findall("content"):
+            typename = content.attrib['type']
+            slug = content.attrib['slug']
+            spoke = type_registry.get(typename)
+            fields = content.find("fields")
 
-        s, delays = spoke.serializer(self.basenode, update_lm=self.update_lm
-                                    ).deserialize(spoke, fields)
-        if slug == "":
-            n = node
-        else:
-            n = node.add(slug)
-        n.set(s.instance)
+            s, delays = spoke.serializer(self.basenode, update_lm=self.update_lm
+                                        ).deserialize(spoke, fields)
+            if slug == "":
+                n = node
+            else:
+                n = node.add(slug)
+            n.set(s.instance)
 
         if tree.find("children") is not None:
             for child in tree.find("children"):
@@ -294,8 +295,8 @@ class Importer(object):
         # import pytest; pytest.set_trace()
         delays = []
 
-        for content in tree.findall("content"):
-            subdelays = self.import_node(self.basenode, content)
+        for node in tree.findall("node"):
+            subdelays = self.import_node(self.basenode, node)
             delays.extend(subdelays)
 
         for delay in delays:
