@@ -39,7 +39,7 @@ class TestExporter(object):
     """
     def test_xml(self, client):
         root = Node.root()
-        content = Type1(node=root, state="published", title="Export Test").save()
+        content = Type1(node=root, state="published", title="Export Test", language="en").save()
         content.tags.add("xml")
         content.tags.add("export")
 
@@ -49,13 +49,19 @@ class TestExporter(object):
         assert xml.tag == 'site'
         assert xml.attrib.get('version', -1) == '1'
         assert xml.attrib.get('base', '--') == ''
-        child = xml.find("content")
-        assert child
-        assert child.tag == 'content'
-        assert len(child.getchildren()) == 2
-        children = child.find('children')
+        node = xml.find("node")
+        assert node
+        assert len(node.getchildren()) == 2
+
+        children = node.find('children')
         assert len(children.getchildren()) == 0
-        fields = child.find('fields')
+
+        content = node.find("content")
+        assert content
+        assert content.tag == 'content'
+        assert len(content.getchildren()) == 1
+
+        fields = content.find('fields')
         title = find_attribute(fields, 'field', "name", "title")
         assert title.text == 'Export Test'
 
@@ -76,31 +82,42 @@ class TestExporter(object):
         xml, files = exporter.run(root)
         assert xml
 
-        content = xml.findall('content') # one root node
-        assert len(content) == 1
-        root = content[0]
-        root_children = root.findall('children')  # one children tag holding
-        assert len(root_children) == 1
-        root_children_content = root_children[0].findall('content')  # 2 childs
+        ## one root node
+        nodes = [x for x in xml if x.tag == "node"]
+        assert len(nodes) == 1
+        root = nodes[0]
+
+        ## containing a single content item
+        contents = [x for x in root if x.tag == "content"]
+        assert len(contents) == 1
+
+        ## two child nodes
+        root_children = root.find('children')
+        assert root_children
+        root_children_content = root_children.findall('node')  # 2 childs
         assert len(root_children_content) == 2
 
         # import pytest; pytest.set_trace()
-        c1 = root_children_content[0]
+        c1node = root_children_content[0]
+        c1 = c1node.find("content")
         assert c1.tag == "content"
         assert c1.attrib['slug'] == "c1"
         assert c1.attrib['type'] == Type1.get_name()
 
-        c1_1 = c1.find("children").find("content")
+        c1_1node = c1node.find("children").find("node")
+        c1_1 = c1_1node.find("content")
         assert c1_1.tag == "content"
         assert c1_1.attrib['slug'] == "c1_1"
         assert c1_1.attrib['type'] == Type2.get_name()
 
-        c2 = root_children_content[1]
+        c2node = root_children_content[1]
+        c2 = c2node.find("content")
         assert c2.tag == "content"
         assert c2.attrib['slug'] == "c2"
         assert c2.attrib['type'] == Type2.get_name()
 
-        c2_1 = c2.find("children").find("content")
+        c2_1node = c2node.find("children").find("node")
+        c2_1 = c2_1node.find("content")
         assert c2_1.tag == "content"
         assert c2_1.attrib['slug'] == "c2_1"
         assert c2_1.attrib['type'] == Type1.get_name()
