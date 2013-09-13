@@ -3,11 +3,14 @@ from two.ol.base import twpatterns
 from wheelcms_axle.main import MainHandler, wheel_500, wheel_404
 from wheelcms_axle.configuration import ConfigurationHandler
 from wheelcms_axle.search import SearchHandler
+from wheelcms_axle.sitemaps import ContentSitemap
 
 handler500 = wheel_500
 handler404 = wheel_404
 
 urlpatterns = patterns('',
+    (r'^sitemap\.xml$', 'django.contrib.sitemaps.views.sitemap', {'sitemaps': dict(default=ContentSitemap())}),
+
     twpatterns("/@/search", SearchHandler, name="haystack_search"),
 
     ## Special url for configuration; issue #553

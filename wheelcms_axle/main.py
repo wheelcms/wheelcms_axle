@@ -180,7 +180,8 @@ class MainHandler(WheelRESTHandler):
 
             domain = ld.get(lang)
             if domain:
-                url = domain + url
+                protocol = "https" if self.request.is_secure() else "http"
+                url = "%s://%s%s" % (protocol, domain, url)
 
             res.append(dict(id=lang, label=label, url=url,
                             has_translation=has_translation,
