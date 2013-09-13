@@ -235,9 +235,13 @@ class Exporter(object):
         files = self.export_node(root, node)
 
         from .models import Configuration
+        ## Import the configuration module so the registration of the
+        ## default config takes place
+        from . import configuration
 
         defaultconfig = Configuration.config()
 
+        
         for (related, (label, model, formclass)) in \
             configuration_registry.iteritems():
 
