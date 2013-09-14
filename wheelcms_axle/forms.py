@@ -275,6 +275,7 @@ def FileFormfactory(type, light=False):
             if light:
                 self.fields['slug'].widget = forms.HiddenInput()
                 self.fields['template'].widget = forms.HiddenInput()
+                self.fields['discussable'].widget = forms.HiddenInput()
 
             if 'tags' in self.fields:
                 del self.fields['tags']  ## not tagselection
