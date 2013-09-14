@@ -10,8 +10,9 @@ handler404 = wheel_404
 
 urlpatterns = patterns('',
     (r'^sitemap\.xml$', 'django.contrib.sitemaps.views.sitemap', {'sitemaps': dict(default=ContentSitemap())}),
-    (r'^robots\.txt$', 'django.views.generic.simple.direct_to_template',
-      {'template': 'robots.txt', 'mimetype': 'text/plain'}),
+
+
+    (r'^robots\.txt$', 'wheelcms_axle.robots.robots_txt'),
 
     twpatterns("/@/search", SearchHandler, name="haystack_search"),
 

@@ -5,5 +5,5 @@ User-agent: *
 Disallow: {% url "wheel_main" "" %}
 {% else %}
 User-agent: *
-Disallow: {% url "wheel_main" "" %}/@/*
+Disallow: {% url "wheel_main" "" %}@/*
 {% endif %}
