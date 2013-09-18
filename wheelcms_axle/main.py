@@ -148,6 +148,49 @@ class MainHandler(WheelRESTHandler):
             return modelinstance
         return None
 
+    @context
+    def languages(self):
+        """ return language switch options """
+        if not self.instance:
+            return None
+
+        ## If there is not more that one language defined, don't show
+        ## a selector
+        if len(settings.LANGUAGES) <= 1:
+            return None
+
+        res = []
+        ld = getattr(settings, 'LANGUAGE_DOMAINS', {})
+        current_language = self.active_language()
+        current_label = dict(settings.LANGUAGES).get(current_language, current_language)
+
+        for lang, label in settings.CONTENT_LANGUAGES:
+            if lang == current_language:
+                is_current = True
+            else:
+                is_current = False
+
+            langcontent = self.instance.content(language=lang)
+            if langcontent:
+                url = langcontent.get_absolute_url()
+                has_translation = True
+            else:
+                url = Node.root().get_absolute_url(language=lang)
+                has_translation = False
+
+            domain = ld.get(lang)
+            if domain:
+                protocol = "https" if self.request.is_secure() else "http"
+                url = "%s://%s%s" % (protocol, domain, url)
+
+            res.append(dict(id=lang, label=label, url=url,
+                            has_translation=has_translation,
+                            is_current=is_current))
+
+        return dict(current=dict(id=current_language,
+                                 label=current_label),
+                    languages=res)
+
     def formclass(self, data=None, instance=None):
         """
             Invoked by dispatcher to initialize this handler's form.

@@ -312,7 +312,7 @@ class NodeBase(models.Model):
         return position
 
     def get_path(self, language=None):
-        language = language or get_language()
+        language = language or self.preferred_language or get_language()
         return Paths.objects.get(node=self, language=language).path
 
     def save(self, *args, **kw):
@@ -334,7 +334,6 @@ class NodeBase(models.Model):
                     langpath = Paths(node=self, language=language)
 
                 langslug = translate.language_slug(self._langslugs, self._slug, language)
-                # langslug = self._langslugs.get(language, self._slug)
 
                 if not self._parent:
                     path = '' # '/' + str(self.id) -- be consistent with 'old' behavior, for now

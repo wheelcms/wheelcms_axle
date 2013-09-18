@@ -84,6 +84,4 @@ class ConfigurationHandler(FormHandler, WheelHandlerMixin):
         self.context['tabs'] = self.construct_tabs(config)
         return self.template("wheelcms_axle/configuration.html")
 
-from wheelcms_axle.registries.configuration import configuration_registry
-
 configuration_registry.register("", "Default", Configuration, ConfigurationForm)

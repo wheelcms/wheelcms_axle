@@ -39,7 +39,7 @@ class TestExporter(object):
     """
     def test_xml(self, client):
         root = Node.root()
-        content = Type1(node=root, state="published", title="Export Test").save()
+        content = Type1(node=root, state="published", title="Export Test", language="en").save()
         content.tags.add("xml")
         content.tags.add("export")
 
@@ -49,13 +49,19 @@ class TestExporter(object):
         assert xml.tag == 'site'
         assert xml.attrib.get('version', -1) == '1'
         assert xml.attrib.get('base', '--') == ''
-        child = xml.find("content")
-        assert child
-        assert child.tag == 'content'
-        assert len(child.getchildren()) == 2
-        children = child.find('children')
+        node = xml.find("node")
+        assert node
+        assert len(node.getchildren()) == 2
+
+        children = node.find('children')
         assert len(children.getchildren()) == 0
-        fields = child.find('fields')
+
+        content = node.find("content")
+        assert content
+        assert content.tag == 'content'
+        assert len(content.getchildren()) == 1
+
+        fields = content.find('fields')
         title = find_attribute(fields, 'field', "name", "title")
         assert title.text == 'Export Test'
 
@@ -76,35 +82,77 @@ class TestExporter(object):
         xml, files = exporter.run(root)
         assert xml
 
-        content = xml.findall('content') # one root node
-        assert len(content) == 1
-        root = content[0]
-        root_children = root.findall('children')  # one children tag holding
-        assert len(root_children) == 1
-        root_children_content = root_children[0].findall('content')  # 2 childs
+        ## one root node
+        nodes = [x for x in xml if x.tag == "node"]
+        assert len(nodes) == 1
+        root = nodes[0]
+
+        ## containing a single content item
+        contents = [x for x in root if x.tag == "content"]
+        assert len(contents) == 1
+
+        ## two child nodes
+        root_children = root.find('children')
+        assert root_children
+        root_children_content = root_children.findall('node')  # 2 childs
         assert len(root_children_content) == 2
 
-        # import pytest; pytest.set_trace()
-        c1 = root_children_content[0]
+        c1node = root_children_content[0]
+        c1 = c1node.find("content")
         assert c1.tag == "content"
         assert c1.attrib['slug'] == "c1"
         assert c1.attrib['type'] == Type1.get_name()
 
-        c1_1 = c1.find("children").find("content")
+        c1_1node = c1node.find("children").find("node")
+        c1_1 = c1_1node.find("content")
         assert c1_1.tag == "content"
         assert c1_1.attrib['slug'] == "c1_1"
         assert c1_1.attrib['type'] == Type2.get_name()
 
-        c2 = root_children_content[1]
+        c2node = root_children_content[1]
+        c2 = c2node.find("content")
         assert c2.tag == "content"
         assert c2.attrib['slug'] == "c2"
         assert c2.attrib['type'] == Type2.get_name()
 
-        c2_1 = c2.find("children").find("content")
+        c2_1node = c2node.find("children").find("node")
+        c2_1 = c2_1node.find("content")
         assert c2_1.tag == "content"
         assert c2_1.attrib['slug'] == "c2_1"
         assert c2_1.attrib['type'] == Type1.get_name()
 
+    def test_multilang(self, client):
+        """ verify content is exported recursively """
+        root = Node.root()
+        Type1(node=root, state="published", title="EN Export Test", language="en").save()
+        Type1(node=root, state="published", title="NL Export Test", language="nl").save()
+
+        exporter = Exporter()
+        xml, files = exporter.run(root)
+        assert xml
+        nodes = [x for x in xml if x.tag == "node"]
+        assert len(nodes) == 1
+        root = nodes[0]
+
+        ## containing two translations
+        contents = [x for x in root if x.tag == "content"]
+        assert len(contents) == 2
+
+        content_nl = [c for c in contents
+                      if find_attribute(c.find("fields"),
+                                        "field",
+                                        "name", "language").text == "nl"][0]
+        assert content_nl
+        assert find_attribute(content_nl.find("fields"),
+                 "field", "name", "title").text == "NL Export Test"
+
+        content_en = [c for c in contents
+                      if find_attribute(c.find("fields"),
+                                        "field",
+                                        "name", "language").text == "en"][0]
+        assert content_en
+        assert find_attribute(content_en.find("fields"),
+                 "field", "name", "title").text == "EN Export Test"
 
 class TestImporter(object):
     """
@@ -117,59 +165,81 @@ class TestImporter(object):
     """
     xml = """
 <site base="" version="1">
- <content slug="" type="tests.type1">
-  <fields>
-   <field name="publication">2013-02-11T15:58:46.004222+00:00</field>
-   <field name="created">2013-02-11T15:58:46.004279+00:00</field>
-   <field name="meta_type">type1</field>
-   <field name="title">Export Test</field>
-   <field name="modified">2013-02-11T15:58:46.004275+00:00</field>
-   <field name="state">published</field>
-   <field name="expire">2033-02-14T15:58:46.004232+00:00</field>
-   <field name="t1field">None</field>
-   <field name="template" />
-   <field name="owner" />
-   <field name="navigation">False</field>
-   <tags>
-     <tag>hello</tag>
-     <tag>world</tag>
-   </tags>
-  </fields>
-  <children>
-   <content slug="c1" type="tests.type1">
+ <node id="1" tree_path="">
+   <content slug="" type="tests.type1">
     <fields>
-     <field name="publication">2013-02-11T15:58:46.006591+00:00</field>
-     <field name="created">2013-02-11T15:58:46.006646+00:00</field>
+     <field name="publication">2013-02-11T15:58:46.004222+00:00</field>
+     <field name="created">2013-02-11T15:58:46.004279+00:00</field>
      <field name="meta_type">type1</field>
-     <field name="title">I'm c1</field>
-     <field name="modified">2013-02-11T15:58:46.006642+00:00</field>
+     <field name="title">Export Test</field>
+     <field name="modified">2013-02-11T15:58:46.004275+00:00</field>
      <field name="state">published</field>
-     <field name="expire">2033-02-14T15:58:46.006600+00:00</field>
+     <field name="expire">2033-02-14T15:58:46.004232+00:00</field>
      <field name="t1field">None</field>
      <field name="template" />
      <field name="owner" />
-     <field name="navigation">True</field>
+     <field name="navigation">False</field>
+     <tags>
+       <tag>hello</tag>
+       <tag>world</tag>
+     </tags>
     </fields>
-    <children>
-     <content slug="c1_1" type="tests.type2">
+   </content>
+   <children>
+    <node id="2" tree_path="/2">
+     <content slug="c1" type="tests.type1">
       <fields>
-       <field name="publication">2013-02-11T15:58:46.012434+00:00</field>
-       <field name="created">2013-02-11T15:58:46.012483+00:00</field>
-       <field name="meta_type">type2</field>
-       <field name="title">I'm c1/c1_1</field>
-       <field name="modified">2013-02-11T15:58:46.012478+00:00</field>
-       <field name="state">private</field>
-       <field name="expire">2033-02-14T15:58:46.012443+00:00</field>
+       <field name="publication">2013-02-11T15:58:46.006591+00:00</field>
+       <field name="created">2013-02-11T15:58:46.006646+00:00</field>
+       <field name="meta_type">type1</field>
+       <field name="title">I'm c1</field>
+       <field name="modified">2013-02-11T15:58:46.006642+00:00</field>
+       <field name="state">published</field>
+       <field name="expire">2033-02-14T15:58:46.006600+00:00</field>
+       <field name="t1field">None</field>
        <field name="template" />
        <field name="owner" />
-       <field name="navigation">False</field>
+       <field name="navigation">True</field>
       </fields>
-      <children />
      </content>
-    </children>
-   </content>
-  </children>
- </content>
+     <children>
+      <node id="3" tree_path="/2/3">
+       <content slug="c1_1_en" type="tests.type2">
+        <fields>
+         <field name="language">en</field>
+         <field name="publication">2013-02-11T15:58:46.012434+00:00</field>
+         <field name="created">2013-02-11T15:58:46.012483+00:00</field>
+         <field name="meta_type">type2</field>
+         <field name="title">I'm c1/c1_1 EN</field>
+         <field name="modified">2013-02-11T15:58:46.012478+00:00</field>
+         <field name="state">private</field>
+         <field name="expire">2033-02-14T15:58:46.012443+00:00</field>
+         <field name="template" />
+         <field name="owner" />
+         <field name="navigation">False</field>
+        </fields>
+       </content>
+       <content slug="c1_1_nl" type="tests.type2">
+        <fields>
+         <field name="language">nl</field>
+         <field name="publication">2013-02-11T15:58:46.012434+00:00</field>
+         <field name="created">2013-02-11T15:58:46.012483+00:00</field>
+         <field name="meta_type">type2</field>
+         <field name="title">I'm c1/c1_1 NL</field>
+         <field name="modified">2013-02-11T15:58:46.012478+00:00</field>
+         <field name="state">private</field>
+         <field name="expire">2033-02-14T15:58:46.012443+00:00</field>
+         <field name="template" />
+         <field name="owner" />
+         <field name="navigation">False</field>
+        </fields>
+       </content>
+       <children />
+      </node>
+     </children>
+    </node>
+   </children>
+ </node>
 </site>"""
     def test_recursive(self, client):
         """ import a recursive structure with different types """
@@ -192,19 +262,31 @@ class TestImporter(object):
         child0_content = child0.content()
 
         assert len(child0.children()) == 1
+        # import pytest; pytest.set_trace()
+        child0_0_nl = child0.child("c1_1_nl", language="nl")
+        child0_0_en = child0.child("c1_1_en", language="en")
+
+
         assert child0.path == "/c1"
         assert child0_content.title == "I'm c1"
         assert child0_content.navigation
         assert child0_content.state == "published"
 
-        child0_0 = child0.children()[0]
-        child0_0_content = child0_0.content()
+        child0_0_nl_content = child0_0_nl.content()
 
-        assert len(child0_0.children()) == 0
-        assert child0_0.path == "/c1/c1_1"
-        assert child0_0_content.title == "I'm c1/c1_1"
-        assert not child0_0_content.navigation
-        assert child0_0_content.state == "private"
+        assert len(child0_0_nl.children()) == 0
+        assert child0_0_nl.path == "/c1/c1_1_nl"
+        assert child0_0_nl_content.title == "I'm c1/c1_1 NL"
+        assert not child0_0_nl_content.navigation
+        assert child0_0_nl_content.state == "private"
+
+        child0_0_en_content = child0_0_en.content()
+
+        assert len(child0_0_en.children()) == 0
+        assert child0_0_en.path == "/c1/c1_1_en"
+        assert child0_0_en_content.title == "I'm c1/c1_1 EN"
+        assert not child0_0_en_content.navigation
+        assert child0_0_en_content.state == "private"
 
     def test_base(self, client):
         """ import a recursive structure with different types """

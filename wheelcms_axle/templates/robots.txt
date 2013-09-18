@@ -1,0 +1,9 @@
+{% load url from future %}
+Sitemap: {% url "wheel_main" "" %}sitemap.xml
+{% if settings.NOINDEX %}
+User-agent: *
+Disallow: {% url "wheel_main" "" %}
+{% else %}
+User-agent: *
+Disallow: {% url "wheel_main" "" %}@/*
+{% endif %}

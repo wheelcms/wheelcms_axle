@@ -96,7 +96,6 @@ class WheelSerializer(object):
         model.tags.add(*tags)
 
     def serialize(self, spoke):
-        # import pytest; pytest.set_trace()
         o = spoke.instance
 
         files = []
@@ -120,8 +119,6 @@ class WheelSerializer(object):
                 if isinstance(field, FileField):
                     files.append(value)
 
-        #if 'rogramming' in o.title:
-        #    import pdb; pdb.set_trace()
         for e in self.extra:
             handler = getattr(self, "serialize_extra_%s" % e, None)
             if handler:
@@ -199,19 +196,24 @@ class Exporter(object):
         # import pdb; pdb.set_trace()
         files = []
 
-        try:
-            spoke = node.content().spoke()
-        except AttributeError:
-            spoke = None
 
-        xmlcontent = SubElement(parent, "content",
-                                dict(slug=node.slug(),
-                                type=spoke.model.get_name()))
-        if spoke:
+        nodetag = SubElement(parent, "node",
+                             dict(id=str(node.pk), tree_path=node.tree_path))
+
+        for content in node.contentbase.all():
+            ## transform the baseclass into the actual instance
+            content = content.content()
+
+            spoke = content.spoke()
+            type = spoke.model.get_name()
+
+            xmlcontent = SubElement(nodetag, "content",
+                                    dict(slug=node.slug(content.language),
+                                    type=type))
             contentxml, files = spoke.serializer().serialize(spoke)
             xmlcontent.append(contentxml)
 
-        children = SubElement(xmlcontent, "children")
+        children = SubElement(nodetag, "children")
         for child in node.children():
             files += self.export_node(children, child)
 
@@ -233,9 +235,13 @@ class Exporter(object):
         files = self.export_node(root, node)
 
         from .models import Configuration
+        ## Import the configuration module so the registration of the
+        ## default config takes place
+        from . import configuration
 
         defaultconfig = Configuration.config()
 
+        
         for (related, (label, model, formclass)) in \
             configuration_registry.iteritems():
 
@@ -265,18 +271,43 @@ class Importer(object):
         self.update_lm = update_lm
 
     def import_node(self, node, tree):
-        typename = tree.attrib['type']
-        slug = tree.attrib['slug']
-        spoke = type_registry.get(typename)
-        fields = tree.find("fields")
+        
+        # import pytest;pytest.set_trace()
+        paths = {}
+        contents = []
+        for content in tree.findall("content"):
+            typename = content.attrib['type']
+            slug = content.attrib['slug']
+            spoke = type_registry.get(typename)
+            fields = content.find("fields")
 
-        s, delays = spoke.serializer(self.basenode, update_lm=self.update_lm
-                                    ).deserialize(spoke, fields)
-        if slug == "":
-            n = node
-        else:
-            n = node.add(slug)
-        n.set(s.instance)
+            language = None
+            for field in fields.findall("field"):
+                if field.attrib.get('name') == 'language':
+                    language = field.text
+
+            s, delays = spoke.serializer(self.basenode, update_lm=self.update_lm
+                                        ).deserialize(spoke, fields)
+            paths[language] = slug
+            contents.append((language, s.instance))
+
+            #if slug == "":
+            #    n = node
+            #else:
+            #    n = node.add(slug)
+            #n.set(s.instance, language=language)
+
+        if contents:
+            ## Add on root on stead of new node
+            if paths.values()[0] == "":
+                n = node
+            elif paths.keys()[0] is None:
+                n = node.add(paths[None])
+            else:
+                n = node.add(langslugs=paths)
+
+            for lang, cont in contents:
+                n.set(cont, language=lang)
 
         if tree.find("children") is not None:
             for child in tree.find("children"):
@@ -292,8 +323,8 @@ class Importer(object):
         # import pytest; pytest.set_trace()
         delays = []
 
-        for content in tree.findall("content"):
-            subdelays = self.import_node(self.basenode, content)
+        for node in tree.findall("node"):
+            subdelays = self.import_node(self.basenode, node)
             delays.extend(subdelays)
 
         for delay in delays:
