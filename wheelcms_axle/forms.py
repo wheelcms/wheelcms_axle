@@ -308,7 +308,6 @@ class UserenaDetailsFormExtra(EditProfileForm):
     twitter = forms.CharField(label=_(u'Twitter+'), required=False)
     google = forms.CharField(label=_(u'Google+'), required=False)
     linkedin = forms.CharField(label=_(u'LinkedIn'), required=False)
-    stackoverflow = forms.CharField(label=_(u'Stackoverflow'), required=False)
 
     def __init__(self, *args, **kw):
         super(UserenaDetailsFormExtra, self).__init__(*args, **kw)

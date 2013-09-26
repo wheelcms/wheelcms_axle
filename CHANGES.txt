@@ -1,2 +1,4 @@
 v0.7, 2013-09-01 -- Initial public release
 v0.8, 2013-09-11 -- Merge translation-frontend containing all i18n support
+v0.9
+    Social media links (google+, twitter, linkedin) in userena profile
