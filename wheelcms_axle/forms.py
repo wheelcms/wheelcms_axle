@@ -3,6 +3,7 @@ import mimetypes
 
 from django import forms
 from django.conf import settings
+from django.forms.widgets import DateTimeInput
 
 from wheelcms_axle.node import Node
 
@@ -116,6 +117,12 @@ class BaseForm(forms.ModelForm):
         if 'tags' in self.fields:
             self.fields['tags'].widget.attrs['class'] = "tagManager"
             self.fields['tags'].required = False
+
+        ## workaround for https://code.djangoproject.com/ticket/21173
+        for patch_dt in ("publication", "expire", "created"):
+            if patch_dt in self.fields:
+                f = self.fields[patch_dt]
+                f.widget = DateTimeInput()
 
         ## lightforms don't have a language field
         if 'language' in self.fields:
