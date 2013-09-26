@@ -30,7 +30,6 @@ class WheelProfile(UserenaLanguageBaseProfile):
     twitter = models.TextField(blank=True, null=False, default="")
     google = models.TextField(blank=True, null=False, default="")
     linkedin = models.TextField(blank=True, null=False, default="")
-    stackoverflow = models.TextField(blank=True, null=False, default="")
 
 ## backwards compat, should import from node directly
 from .node import NodeException, DuplicatePathException, InvalidPathException
