@@ -5,7 +5,7 @@ from wheelcms_axle.configuration import ConfigurationHandler
 from wheelcms_axle.search import SearchHandler
 from wheelcms_axle.sitemaps import ContentSitemap
 
-from wheelcms_axle.forms import UserenaDetailsFormExtra
+from wheelcms_axle.userena_custom import UserenaDetailsFormExtra
 
 handler500 = wheel_500
 handler404 = wheel_404
