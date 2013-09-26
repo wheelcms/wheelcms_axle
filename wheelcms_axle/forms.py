@@ -305,10 +305,10 @@ def FileFormfactory(type, light=False):
 from userena.forms import EditProfileForm
 
 class UserenaDetailsFormExtra(EditProfileForm):
-    twitter = forms.CharField(label=_(u'Twitter+'), max_length=30, required=False)
-    google = forms.CharField(label=_(u'Google+'), max_length=30, required=False)
-    linkedin = forms.CharField(label=_(u'LinkedIn'), max_length=30, required=False)
-    stackoverflow = forms.CharField(label=_(u'Stackoverflow'), max_length=30, required=False)
+    twitter = forms.CharField(label=_(u'Twitter+'), required=False)
+    google = forms.CharField(label=_(u'Google+'), required=False)
+    linkedin = forms.CharField(label=_(u'LinkedIn'), required=False)
+    stackoverflow = forms.CharField(label=_(u'Stackoverflow'), required=False)
 
     def __init__(self, *args, **kw):
         super(UserenaDetailsFormExtra, self).__init__(*args, **kw)
