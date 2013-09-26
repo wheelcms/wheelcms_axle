@@ -4,6 +4,7 @@ import mimetypes
 from django import forms
 from django.conf import settings
 from django.forms.widgets import DateTimeInput
+from django.utils.translation import ugettext as _
 
 from wheelcms_axle.node import Node
 
@@ -300,4 +301,16 @@ def FileFormfactory(type, light=False):
                 title = ''
             return title
     return Form
+
+from userena.forms import EditProfileForm
+
+class UserenaDetailsFormExtra(EditProfileForm):
+    twitter = forms.CharField(label=_(u'Twitter+'), max_length=30, required=False)
+    google = forms.CharField(label=_(u'Google+'), max_length=30, required=False)
+    linkedin = forms.CharField(label=_(u'LinkedIn'), max_length=30, required=False)
+    stackoverflow = forms.CharField(label=_(u'Stackoverflow'), max_length=30, required=False)
+
+    def __init__(self, *args, **kw):
+        super(UserenaDetailsFormExtra, self).__init__(*args, **kw)
+
 
