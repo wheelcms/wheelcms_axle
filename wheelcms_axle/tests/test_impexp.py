@@ -350,6 +350,51 @@ class TestSerializer(object):
         res, files = WheelSerializer().serialize(tt)
         assert find_attribute(res, "field", "name", 'owner').text == "johndoe"
 
+from wheelcms_axle.models import Configuration
+from wheelcms_axle.tests.models import Configuration as ConfigurationTest
+
+class TestConfigImportExport(object):
+    """ configuration import/export tests """
+
+    def test_export(self, client):
+        """ Test export of main and sub config """
+        c = Configuration.config()
+        c.title = "Test Site"
+        c.description = "Test Description"
+        c.save()
+
+        t = ConfigurationTest(main=c, value="conftest")
+        t.save()
+
+        root = Node.root()
+        exporter = Exporter()
+        xml, files = exporter.run(root)
+        assert xml
+
+        main = find_attribute(xml, "config", "set", "")
+        testconf = find_attribute(xml, "config", "set", "testconf")
+
+        assert main
+        assert testconf
+
+        assert find_attribute(main, "item", "name", "title").text == "Test Site"
+        assert find_attribute(testconf, "item", "name", "value").text == "conftest"
+
+    def test_import(self, client):
+        """ test import of main and sub config """
+        xml = """<site base="" version="1"><node id="1" tree_path=""><children /></node><config set=""><item name="id">1</item><item name="title">Test Site</item><item name="description">Test Description</item><item name="theme">default</item><item name="analytics" /><item name="head" /><item name="sender" /><item name="sendermail" /><item name="mailto" /></config><config set="testconf"><item name="value">conftest</item></config></site>"""
+
+        root = Node.root()
+
+        importer = Importer(root)
+        tree = ElementTree.fromstring(xml)
+        res = importer.run(tree)
+
+        c = Configuration.config()
+        assert c.title == "Test Site"
+        assert c.description == "Test Description"
+        assert c.testconf.all()[0].value == "conftest"
+
 
 class BaseSpokeImportExportTest(object):
     """

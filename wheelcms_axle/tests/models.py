@@ -88,3 +88,12 @@ class TestTypeRegistry(TypeRegistry):
     def register(self, t):
         self[t.name()] = t
 
+from wheelcms_axle.models import Configuration as BaseConfiguration
+from wheelcms_axle.registries.configuration import configuration_registry
+
+class Configuration(models.Model):
+    main = models.ForeignKey(BaseConfiguration, related_name="testconf")
+    value = models.TextField(blank=True)
+
+configuration_registry.register("testconf", "ConfTest", Configuration, None)
+
