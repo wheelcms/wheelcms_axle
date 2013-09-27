@@ -6,3 +6,4 @@ v0.8.1, 2013-09-27
     README.txt renamed to README.md, content added
     Misc. fixes
 v0.8.2, 2013-09-27 -- Fix in setup.py
+v0.8.3, 2013-09-27 -- Fix in setup.py
