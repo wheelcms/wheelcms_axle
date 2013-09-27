@@ -1,31 +1,8 @@
 {% extends "wheelcms_axle/base.html" %}
+{% load i18n %}
 
 {% block htmltitle %}
-<title>Site configuration</title>
-{% endblock %}
-
-{% block base_javascript %}
-
-{{block.super }}
-
-<script type="text/javascript">
-$(document).ready(function() {
-  var request_leave = false;
-  $(":input").change(function() {
-        request_leave = true;
-  });
-  $(".canleave").click(function() {
-        request_leave = false;
-  });
-  $(window).on('beforeunload',
-      function() {
-          if(request_leave) {
-            return 'You have unsafed changes. Leaving this page will lose those changes.'
-          }
-      } );
-});
-</script>
-
+<title>{% trans "site_settings" %}</title>
 {% endblock %}
 
 {% block breadcrumb %}
@@ -33,11 +10,11 @@ $(document).ready(function() {
   <div class="span12">
     <ul class="breadcrumb">
         <li>
-            <a href="{{root.get_absolute_url}}">Home</a>
+            <a href="{{root.get_absolute_url}}">{% trans "nav_home" %}</a>
         <span class="divider">/</span>
         </li>
         <li>
-          Settings
+          {% trans "site_settings" %}
           {% for t in tabs %}
             {% if t.selected %} &rsaquo;&rsaquo; {{t.label}} {% endif %}
           {% endfor %}
@@ -48,7 +25,7 @@ $(document).ready(function() {
 {% endblock %}
 
 {% block main %}
-<h2>Site settings</h1>
+<h2>{% trans "site_settings" %}</h2>
 
 <div class="tabbable tabs-left">
   <ul class="nav nav-tabs">
@@ -61,13 +38,13 @@ $(document).ready(function() {
     {% for t in tabs %}
     <div class="tab-pane {% if t.selected %}active{% endif %}">
       {% if t.form %}
-      <form method="post" action="." class="form-horizontal"
+      <form method="post" action="." class="form-horizontal checksave"
         {% if form.is_multipart %}enctype="multipart/form-data"{%endif%}>
         <input type="hidden" name="config" value="{{t.related}}">
         {% csrf_token %}
         {% include "two.bootstrap/bootstrap-form.html" with form=t.form %}
         <div class="form-actions">
-          <input class="btn primary canleave" type="submit" value="Save">
+          <input class="btn primary canleave" type="submit" value="{% trans "form_save" %}">
         </div>
       </form>
       {% endif %}

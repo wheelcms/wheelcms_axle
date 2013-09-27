@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-27 17:29+0200\n"
+"POT-Creation-Date: 2013-09-27 18:13+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,6 +33,19 @@ msgstr "Google+"
 #: userena_custom.py:8
 msgid "LinkedIn"
 msgstr "LinkedIn"
+
+#: templates/wheelcms_axle/configuration.html:13
+msgid "nav_home"
+msgstr "Home"
+
+#: templates/wheelcms_axle/configuration.html:17
+#: templates/wheelcms_axle/toolbar.html:79
+msgid "site_settings"
+msgstr "Instellingen"
+
+#: templates/wheelcms_axle/configuration.html:47
+msgid "form_save"
+msgstr "Opslaan"
 
 #: templates/wheelcms_axle/toolbar.html:16
 msgid "toolbar_brand"
@@ -59,10 +72,6 @@ msgstr "Bewerk"
 msgid "content_list"
 msgstr "Inhoud"
 
-#: templates/wheelcms_axle/toolbar.html:79
-msgid "site_settings"
-msgstr "Instellingen"
-
 #: templates/wheelcms_axle/toolbar.html:92
 msgid "user_profile"
 msgstr "Profiel"
@@ -83,6 +92,10 @@ msgstr "Schakel naar"
 msgid "lang_create_trans"
 msgstr "Vertaal naar"
 
-#: templates/wheelcms_axle/wheel_base.html:112
+#: templates/wheelcms_axle/wheel_base.html:68
+msgid "unsaved_changes_js_warning"
+msgstr "Er zijn wijzigingen op deze pagina die nog niet opgeslagen zijn. Als u deze pagina verlaat dan zult u deze wijzigingen kwijtraken."
+
+#: templates/wheelcms_axle/wheel_base.html:130
 msgid "language_switch_language"
 msgstr "Taal"
