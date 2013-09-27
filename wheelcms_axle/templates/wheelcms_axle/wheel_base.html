@@ -54,6 +54,7 @@
     })();
   </script>
   <script type="text/javascript">
+    {# this script will have no effect after a submit where the content has not been saved, for example in case of a validation error #}
     $(document).ready(function() {
       var request_leave = false;
       $("form.checksave :input").change(function() {
