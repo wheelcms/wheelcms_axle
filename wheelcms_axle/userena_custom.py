@@ -3,7 +3,7 @@ from userena.forms import EditProfileForm
 from django.utils.translation import ugettext as _
 
 class UserenaDetailsFormExtra(EditProfileForm):
-    twitter = forms.CharField(label=_(u'Twitter+'), required=False)
+    twitter = forms.CharField(label=_(u'Twitter'), required=False)
     google = forms.CharField(label=_(u'Google+'), required=False)
     linkedin = forms.CharField(label=_(u'LinkedIn'), required=False)
 

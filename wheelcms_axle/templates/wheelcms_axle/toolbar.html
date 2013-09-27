@@ -1,4 +1,5 @@
 {% load url from future %}
+{% load i18n %}
 {% load staticfiles %}
 
 {% if toolbar %}
@@ -12,7 +13,7 @@
         <span class="icon-bar"></span>
       </a>
 
-      <a class="brand" href="#">Wheel CMS</a>
+      <a class="brand" href="#">{% trans "toolbar_brand" %}</a>
 
       <div class="nav-collapse collapse">
         <ul class="nav">
@@ -20,7 +21,7 @@
               {% if toolbar.show_attach %}
               <div class="btn-group dropup">
                 <a href="#" class="btn btn-warning dropdown-toggle" data-toggle="dropdown">
-                  <i class="icon-magnet"></i> Attach
+                  <i class="icon-magnet"></i> {% trans "content_attach" %}
                   <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
@@ -37,14 +38,14 @@
                   <a class="btn btn-info"
                      href="{{instance.get_absolute_url}}create?type={{primary.name}}">
                     <i class="icon-plus-sign"></i>
-                    Create {{primary.title}}</a>
+                    {% trans "content_create" %} {{primary.title}}</a>
                   <button class="btn btn-info dropdown-toggle"
                           data-toggle="dropdown">
                     <span class="caret"></span>
                   </button>
                   {% else %}
                   <a href="#" class="btn btn-info" data-toggle="dropdown">
-                    <i class="icon-plus-sign"></i> Create
+                    <i class="icon-plus-sign"></i> {% trans "content_create" %}
                     <b class="caret"></b>
                   </a>
                   {% endif %}
@@ -56,17 +57,17 @@
                 </ul>
                 {% endif %}
                 {% if toolbar.show_translate %}
-                <a class="btn btn-info" href="{{instance.get_absolute_url}}edit"><i class="icon-edit"></i> Translate</a>
+                <a class="btn btn-info" href="{{instance.get_absolute_url}}edit"><i class="icon-edit"></i> {% trans "content_translate" %}</a>
                 {% endif %}
                 {% if toolbar.show_update %}
-                <a class="btn btn-info" href="{{instance.get_absolute_url}}edit"><i class="icon-edit"></i> Edit</a>
+                <a class="btn btn-info" href="{{instance.get_absolute_url}}edit"><i class="icon-edit"></i> {% trans "content_edit" %}</a>
                 {% endif %}
                 {% if toolbar.show_list %}
-                <a class="btn btn-info" href="{{instance.get_absolute_url}}list"><i class="icon-list"></i> Contents</a>
+                <a class="btn btn-info" href="{{instance.get_absolute_url}}list"><i class="icon-list"></i> {% trans "content_list" %}</a>
                 {% endif %}
                 <!-- make the button toggle -->
                 {% if toolbar.show_view %}
-                <a class="btn btn-info" href="{{instance.get_absolute_url}}"><i class="icon-eye-open"></i> View</a>
+                <a class="btn btn-info" href="{{instance.get_absolute_url}}"><i class="icon-eye-open"></i> {% trans "content_view" </a>
                 {% endif %}
               </div>
           </li>
@@ -75,7 +76,7 @@
       {% if toolbar.show_settings %}
       <div class="pull-right">
         <ul class="nav">
-          <li><div><a class="btn btn-mini" href="{% url "wheel_config" %}"><i class="icon-wrench"></i> Settings</a></div></li>
+          <li><div><a class="btn btn-mini" href="{% url "wheel_config" %}"><i class="icon-wrench"></i> {% trans "site_settings" %}</a></div></li>
         </ul>
       </div>
       {% endif %}
@@ -87,10 +88,10 @@
                  data-toggle="dropdown">{{user.email}} <b class="caret"></b>
               </a>
               <ul class="dropdown-menu" role="menu">
-                {# <li><a href="/"><i class="icon-cog"></i> Preferences</a></li> #}
-                <li><a href="{% url "userena_profile_detail" user.username %}"><i class="icon-user"></i> Profile</a></li>
+                {# <li><a href="/"><i class="icon-cog"></i> {% trans "user_preferences" %}</a></li> #}
+                <li><a href="{% url "userena_profile_detail" user.username %}"><i class="icon-user"></i> {% trans "user_profile" %}</a></li>
                 <li class="divider"></li>
-                <li><a href="{% url "userena_signout" %}"><i class="icon-off"></i> Logout</a></li>
+                <li><a href="{% url "userena_signout" %}"><i class="icon-off"></i> {% trans "user_logout" %}</a></li>
               </ul>
             </div>
           </li>
@@ -103,14 +104,14 @@
             <li>
               <div class="btn-group dropup">
                 <a href="/" data-target="#" class="btn btn-mini dropdown-toggle"
-                   data-toggle="dropdown"> Current language: {{translations.active.language}} <b class="caret"></b>
+                   data-toggle="dropdown"> {% trans "lang_current_language" %}: {{translations.active.language}} <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu" role="menu">
                   {% for translation in translations.translated %}
-                    <li><a href="{{translation.action_url}}"><i class="icon-flag"></i> Switch to {{translation.language}}</a></li>
+                    <li><a href="{{translation.action_url}}"><i class="icon-flag"></i> {% trans "lang_switch_to" %} {{translation.language}}</a></li>
                   {% endfor %}
                   {% for language in translations.untranslated %}
-                    <li><a href="{{language.action_url}}"><i class="icon-globe"></i> Create translation {{language.language}}</a></li>
+                    <li><a href="{{language.action_url}}"><i class="icon-globe"></i> {% trans "lang_create_trans" %} {{language.language}}</a></li>
                   {% endfor %}
                 </ul>
               </div>
