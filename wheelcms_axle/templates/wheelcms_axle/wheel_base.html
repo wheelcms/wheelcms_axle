@@ -6,47 +6,39 @@
 {% load staticfiles %}
 
 {% block htmltitle %}
-<title>{{page_title}}</title>
+  <title>{{page_title}}</title>
 {% endblock %}
-{% block bootstrapcss %}
-    {{config.themeinfo.css|safe}}
-    <link rel="stylesheet" href="{% static "css/bootstrap-responsive.min.css" %}" media="screen, projection, print"/>
-    <link rel="stylesheet" href="{% static "css/twool-bootstrap.css" %}" media="screen, projection, print"/>
-    <style type="text/css">
-        body {
-            padding-top: 60px;
-            padding-bottom: 40px;
-        }
-    </style>
 
+{% block beforebootstrapcss %}
+  {{config.themeinfo.css|safe}}
 {% endblock %}
 
 {% block bootstrapjs %}
-    <script src="{% static "js/jquery-1.7.min.js" %}"></script>
-    {{config.themeinfo.js|safe}}
+  {{config.themeinfo.js|safe}}
 {% endblock %}
 
 {% block base_stylesheets %}
-    <link rel="stylesheet" href="{% static "css/wheel.css" %}" media="screen, projection, print"/>
-    <link rel="stylesheet" href="{% static "css/wheel_content.css" %}" media="screen, projection, print"/>
+  <link rel="stylesheet" href="{% static "css/wheel.css" %}" media="screen, projection, print"/>
+  <link rel="stylesheet" href="{% static "css/wheel_content.css" %}" media="screen, projection, print"/>
 {% endblock %}
 
 {% block meta_head %}
-    <!-- {{settings.BUILD}} {{settings.BRANCH}} {{settings.VERSION }} -->
-    <meta name="generator" content="WheelCMS {{settings.VERSION}}">
+  <!-- {{settings.BUILD}} {{settings.BRANCH}} {{settings.VERSION }} -->
+  <meta name="generator" content="WheelCMS {{settings.VERSION}}">
 
-   {% fragments "head" %}
+  {% fragments "head" %}
 {% endblock %}
+
 {% block extra_head %}
 
-{{config.head|safe}}
+  {{config.head|safe}}
 
   {% if config.analytics.strip %}
   <script type="text/javascript">
     var _gaq = _gaq || [];
     _gaq.push(['_setAccount', '{{config.analytics}}']);
     _gaq.push(['_trackPageview']);
-  
+
     (function() {
       var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
       ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
@@ -72,79 +64,78 @@
     });
     </script>
   {% endif %}
+{% endblock %} {# extra_head #}
+
+{% block topbar_brand %}
+  <a class="brand" href="{{root.get_absolute_url}}">{{config.title}}</a>
 {% endblock %}
 
-{% block topbar %}
-{% block logo %}
-<a class="brand" href="{{root.get_absolute_url}}">{{config.title}}</a>
-{% endblock %}
-
-<div class="nav-collapse">
+{% block leftnav %}
   {% topnav %}
-  {% block searchnav %}
-  <form class="navbar-search pull-right" action="{% url "haystack_search" %}">
+{% endblock %}
+
+{% block searchnav %}
+  <form class="navbar-form navbar-right" action="{% url "haystack_search" %}">
+    <div class="form-group">
     <input type="text" name="q" class="search-query span3" placeholder="Search">
     <div class="icon-search"></div>
+    </div>
   </form>
-  {% endblock %}
-  <div class="pull-right">
-    {% block rightnav %}
-    <ul class="nav">
-      <li><a href="{{root.get_absolute_url}}+contact">Contact</a></li>
-    </ul>
-    {% endblock %}
-    {% block right_signin_nav %}
+{% endblock %} {# searchnav #}
+
+{% block rightnav %}
+  {% block right_signin_nav %}
     {% if not user.is_authenticated %}
-    <ul class="nav">
-      {% if settings.ALLOW_SIGNUP %}
-      <li><a href="{% url "userena_signup" %}">Register</a></li>
-      {% endif %}
-      {# issue 576 - do not redirect to logout page #}
-      {% if not is_logout_url %}
-      <li><a href="{% url "userena_signin" %}?next={{request.path}}">Signin</a></li>
-      {% else %}
-      <li><a href="{% url "userena_signin" %}?next=/">Signin</a></li>
-      {% endif %}
-
-    </ul>
-    {% else %}
-    <ul class="nav">
-      <li class="dropdown">
-          <a href="/" data-target="#" class="dropdown-toggle" data-toggle="dropdown">{{user.email}} <b class="caret"></b></a>
-          <ul class="dropdown-menu" role="menu">
-            {# <li><a href="{{root.get_absolute_url}}"><i class="icon-cog"></i> Preferences</a></li> #}
-
-            <li><a href="{% url "userena_profile_detail" user.username %}"><i class="icon-user"></i> Profile</a></li>
-            <li class="divider"></li>
-            <li><a href="{% url "userena_signout" %}"><i class="icon-off"></i> Logout</a></li>
-          </ul>
-      </li>
-    </ul>
-    {% endif %}
-    {% block language_selector %}
-      {# language selection #}
-      {% with langdata=languages %}
-        {% if langdata %}
-        <ul class="nav">
-          <li class="dropdown">
-              <a href="/" data-target="#" class="dropdown-toggle" data-toggle="dropdown"> {% trans "language_switch_language" %}: {{ langdata.current.label }} <b class="caret"></b></a>
-              <ul class="dropdown-menu" role="menu">
-                 {% for lang in langdata.languages %}
-                   {% if not lang.is_current %}
-                     <li><a href="{{lang.url}}">{{lang.label}}</a>
-                   {% endif %}
-                 {% endfor %}
-              </ul>
-          </li>
-        </ul>
+      <ul class="nav navbar-nav navbar-right">
+        {% if settings.ALLOW_SIGNUP %}
+        <li><a href="{% url "userena_signup" %}">Register</a></li>
         {% endif %}
-      {% endwith %}
-    {% endblock %}
+        {# issue 576 - do not redirect to logout page #}
+        {% if not is_logout_url %}
+        <li><a href="{% url "userena_signin" %}?next={{request.path}}">Signin</a></li>
+        {% else %}
+        <li><a href="{% url "userena_signin" %}?next=/">Signin</a></li>
+        {% endif %}
+      </ul>
+    {% else %}
+      <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown">
+            <a href="/" data-target="#" class="dropdown-toggle" data-toggle="dropdown">{{user.email}} <b class="caret"></b></a>
+            <ul class="dropdown-menu" role="menu">
+              {# <li><a href="{{root.get_absolute_url}}"><i class="icon-cog"></i> Preferences</a></li> #}
+  
+              <li><a href="{% url "userena_profile_detail" user.username %}"><i class="icon-user"></i> Profile</a></li>
+              <li class="divider"></li>
+              <li><a href="{% url "userena_signout" %}"><i class="icon-off"></i> Logout</a></li>
+            </ul>
+        </li>
+      </ul>
+    {% endif %}
+  {% endblock %} {# right_signin_nav #}
+  {% block language_selector %}
+    {# language selection #}
+    {% with langdata=languages %}
+      {% if langdata %}
+      <ul class="nav navbar-nav navbar-right">
+        <li class="dropdown">
+            <a href="/" data-target="#" class="dropdown-toggle" data-toggle="dropdown"> {% trans "language_switch_language" %}: {{ langdata.current.label }} <b class="caret"></b></a>
+            <ul class="dropdown-menu" role="menu">
+               {% for lang in langdata.languages %}
+                 {% if not lang.is_current %}
+                   <li><a href="{{lang.url}}">{{lang.label}}</a>
+                 {% endif %}
+               {% endfor %}
+            </ul>
+        </li>
+      </ul>
+      {% endif %}
+    {% endwith %}
+  {% endblock %} {# language_selector #}
+  <ul class="nav navbar-nav navbar-right">
+    <li><a href="{{root.get_absolute_url}}+contact">Contact</a></li>
+  </ul>
 
-    {% endblock %}
-  </div>
-</div>
-{% endblock %}
+{% endblock %} {# rightnav #}
 
 {% block base_javascript %}
     <script src="{% static "js/jquery-ui-1.9.2.custom.min.js" %}"></script>
