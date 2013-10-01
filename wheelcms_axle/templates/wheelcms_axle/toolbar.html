@@ -3,20 +3,20 @@
 {% load staticfiles %}
 
 {% if toolbar %}
-<div class="navbar navbar-fixed-bottom">
-  <div class="navbar-inner">
-    <div class="container-fluid">
+<div class="navbar navbar-fixed-bottom navbar-inverse">
+    <div class="container">
       <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </a>
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <div class="navbar-brand" >{% trans "toolbar_brand" %}</div>
+      </div>
 
-      <a class="brand" href="#">{% trans "toolbar_brand" %}</a>
-
-      <div class="nav-collapse collapse">
-        <ul class="nav">
+      <div class="navbar-collapse collapse">
+        <ul class="nav navbar-nav">
           <li>
               {% if toolbar.show_attach %}
               <div class="btn-group dropup">
@@ -30,7 +30,8 @@
                   {% endfor %}
                 </ul>
               </div>
-              {% endif %}
+              {% endif %} {# show_attach #}
+
               <div class="btn-group dropup">
               {% if toolbar.show_create %}
                 {% with primary=toolbar.primary %}
@@ -67,67 +68,72 @@
                 {% endif %}
                 <!-- make the button toggle -->
                 {% if toolbar.show_view %}
-                <a class="btn btn-info" href="{{instance.get_absolute_url}}"><i class="icon-eye-open"></i> {% trans "content_view" </a>
+                <a class="btn btn-info" href="{{instance.get_absolute_url}}"><i class="icon-eye-open"></i> {% trans "content_view" %} </a>
                 {% endif %}
               </div>
           </li>
         </ul>
-      </div>
       {% if toolbar.show_settings %}
-      <div class="pull-right">
-        <ul class="nav">
-          <li><div><a class="btn btn-mini" href="{% url "wheel_config" %}"><i class="icon-wrench"></i> {% trans "site_settings" %}</a></div></li>
-        </ul>
-      </div>
+      <ul class="nav navbar-nav navbar-right">
+        <li><div><a class="btn btn-mini" href="{% url "wheel_config" %}"><i class="icon-wrench"></i> {% trans "site_settings" %}</a></div></li>
+      </ul>
       {% endif %}
-      <div class="pull-right">
-        <ul class="nav">
-          <li>
-            <div class="btn-group dropup">
-              <a href="/" data-target="#" class="btn btn-mini dropdown-toggle"
-                 data-toggle="dropdown">{{user.email}} <b class="caret"></b>
-              </a>
-              <ul class="dropdown-menu" role="menu">
-                {# <li><a href="/"><i class="icon-cog"></i> {% trans "user_preferences" %}</a></li> #}
-                <li><a href="{% url "userena_profile_detail" user.username %}"><i class="icon-user"></i> {% trans "user_profile" %}</a></li>
-                <li class="divider"></li>
-                <li><a href="{% url "userena_signout" %}"><i class="icon-off"></i> {% trans "user_logout" %}</a></li>
-              </ul>
-            </div>
-          </li>
-        </ul>
-      </div>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+          <div class="btn-group dropup">
+            <a href="/" data-target="#" class="btn btn-mini dropdown-toggle"
+               data-toggle="dropdown">{{user.email}} <b class="caret"></b>
+            </a>
+            <ul class="dropdown-menu" role="menu">
+              {# <li><a href="/"><i class="icon-cog"></i> {% trans "user_preferences" %}</a></li> #}
+              <li><a href="{% url "userena_profile_detail" user.username %}"><i class="icon-user"></i> {% trans "user_profile" %}</a></li>
+              <li class="divider"></li>
+              <li><a href="{% url "userena_signout" %}"><i class="icon-off"></i> {% trans "user_logout" %}</a></li>
+            </ul>
+          </div>
+        </li>
+      </ul>
       {% with translations=toolbar.translations %}
         {% if translations %}
-        <div class="pull-right">
-          <ul class="nav">
+          <ul class="nav navbar-nav navbar-right">
             <li>
               <div class="btn-group dropup">
                 <a href="/" data-target="#" class="btn btn-mini dropdown-toggle"
-                   data-toggle="dropdown"> {% trans "lang_current_language" %}: {{translations.active.language}} <b class="caret"></b>
+                   data-toggle="dropdown">
+                    {% trans "lang_current_language" %}: {{translations.active.language}} 
+                    <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu" role="menu">
                   {% for translation in translations.translated %}
-                    <li><a href="{{translation.action_url}}"><i class="icon-flag"></i> {% trans "lang_switch_to" %} {{translation.language}}</a></li>
+                    <li><a href="{{translation.action_url}}">
+                          <i class="icon-flag"></i>
+                          {% trans "lang_switch_to" %} {{translation.language}}
+                        </a>
+                    </li>
                   {% endfor %}
                   {% for language in translations.untranslated %}
-                    <li><a href="{{language.action_url}}"><i class="icon-globe"></i> {% trans "lang_create_trans" %} {{language.language}}</a></li>
+                    <li><a href="{{language.action_url}}">
+                          <i class="icon-globe"></i>
+                          {% trans "lang_create_trans" %} {{language.language}}
+                        </a>
+                    </li>
                   {% endfor %}
                 </ul>
               </div>
             </li>
           </ul>
-        </div>
         {% endif %}
       {% endwith %}
       {% with worklist=toolbar.worklist clipboard=toolbar.clipboard %}
-      <div class="pull-right">
-        <ul class="nav">
+        <ul class="nav navbar-nav navbar-right">
           <li>
            {% if worklist.count %}
            <div class="btn-group dropup">
-             <a class="badge badge-important" title="{{worklist.count}} item{{worklist.count|pluralize}} to be reviewed"
-                data-toggle="dropdown"><img src="{% static "img/icons/inbox_document.png" %}"></i> {{worklist.count}}</a>
+             <a class="badge badge-important"
+                title="{{worklist.count}} item{{worklist.count|pluralize}} to be reviewed"
+                data-toggle="dropdown">
+                 <img src="{% static "img/icons/inbox_document.png" %}"></i> {{worklist.count}}
+             </a>
              <ul class="dropdown-menu right">
                 {% for item in worklist.items %}
                 <li><a href="{{item.get_absolute_url}}edit#collapseadvanced">{{item.title}}</a></li>
@@ -137,9 +143,15 @@
            {% endif %}
            {% if clipboard.count %}
            <div class="btn-group dropup">
-             <a class="badge badge-info" title="{{clipboard.count}} item{{clipboard.count|pluralize}} in clipboard" data-toggle="dropdown"><img src="{% static "img/icons/paste_plain.png" %}"></i> {{clipboard.count}}</a>
+             <a class="badge badge-info"
+                title="{{clipboard.count}} item{{clipboard.count|pluralize}} in clipboard"
+                data-toggle="dropdown">
+                <img src="{% static "img/icons/paste_plain.png" %}"></i> {{clipboard.count}}
+             </a>
              <ul class="dropdown-menu right">
-                <li class="disabled"><a>{{clipboard.count}} item(s) to be {{clipboard.copy|yesno:"copied,moved"}}</a></li>
+                <li class="disabled">
+                  <a>{{clipboard.count}} item(s) to be {{clipboard.copy|yesno:"copied,moved"}}</a>
+                </li>
                 <li class="divider"></li>
                 {% for item in clipboard.items %}
                 <li><a href="{{item.get_absolute_url}}edit#collapseadvanced">{{item.title}}</a></li>
@@ -150,9 +162,8 @@
            {% endif %}
          </li>
         </ul>
-      </div>
       {% endwith %}
+      </div> {# navbar-collapse #}
     </div>
-  </div>
 </div>
 {% endif %}
