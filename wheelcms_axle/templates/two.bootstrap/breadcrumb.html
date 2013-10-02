@@ -1,5 +1,5 @@
 <div class="row">
-  <div class="span12">
+  <div class="col-lg-12">
     {% if breadcrumb %}
     <ul class="breadcrumb">
       {% for crumb in breadcrumb %}
@@ -10,7 +10,7 @@
         {{crumb.0}}
         {% endif %}
         {% if not forloop.last %}
-        <span class="divider">/</span>
+        <span class="divider"></span>
         {% endif %}
       </li>
       {% endfor %}
