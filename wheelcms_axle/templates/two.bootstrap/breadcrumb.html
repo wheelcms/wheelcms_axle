@@ -1,7 +1,7 @@
 <div class="row">
   <div class="col-lg-12">
     {% if breadcrumb %}
-    <ul class="breadcrumb">
+    <ol class="breadcrumb">
       {% for crumb in breadcrumb %}
       <li {% if forloop.last %}class="active"{% endif %}>
         {% if crumb.1 %}
@@ -9,18 +9,15 @@
         {% else %}
         {{crumb.0}}
         {% endif %}
-        {% if not forloop.last %}
-        <span class="divider"></span>
-        {% endif %}
       </li>
       {% endfor %}
-    </ul>
+    </ol>
     {% else %}
-    <ul class="breadcrumb">
+    <ol class="breadcrumb">
         <li>
             <a href="{{root.get_absolute_url}}">Home</a>
         </li>
-    </ul>
+    </ol>
     {% endif %}
   </div>
 </div>
