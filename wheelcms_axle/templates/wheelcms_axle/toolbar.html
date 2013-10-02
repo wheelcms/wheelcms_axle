@@ -19,7 +19,7 @@
         <ul class="nav navbar-nav">
           <li>
               {% if toolbar.show_attach %}
-              <div class="btn-group dropup">
+              <div class="btn-group dropup navbar-btn">
                 <a href="#" class="btn btn-warning dropdown-toggle" data-toggle="dropdown">
                   <i class="glyphicon glyphicon-magnet"></i> {% trans "content_attach" %}
                   <b class="caret"></b>
@@ -32,7 +32,7 @@
               </div>
               {% endif %} {# show_attach #}
 
-              <div class="btn-group dropup">
+              <div class="btn-group dropup navbar-btn">
               {% if toolbar.show_create %}
                 {% with primary=toolbar.primary %}
                   {% if primary %}
@@ -75,13 +75,13 @@
         </ul>
       {% if toolbar.show_settings %}
       <ul class="nav navbar-nav navbar-right">
-        <li><div><a class="btn btn-mini" href="{% url "wheel_config" %}"><i class="glyphicon glyphicon-wrench"></i> {% trans "site_settings" %}</a></div></li>
+        <li><div><a class="btn btn-sm btn-default navbar-btn" href="{% url "wheel_config" %}"><i class="glyphicon glyphicon-wrench"></i> {% trans "site_settings" %}</a></div></li>
       </ul>
       {% endif %}
       <ul class="nav navbar-nav navbar-right">
         <li>
-          <div class="btn-group dropup">
-            <a href="/" data-target="#" class="btn btn-mini dropdown-toggle"
+          <div class="btn-group dropup navbar-btn">
+            <a href="/" data-target="#" class="btn btn-sm btn-default dropdown-toggle"
                data-toggle="dropdown">{{user.email}} <b class="caret"></b>
             </a>
             <ul class="dropdown-menu" role="menu">
@@ -97,8 +97,8 @@
         {% if translations %}
           <ul class="nav navbar-nav navbar-right">
             <li>
-              <div class="btn-group dropup">
-                <a href="/" data-target="#" class="btn btn-mini dropdown-toggle"
+              <div class="btn-group dropup navbar-btn">
+                <a href="/" data-target="#" class="btn btn-sm btn-default dropdown-toggle"
                    data-toggle="dropdown">
                     {% trans "lang_current_language" %}: {{translations.active.language}} 
                     <b class="caret"></b>
@@ -128,7 +128,7 @@
         <ul class="nav navbar-nav navbar-right">
           <li>
            {% if worklist.count %}
-           <div class="btn-group dropup">
+           <div class="btn-group dropup navbar-btn">
              <a class="badge badge-important"
                 title="{{worklist.count}} item{{worklist.count|pluralize}} to be reviewed"
                 data-toggle="dropdown">
@@ -142,7 +142,7 @@
            </div>
            {% endif %}
            {% if clipboard.count %}
-           <div class="btn-group dropup">
+           <div class="btn-group dropup navbar-btn">
              <a class="badge badge-info"
                 title="{{clipboard.count}} item{{clipboard.count|pluralize}} in clipboard"
                 data-toggle="dropdown">
