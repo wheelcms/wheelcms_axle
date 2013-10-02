@@ -21,7 +21,7 @@
               {% if toolbar.show_attach %}
               <div class="btn-group dropup">
                 <a href="#" class="btn btn-warning dropdown-toggle" data-toggle="dropdown">
-                  <i class="icon-magnet"></i> {% trans "content_attach" %}
+                  <i class="glyphicon glyphicon-magnet"></i> {% trans "content_attach" %}
                   <b class="caret"></b>
                 </a>
                 <ul class="dropdown-menu">
@@ -38,7 +38,7 @@
                   {% if primary %}
                   <a class="btn btn-info"
                      href="{{instance.get_absolute_url}}create?type={{primary.name}}">
-                    <i class="icon-plus-sign"></i>
+                    <i class="glyphicon glyphicon-plus-sign"></i>
                     {% trans "content_create" %} {{primary.title}}</a>
                   <button class="btn btn-info dropdown-toggle"
                           data-toggle="dropdown">
@@ -46,7 +46,7 @@
                   </button>
                   {% else %}
                   <a href="#" class="btn btn-info" data-toggle="dropdown">
-                    <i class="icon-plus-sign"></i> {% trans "content_create" %}
+                    <i class="glyphicon glyphicon-plus-sign"></i> {% trans "content_create" %}
                     <b class="caret"></b>
                   </a>
                   {% endif %}
@@ -58,24 +58,24 @@
                 </ul>
                 {% endif %}
                 {% if toolbar.show_translate %}
-                <a class="btn btn-info" href="{{instance.get_absolute_url}}edit"><i class="icon-edit"></i> {% trans "content_translate" %}</a>
+                <a class="btn btn-info" href="{{instance.get_absolute_url}}edit"><i class="glyphicon glyphicon-edit"></i> {% trans "content_translate" %}</a>
                 {% endif %}
                 {% if toolbar.show_update %}
-                <a class="btn btn-info" href="{{instance.get_absolute_url}}edit"><i class="icon-edit"></i> {% trans "content_edit" %}</a>
+                <a class="btn btn-info" href="{{instance.get_absolute_url}}edit"><i class="glyphicon glyphicon-edit"></i> {% trans "content_edit" %}</a>
                 {% endif %}
                 {% if toolbar.show_list %}
-                <a class="btn btn-info" href="{{instance.get_absolute_url}}list"><i class="icon-list"></i> {% trans "content_list" %}</a>
+                <a class="btn btn-info" href="{{instance.get_absolute_url}}list"><i class="glyphicon glyphicon-list"></i> {% trans "content_list" %}</a>
                 {% endif %}
                 <!-- make the button toggle -->
                 {% if toolbar.show_view %}
-                <a class="btn btn-info" href="{{instance.get_absolute_url}}"><i class="icon-eye-open"></i> {% trans "content_view" %} </a>
+                <a class="btn btn-info" href="{{instance.get_absolute_url}}"><i class="glyphicon glyphicon-eye-open"></i> {% trans "content_view" %} </a>
                 {% endif %}
               </div>
           </li>
         </ul>
       {% if toolbar.show_settings %}
       <ul class="nav navbar-nav navbar-right">
-        <li><div><a class="btn btn-mini" href="{% url "wheel_config" %}"><i class="icon-wrench"></i> {% trans "site_settings" %}</a></div></li>
+        <li><div><a class="btn btn-mini" href="{% url "wheel_config" %}"><i class="glyphicon glyphicon-wrench"></i> {% trans "site_settings" %}</a></div></li>
       </ul>
       {% endif %}
       <ul class="nav navbar-nav navbar-right">
@@ -85,10 +85,10 @@
                data-toggle="dropdown">{{user.email}} <b class="caret"></b>
             </a>
             <ul class="dropdown-menu" role="menu">
-              {# <li><a href="/"><i class="icon-cog"></i> {% trans "user_preferences" %}</a></li> #}
-              <li><a href="{% url "userena_profile_detail" user.username %}"><i class="icon-user"></i> {% trans "user_profile" %}</a></li>
+              {# <li><a href="/"><i class="glyphicon glyphicon-cog"></i> {% trans "user_preferences" %}</a></li> #}
+              <li><a href="{% url "userena_profile_detail" user.username %}"><i class="glyphicon glyphicon-user"></i> {% trans "user_profile" %}</a></li>
               <li class="divider"></li>
-              <li><a href="{% url "userena_signout" %}"><i class="icon-off"></i> {% trans "user_logout" %}</a></li>
+              <li><a href="{% url "userena_signout" %}"><i class="glyphicon glyphicon-off"></i> {% trans "user_logout" %}</a></li>
             </ul>
           </div>
         </li>
@@ -106,14 +106,14 @@
                 <ul class="dropdown-menu" role="menu">
                   {% for translation in translations.translated %}
                     <li><a href="{{translation.action_url}}">
-                          <i class="icon-flag"></i>
+                          <i class="glyphicon glyphicon-flag"></i>
                           {% trans "lang_switch_to" %} {{translation.language}}
                         </a>
                     </li>
                   {% endfor %}
                   {% for language in translations.untranslated %}
                     <li><a href="{{language.action_url}}">
-                          <i class="icon-globe"></i>
+                          <i class="glyphicon glyphicon-globe"></i>
                           {% trans "lang_create_trans" %} {{language.language}}
                         </a>
                     </li>
