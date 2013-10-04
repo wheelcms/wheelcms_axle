@@ -2,7 +2,6 @@
 <ul class="breadcrumb">
   {% for crumb in crumbs %}
   <li><a class="crumb" data-url="{{crumb.path}}" href="#">{{crumb.title}}</a>
-  {% if not forloop.last %}<span class="divider">/</span>{% endif %}
   </li>
   {% endfor %}
 </ul>
