@@ -17,11 +17,6 @@
   {{config.themeinfo.js|safe}}
 {% endblock %}
 
-{% block base_stylesheets %}
-  <link rel="stylesheet" href="{% static "css/wheel.css" %}" media="screen, projection, print"/>
-  <link rel="stylesheet" href="{% static "css/wheel_content.css" %}" media="screen, projection, print"/>
-{% endblock %}
-
 {% block meta_head %}
   <!-- {{settings.BUILD}} {{settings.BRANCH}} {{settings.VERSION }} -->
   <meta name="generator" content="WheelCMS {{settings.VERSION}}">
@@ -29,41 +24,23 @@
   {% fragments "head" %}
 {% endblock %}
 
+{% block base_stylesheets %}
+    {{block.super}}
+    {% fragments "base_stylesheets" %}
+{% endblock %}
+
 {% block extra_head %}
 
   {{config.head|safe}}
 
-  {% if config.analytics.strip %}
-  <script type="text/javascript">
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', '{{config.analytics}}']);
-    _gaq.push(['_trackPageview']);
+  <script type="text/javascript" encoding="utf-8">
+    delayed_confs = [];
 
-    (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
+    function tinyMCE_init_delayed(conf) {
+        delayed_confs.push(conf);
+    }
+  {% fragments "head_javascript" %}
   </script>
-  <script type="text/javascript">
-    {# this script will have no effect after a submit where the content has not been saved, for example in case of a validation error #}
-    $(document).ready(function() {
-      var request_leave = false;
-      $("form.checksave :input").change(function() {
-            request_leave = true;
-      });
-      $("form.checksave .canleave").click(function() {
-            request_leave = false;
-      });
-      $(window).on('beforeunload',
-          function() {
-              if(request_leave) {
-                return '{% trans "unsaved_changes_js_warning" %}';
-              }
-          } );
-    });
-    </script>
-  {% endif %}
 {% endblock %} {# extra_head #}
 
 {% block topbar_brand %}
@@ -139,6 +116,44 @@
   <script src="{% static "js/jquery.cookie.1.3.1.js" %}"></script>
   <script src="{% static "js/wheel.js" %}"></script>
   <script type="text/javascript" src="{% static "tiny_mce/tiny_mce.js" %}"></script>
+  {% if config.analytics.strip %}
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', '{{config.analytics}}']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+    <script type="text/javascript">
+      {# this script will have no effect after a submit where the content has not been saved, for example in case of a validation error #}
+      $(document).ready(function() {
+        var request_leave = false;
+        $("form.checksave :input").change(function() {
+              request_leave = true;
+        });
+        $("form.checksave .canleave").click(function() {
+              request_leave = false;
+        });
+        $(window).on('beforeunload',
+            function() {
+                if(request_leave) {
+                  return '{% trans "unsaved_changes_js_warning" %}';
+                }
+            } );
+      });
+      $(document).ready(function () {
+          for(i=0; i < delayed_confs.length; i++) {
+              tinyMCE.init(delayed_confs[i]);
+          }
+      });
+    </script>
+  {% endif %}
+  {% fragments "javascript" %}
+
 {% endblock %}
 
 {% block body_class %}{{body_class}}{%endblock %}

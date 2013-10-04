@@ -1,17 +1,16 @@
 {# base template that includes editing controls #}
 {% extends "wheelcms_axle/base.html" %}
 {% load staticfiles %}
+{% load fragments %}
 
-{% block base_stylesheets  %}
-{{ block.super }}
 
+{% block fragments %}
+{{block.super}}
+{% fragment "base_stylesheets"  %}
 <link rel="stylesheet" href="{% static "tagmanager/bootstrap-tagmanager.css" %}" media="screen, projection, print"/>
 <link rel="stylesheet" href="{% static "css/upload/jquery.fileupload-ui.css" %}" media="screen, projection, print"/>
-{% endblock %}
-
-{% block javascript %}
-
-{{ block.super }}
+{% endfragment %}
+{% fragment "javascript" %}
 
 <script src="{% static "js/upload/jquery.ui.widget.js" %}"></script>
 <script src="{% static "js/upload/load-image.min.js" %}"></script>
@@ -359,7 +358,7 @@
             /*
              * cliking an entry in a panel should load the subpanel/content
              */
-            $("tr.entry").live('click', function() {
+            $("tr.entry").on('click', function() {
                 var path = $(this).data('url');
                 var panelid = parseInt($(this).parents("div.panel").data('panel'));
                 load_panels(path, panelid);
@@ -374,7 +373,7 @@
             /*
              * clicking a path component in the breadcrumb should take you there
              */
-            $("a.crumb").live('click', function() {
+            $("a.crumb").on('click', function() {
                 var path = $(this).data('url');
                 var panelid = parseInt($(this).parents("div.panel").data('panel'));
                 load_panels(path, panelid);
@@ -538,8 +537,8 @@
     });
 </script>
 
+{% endfragment %}
 {% endblock %}
-
 {% block base_main %}
 
 <!-- Button to trigger modal -->
@@ -664,5 +663,4 @@
 
 {{ block.super }}
 
-{% block base_main_edit %} {# block that automatically includes controls #} {% endblock %}
 {% endblock %}
