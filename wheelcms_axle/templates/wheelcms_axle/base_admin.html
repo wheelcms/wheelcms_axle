@@ -157,9 +157,20 @@
         var initialized = false;
         var current_tab = "browse_local";
 
-
+        function fix_sizes() {
+            /*
+             * Make sure the "panels" div takes up exactly the remaining space.
+             * Can this be done in css? XXX
+             */
+            var total = $("#browseModal .modal-body").height();
+            var header = $("#browsecrumbs").outerHeight(true);
+            var tabs = $("#browseModal .nav-tabs").outerHeight(true);
+            var remainder = total - header - tabs;
+            $("#panels").height(remainder);
+        }
 
         function modal_shown() {
+            fix_sizes();
         }
 
         function load_panels(path, panelid) {
