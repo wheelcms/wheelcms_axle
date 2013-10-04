@@ -158,29 +158,8 @@
         var current_tab = "browse_local";
 
 
-        function fix_sizes() {
-            /*
-             * Make sure the "panels" div takes up exactly the remaining space.
-             * Can this be done in css? XXX
-             */
-            var total = $("#browseModal .modal-body").height();
-            var header = $("#browsecrumbs").outerHeight(true);
-            var tabs = $("#browseModal .nav-tabs").outerHeight(true);
-            var remainder = total - header - tabs;
-            $("#panels").height(remainder);
-
-            var iframe = $("#external_iframe");
-
-            // XXX -10 is a hack - iframe scrollbars?
-            iframe.outerHeight(total-tabs-10);
-            iframe.outerWidth(iframe.parent().innerWidth());
-
-            $("#browse_external_image").height(total-tabs);
-
-        }
 
         function modal_shown() {
-            fix_sizes()
         }
 
         function load_panels(path, panelid) {
@@ -213,7 +192,6 @@
                 panel.html(paneldata);
             }
             $(".crumbcontainer").html(crumbs);
-            setTimeout(fix_sizes, 250);
             // find the current selection and see if it's selectable
             select_state($("tr[data-url='" + path + "']").data("selectable") == "yes");
         }
@@ -288,7 +266,6 @@
 
             select_state(false);
 
-            setTimeout(fix_sizes, 250);
 
             if(initialized) {
                 return;
@@ -299,11 +276,11 @@
             /*
              * stuff to do once the modal actually shows
              */
-            modal.on('shown', modal_shown);
+            modal.on('shown.bs.modal', modal_shown);
             /*
              * handle tab changes
              */
-            modal.find('a[data-toggle="tab"]').on('shown', tab_selected);
+            modal.find('a[data-toggle="tab"]').on('shown.bs.tab', tab_selected);
 
             /*
              * Track changes on the external link input so we can
@@ -537,7 +514,7 @@
                  blinkBGColor_1: '#FFFF9C',
                  blinkBGColor_2: '#CDE69C'});
         });
-        //$("#browseModal").modal("show");
+        // $("#browseModal").modal("show");
     });
 </script>
 
@@ -593,7 +570,7 @@
                 </form>
               </div>
               <div class="col-sm-6">
-                <iframe width="90%" id="external_iframe" src=""></iframe>
+                <iframe width="100%" id="external_iframe" src=""></iframe>
               </div>
             </div>
           </div>
@@ -613,7 +590,7 @@
                 </form>
               </div>
               <div class="col-sm-6">
-                <img id="external_image" src="{% static 'img/preview.png' %}" class="img-polaroid">
+                <img id="external_image" width="100%" src="{% static 'img/preview.png' %}" class="img-polaroid">
               </div>
             </div>
           </div>
@@ -628,7 +605,8 @@
  </div> <!-- modal-dialog -->
 </div>
 
-<div id="uploadModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
+<div id="uploadModal" class="modal fade" tabindex="-1" role="dialog"
+     aria-labelledby="uploadModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
