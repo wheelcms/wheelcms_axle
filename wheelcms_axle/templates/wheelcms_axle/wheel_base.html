@@ -9,8 +9,8 @@
   <title>{{page_title}}</title>
 {% endblock %}
 
-{% block beforebootstrapcss %}
-  {{xconfig.themeinfo.css|safe}} {# XXX temp uit #}
+{% block bootstrapcss %}
+  {{config.themeinfo.css|safe}}
 {% endblock %}
 
 {% block bootstrapjs %}
