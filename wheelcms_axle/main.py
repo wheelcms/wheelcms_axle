@@ -734,11 +734,6 @@ class MainHandler(WheelRESTHandler):
         return self.redirect(self.instance.get_absolute_url() + 'list',
                              info="%d item(s) deleted" % count)
 
-    def handle_popup(self):
-        """ popup experiments - #524 """
-        return self.template("wheelcms_axle/popup.html",
-                             original="/data/powerful-editing")
-
     @applyrequest
     def handle_panel_selection_details(self, path, type, klass="", title="",
                                        target="", download=False,
