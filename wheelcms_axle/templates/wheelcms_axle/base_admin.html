@@ -55,7 +55,7 @@
             var upload = null;
 
             var fileinput = $("#fileupload input[type=file]");
-            fileinput.replaceWith('<div id="filepreview" ></div><span class="btn btn-success fileinput-button"><i class="icon-plus icon-white"></i><span id="filelabel">Add file</span><input id="' + fileinput.attr('id') + '" type="file" name="' + fileinput.attr('name') + '"></span>');
+            fileinput.replaceWith('<div id="filepreview" ></div><span class="btn btn-success fileinput-button"><i class="glyphicon glyphicon-plus icon-white"></i><span id="filelabel">Add file</span><input id="' + fileinput.attr('id') + '" type="file" name="' + fileinput.attr('name') + '"></span>');
             //var preview = $("#fileupload input[type=file]").parent(".controls")
             $('#fileupload').fileupload({
                 url: 'fileup',
@@ -573,7 +573,7 @@
                   <label class="control-label" for="external_url">URL</label>
                   <div class="input-append">
                     <input id="external_url" type="text" name="url" maxlength="256" />
-                    <button id="external_url_preview" class="btn">Preview <i class="icon-chevron-right"></i></button>
+                    <button id="external_url_preview" class="btn">Preview <i class="glyphicon glyphicon-chevron-right"></i></button>
                   </div>
                   <div class="help-block">
                     Not all sites (e.g. facebook) may support preview/embedding
@@ -593,7 +593,7 @@
                   <label class="control-label" for="external_image_url">URL</label>
                   <div class="input-append">
                     <input id="external_image_url" type="text" name="url" maxlength="256" />
-                    <button id="external_image_url_preview" class="btn">Preview <i class="icon-chevron-right"></i></button>
+                    <button id="external_image_url_preview" class="btn">Preview <i class="glyphicon glyphicon-chevron-right"></i></button>
                   </div>
                   <div class="help-block">
                     Not all sites (e.g. facebook) may support preview/embedding
