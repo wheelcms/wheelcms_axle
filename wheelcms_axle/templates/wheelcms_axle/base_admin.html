@@ -127,13 +127,13 @@
 
             if(mode == "any") {
                 header.text("Upload content");
-                types.html('<select class="select_type"> ' +
+                types.html('<select class="select_type form-control"> ' +
                            '<option value="wheelcms_spokes.image">an Image</option> ' +
                            '<option value="wheelcms_spokes.file">a File</option> ' +
                            '</select>');
             } else {
                 header.text("Upload an image");
-                types.html('<select class="select_type"> ' +
+                types.html('<select class="select_type form-control"> ' +
                            '<option value="wheelcms_spokes.image">an Image</option> ' +
                            '</select>');
             }
@@ -629,10 +629,10 @@
           <div class="col-lg-12 upload-alert">
           </div>
         </div>
-        <div class="row">
-          <div class="col-lg-12 form-horizontal">
-            <div class="control-group">
-              <label class="control-label" for="select_type">Upload</label>
+        <div class="form-horizontal">
+          <div class="form-group">
+            <label class="control-label col-lg-2" for="select_type">Upload</label>
+            <div class="col-lg-10">
               <div class="controls upload_types">
               </div>
             </div>

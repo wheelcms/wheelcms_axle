@@ -824,6 +824,7 @@ class MainHandler(WheelRESTHandler):
             mode can be either "link" (any content) or "image" (only image
             based content)
         """
+        language = self.active_language()
         if not self.hasaccess():
             return self.forbidden()
 
@@ -849,7 +850,7 @@ class MainHandler(WheelRESTHandler):
         path = strip_action(path)
         original = strip_action(original)
 
-        node = start = Node.get(path)
+        node = start = Node.get(path, language=language)
         panels = []
 
         ## first panel: bookmarks/shortcuts
