@@ -850,7 +850,7 @@ class MainHandler(WheelRESTHandler):
         path = strip_action(path)
         original = strip_action(original)
 
-        node = start = Node.get(path, language=language)
+        node = start = Node.get(path)# , language=language)
         panels = []
 
         ## first panel: bookmarks/shortcuts
