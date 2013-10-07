@@ -56,3 +56,27 @@ form .help-block {
     color: rgb(215, 215, 215);
 }
 
+/*
+ * generic result listing styling, as used for contents view on page
+ */
+table.result-listing tr.state-private {
+    font-style: italic;
+}
+
+table.result-listing span.title {
+    font-weight: bold;
+    display: block;
+}
+table.result-listing p {
+    margin: 0 0 10px;
+}
+
+table.result-listing span.byline {
+    font-size: 0.8em;
+    color: #666;
+}
+
+table.result-listing img.icon {
+    margin-right: 5px;
+}
+
