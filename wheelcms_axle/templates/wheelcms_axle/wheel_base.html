@@ -26,6 +26,7 @@
 
 {% block base_stylesheets %}
     {{block.super}}
+    <link rel="stylesheet" href="{% static "css/wheel3.css" %}" media="screen, projection, print"/>
     {% fragments "base_stylesheets" %}
 {% endblock %}
 
