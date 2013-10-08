@@ -44,7 +44,7 @@
         {% csrf_token %}
         {% include "two.bootstrap/bootstrap-form.html" with form=t.form %}
         <div class="form-actions">
-          <input class="btn primary canleave" type="submit" value="{% trans "form_save" %}">
+          <input class="btn btn-primary canleave" type="submit" value="{% trans "form_save" %}">
         </div>
       </form>
       {% endif %}
