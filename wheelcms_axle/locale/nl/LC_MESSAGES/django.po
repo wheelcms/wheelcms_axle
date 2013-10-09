@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-27 18:13+0200\n"
+"POT-Creation-Date: 2013-10-09 11:09+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,20 +34,22 @@ msgstr "Google+"
 msgid "LinkedIn"
 msgstr "LinkedIn"
 
+#: templates/wheelcms_axle/configuration.html:5
+#: templates/wheelcms_axle/configuration.html:16
+#: templates/wheelcms_axle/configuration.html:27
+#: templates/wheelcms_axle/toolbar.html:78
+msgid "site_settings"
+msgstr "Instellingen"
+
 #: templates/wheelcms_axle/configuration.html:13
 msgid "nav_home"
 msgstr "Home"
-
-#: templates/wheelcms_axle/configuration.html:17
-#: templates/wheelcms_axle/toolbar.html:79
-msgid "site_settings"
-msgstr "Instellingen"
 
 #: templates/wheelcms_axle/configuration.html:47
 msgid "form_save"
 msgstr "Opslaan"
 
-#: templates/wheelcms_axle/toolbar.html:16
+#: templates/wheelcms_axle/toolbar.html:15
 msgid "toolbar_brand"
 msgstr "WheelCMS"
 
@@ -55,47 +57,53 @@ msgstr "WheelCMS"
 msgid "content_attach"
 msgstr "Koppelen"
 
-#: templates/wheelcms_axle/toolbar.html:41
-#: templates/wheelcms_axle/toolbar.html:48
+#: templates/wheelcms_axle/toolbar.html:42
+#: templates/wheelcms_axle/toolbar.html:49
 msgid "content_create"
 msgstr "Nieuw"
 
-#: templates/wheelcms_axle/toolbar.html:60
+#: templates/wheelcms_axle/toolbar.html:61
 msgid "content_translate"
 msgstr "Vertaal"
 
-#: templates/wheelcms_axle/toolbar.html:63
+#: templates/wheelcms_axle/toolbar.html:64
 msgid "content_edit"
 msgstr "Bewerk"
 
-#: templates/wheelcms_axle/toolbar.html:66
+#: templates/wheelcms_axle/toolbar.html:67
 msgid "content_list"
 msgstr "Inhoud"
 
-#: templates/wheelcms_axle/toolbar.html:92
+#: templates/wheelcms_axle/toolbar.html:71
+msgid "content_view"
+msgstr "Bekijk"
+
+#: templates/wheelcms_axle/toolbar.html:89
 msgid "user_profile"
 msgstr "Profiel"
 
-#: templates/wheelcms_axle/toolbar.html:94
+#: templates/wheelcms_axle/toolbar.html:91
 msgid "user_logout"
 msgstr "Uitloggen"
 
-#: templates/wheelcms_axle/toolbar.html:107
+#: templates/wheelcms_axle/toolbar.html:103
 msgid "lang_current_language"
 msgstr "Huidige taal"
 
-#: templates/wheelcms_axle/toolbar.html:111
+#: templates/wheelcms_axle/toolbar.html:110
 msgid "lang_switch_to"
 msgstr "Schakel naar"
 
-#: templates/wheelcms_axle/toolbar.html:114
+#: templates/wheelcms_axle/toolbar.html:117
 msgid "lang_create_trans"
 msgstr "Vertaal naar"
 
 #: templates/wheelcms_axle/wheel_base.html:68
-msgid "unsaved_changes_js_warning"
-msgstr "Er zijn wijzigingen op deze pagina die nog niet opgeslagen zijn. Als u deze pagina verlaat dan zult u deze wijzigingen kwijtraken."
-
-#: templates/wheelcms_axle/wheel_base.html:130
 msgid "language_switch_language"
 msgstr "Taal"
+
+#: templates/wheelcms_axle/wheel_base.html:144
+msgid "unsaved_changes_js_warning"
+msgstr ""
+"Er zijn wijzigingen op deze pagina die nog niet opgeslagen zijn. Als u deze "
+"pagina verlaat dan zult u deze wijzigingen kwijtraken."
