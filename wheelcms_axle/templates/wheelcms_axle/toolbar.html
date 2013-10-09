@@ -72,97 +72,98 @@
                 {% endif %}
               </div>
           </li>
-        </ul>
-      {% if toolbar.show_settings %}
-      <ul class="nav navbar-nav navbar-right">
-        <li><div><a class="btn btn-sm btn-default navbar-btn" href="{% url "wheel_config" %}"><i class="glyphicon glyphicon-wrench"></i> {% trans "site_settings" %}</a></div></li>
-      </ul>
-      {% endif %}
-      <ul class="nav navbar-nav navbar-right">
-        <li>
-          <div class="btn-group dropup navbar-btn">
-            <a href="/" data-target="#" class="btn btn-sm btn-default dropdown-toggle"
-               data-toggle="dropdown">{{user.email}} <b class="caret"></b>
-            </a>
-            <ul class="dropdown-menu" role="menu">
-              {# <li><a href="/"><i class="glyphicon glyphicon-cog"></i> {% trans "user_preferences" %}</a></li> #}
-              <li><a href="{% url "userena_profile_detail" user.username %}"><i class="glyphicon glyphicon-user"></i> {% trans "user_profile" %}</a></li>
-              <li class="divider"></li>
-              <li><a href="{% url "userena_signout" %}"><i class="glyphicon glyphicon-off"></i> {% trans "user_logout" %}</a></li>
-            </ul>
-          </div>
-        </li>
-      </ul>
-      {% with translations=toolbar.translations %}
-        {% if translations %}
-          <ul class="nav navbar-nav navbar-right">
+        </ul> <!-- navbar (left) -->
+        <ul class="nav navbar-nav navbar-right">
+          {% with worklist=toolbar.worklist clipboard=toolbar.clipboard %}
             <li>
+              {% if worklist.count %}
               <div class="btn-group dropup navbar-btn">
-                <a href="/" data-target="#" class="btn btn-sm btn-default dropdown-toggle"
+                <a class="badge badge-important"
+                   title="{{worklist.count}} item{{worklist.count|pluralize}} to be reviewed"
                    data-toggle="dropdown">
-                    {% trans "lang_current_language" %}: {{translations.active.language}} 
-                    <b class="caret"></b>
+                    <img src="{% static "img/icons/inbox_document.png" %}"></i> {{worklist.count}}
                 </a>
-                <ul class="dropdown-menu" role="menu">
-                  {% for translation in translations.translated %}
-                    <li><a href="{{translation.action_url}}">
-                          <i class="glyphicon glyphicon-flag"></i>
-                          {% trans "lang_switch_to" %} {{translation.language}}
-                        </a>
-                    </li>
-                  {% endfor %}
-                  {% for language in translations.untranslated %}
-                    <li><a href="{{language.action_url}}">
-                          <i class="glyphicon glyphicon-globe"></i>
-                          {% trans "lang_create_trans" %} {{language.language}}
-                        </a>
-                    </li>
-                  {% endfor %}
+                <ul class="dropdown-menu right">
+                   {% for item in worklist.items %}
+                   <li><a href="{{item.get_absolute_url}}edit#collapseadvanced">{{item.title}}</a></li>
+                   {% endfor %}
                 </ul>
               </div>
+              {% endif %}
+              {% if clipboard.count %}
+              <div class="btn-group dropup navbar-btn">
+                <a class="badge badge-info"
+                   title="{{clipboard.count}} item{{clipboard.count|pluralize}} in clipboard"
+                   data-toggle="dropdown">
+                   <img src="{% static "img/icons/paste_plain.png" %}"></i> {{clipboard.count}}
+                </a>
+                <ul class="dropdown-menu right">
+                   <li class="disabled">
+                     <a>{{clipboard.count}} item(s) to be {{clipboard.copy|yesno:"copied,moved"}}</a>
+                   </li>
+                   <li class="divider"></li>
+                   {% for item in clipboard.items %}
+                   <li><a href="{{item.get_absolute_url}}edit#collapseadvanced">{{item.title}}</a></li>
+                   {% endfor %}
+                   {# clear clipboard, .. ? #}
+                </ul>
+              </div>
+              {% endif %}
             </li>
-          </ul>
-        {% endif %}
-      {% endwith %}
-      {% with worklist=toolbar.worklist clipboard=toolbar.clipboard %}
-        <ul class="nav navbar-nav navbar-right">
+          {% endwith %}
+          {% with translations=toolbar.translations %}
+            {% if translations %}
+              <li>
+                <div class="btn-group dropup navbar-btn">
+                  <a href="/" data-target="#" class="btn btn-sm btn-default dropdown-toggle"
+                     data-toggle="dropdown">
+                      {% trans "lang_current_language" %}: {{translations.active.language}} 
+                      <b class="caret"></b>
+                  </a>
+                  <ul class="dropdown-menu" role="menu">
+                    {% for translation in translations.translated %}
+                      <li><a href="{{translation.action_url}}">
+                            <i class="glyphicon glyphicon-flag"></i>
+                            {% trans "lang_switch_to" %} {{translation.language}}
+                          </a>
+                      </li>
+                    {% endfor %}
+                    {% for language in translations.untranslated %}
+                      <li><a href="{{language.action_url}}">
+                            <i class="glyphicon glyphicon-globe"></i>
+                            {% trans "lang_create_trans" %} {{language.language}}
+                          </a>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              </li>
+            {% endif %}
+          {% endwith %}
           <li>
-           {% if worklist.count %}
-           <div class="btn-group dropup navbar-btn">
-             <a class="badge badge-important"
-                title="{{worklist.count}} item{{worklist.count|pluralize}} to be reviewed"
-                data-toggle="dropdown">
-                 <img src="{% static "img/icons/inbox_document.png" %}"></i> {{worklist.count}}
-             </a>
-             <ul class="dropdown-menu right">
-                {% for item in worklist.items %}
-                <li><a href="{{item.get_absolute_url}}edit#collapseadvanced">{{item.title}}</a></li>
-                {% endfor %}
-             </ul>
-           </div>
-           {% endif %}
-           {% if clipboard.count %}
-           <div class="btn-group dropup navbar-btn">
-             <a class="badge badge-info"
-                title="{{clipboard.count}} item{{clipboard.count|pluralize}} in clipboard"
-                data-toggle="dropdown">
-                <img src="{% static "img/icons/paste_plain.png" %}"></i> {{clipboard.count}}
-             </a>
-             <ul class="dropdown-menu right">
-                <li class="disabled">
-                  <a>{{clipboard.count}} item(s) to be {{clipboard.copy|yesno:"copied,moved"}}</a>
-                </li>
+            <div class="btn-group dropup navbar-btn">
+              <a href="/" data-target="#" class="btn btn-sm btn-default dropdown-toggle"
+                 data-toggle="dropdown">{{user.email}} <b class="caret"></b>
+              </a>
+              <ul class="dropdown-menu" role="menu">
+                {# <li><a href="/"><i class="glyphicon glyphicon-cog"></i> {% trans "user_preferences" %}</a></li> #}
+                <li><a href="{% url "userena_profile_detail" user.username %}"><i class="glyphicon glyphicon-user"></i> {% trans "user_profile" %}</a></li>
                 <li class="divider"></li>
-                {% for item in clipboard.items %}
-                <li><a href="{{item.get_absolute_url}}edit#collapseadvanced">{{item.title}}</a></li>
-                {% endfor %}
-                {# clear clipboard, .. ? #}
-             </ul>
-           </div>
-           {% endif %}
-         </li>
+                <li><a href="{% url "userena_signout" %}"><i class="glyphicon glyphicon-off"></i> {% trans "user_logout" %}</a></li>
+              </ul>
+            </div>
+          </li>
+          {% if toolbar.show_settings %}
+            <li>
+              <div>
+                <a class="btn btn-sm btn-default navbar-btn" 
+                   href="{% url "wheel_config" %}">
+                     <i class="glyphicon glyphicon-wrench"></i> {% trans "site_settings" %}
+                </a>
+              </div>
+            </li>
+          {% endif %}
         </ul>
-      {% endwith %}
       </div> {# toolbar-collapse #}
     </div>
 </div>
