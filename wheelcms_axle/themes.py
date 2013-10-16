@@ -4,15 +4,27 @@ from django.conf import settings
 class Theme(object):
     DEFAULT_JS = "bootstrap.js"
 
-    def __init__(self, id, name, css, js=None):
+    def __init__(self, id, name, css, js=None, extra=""):
         self.id = id
         self.name = name
-        ## XXX handle case when multiple css files are passed
-        self._css = ["wheel_content.css", css]
-        self._js = js or self.DEFAULT_JS
+        if isinstance(css, (str, unicode)):
+            self._css = ["wheel_content.css", css]
+        else:
+            self._css = ["wheel_content.css"] + list(css)
+
+        if isinstance(js, (str, unicode)):
+            self._js = [js or self.DEFAULT_JS]
+        else:
+            self._js = js
+
+        self.extra = extra
+
 
     def css_resources(self):
         return ["%s/css/%s" % (settings.STATIC_URL, f) for f in self._css]
+
+    def js_resources(self):
+        return ["%s/js/%s" % (settings.STATIC_URL, f) for f in self._js]
 
     def css(self):
         return "\n".join('<link rel="stylesheet" href="%s"' \
@@ -20,8 +32,9 @@ class Theme(object):
                r for r in self.css_resources())
 
     def js(self):
-        return '<script src="%s/js/%s"></script>' % \
-               (settings.STATIC_URL, self._js)
+        return "\n".join('<script src="%s/js/%s"></script>' % \
+               r for r in self.js_resources())
+
 
 
 class ThemeRegistry(list):

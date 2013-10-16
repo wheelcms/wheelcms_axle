@@ -25,6 +25,7 @@
 {% endblock %}
 
 {% block base_stylesheets %}
+    {{config.themeinfo.extra|safe}}
     {{block.super}}
     <link rel="stylesheet" href="{% static "css/wheel3.css" %}" media="screen, projection, print"/>
     {% fragments "base_stylesheets" %}
