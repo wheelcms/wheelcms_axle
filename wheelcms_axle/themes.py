@@ -32,9 +32,8 @@ class Theme(object):
                r for r in self.css_resources())
 
     def js(self):
-        return "\n".join('<script src="%s/js/%s"></script>' % \
+        return "\n".join('<script src="%s"></script>' % \
                r for r in self.js_resources())
-
 
 
 class ThemeRegistry(list):

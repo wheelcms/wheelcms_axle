@@ -146,13 +146,15 @@
                 }
             } );
       });
+    </script>
+  {% endif %}
+    <script type="text/javascript">
       $(document).ready(function () {
           for(i=0; i < delayed_confs.length; i++) {
               tinyMCE.init(delayed_confs[i]);
           }
       });
     </script>
-  {% endif %}
   {% fragments "javascript" %}
 
 {% endblock %}
