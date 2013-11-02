@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-12 16:12+0200\n"
+"POT-Creation-Date: 2013-09-27 18:13+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,6 +22,80 @@ msgstr ""
 msgid "user"
 msgstr "gebruiker"
 
-#: templates/wheelcms_axle/wheel_base.html:111
+#: userena_custom.py:6
+msgid "Twitter"
+msgstr "Twitter"
+
+#: userena_custom.py:7
+msgid "Google+"
+msgstr "Google+"
+
+#: userena_custom.py:8
+msgid "LinkedIn"
+msgstr "LinkedIn"
+
+#: templates/wheelcms_axle/configuration.html:13
+msgid "nav_home"
+msgstr "Home"
+
+#: templates/wheelcms_axle/configuration.html:17
+#: templates/wheelcms_axle/toolbar.html:79
+msgid "site_settings"
+msgstr "Instellingen"
+
+#: templates/wheelcms_axle/configuration.html:47
+msgid "form_save"
+msgstr "Opslaan"
+
+#: templates/wheelcms_axle/toolbar.html:16
+msgid "toolbar_brand"
+msgstr "WheelCMS"
+
+#: templates/wheelcms_axle/toolbar.html:24
+msgid "content_attach"
+msgstr "Koppelen"
+
+#: templates/wheelcms_axle/toolbar.html:41
+#: templates/wheelcms_axle/toolbar.html:48
+msgid "content_create"
+msgstr "Nieuw"
+
+#: templates/wheelcms_axle/toolbar.html:60
+msgid "content_translate"
+msgstr "Vertaal"
+
+#: templates/wheelcms_axle/toolbar.html:63
+msgid "content_edit"
+msgstr "Bewerk"
+
+#: templates/wheelcms_axle/toolbar.html:66
+msgid "content_list"
+msgstr "Inhoud"
+
+#: templates/wheelcms_axle/toolbar.html:92
+msgid "user_profile"
+msgstr "Profiel"
+
+#: templates/wheelcms_axle/toolbar.html:94
+msgid "user_logout"
+msgstr "Uitloggen"
+
+#: templates/wheelcms_axle/toolbar.html:107
+msgid "lang_current_language"
+msgstr "Huidige taal"
+
+#: templates/wheelcms_axle/toolbar.html:111
+msgid "lang_switch_to"
+msgstr "Schakel naar"
+
+#: templates/wheelcms_axle/toolbar.html:114
+msgid "lang_create_trans"
+msgstr "Vertaal naar"
+
+#: templates/wheelcms_axle/wheel_base.html:68
+msgid "unsaved_changes_js_warning"
+msgstr "Er zijn wijzigingen op deze pagina die nog niet opgeslagen zijn. Als u deze pagina verlaat dan zult u deze wijzigingen kwijtraken."
+
+#: templates/wheelcms_axle/wheel_base.html:130
 msgid "language_switch_language"
 msgstr "Taal"

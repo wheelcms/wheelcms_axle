@@ -275,6 +275,8 @@ class Importer(object):
         # import pytest;pytest.set_trace()
         paths = {}
         contents = []
+        delays = []
+
         for content in tree.findall("content"):
             typename = content.attrib['type']
             slug = content.attrib['slug']
@@ -286,8 +288,10 @@ class Importer(object):
                 if field.attrib.get('name') == 'language':
                     language = field.text
 
-            s, delays = spoke.serializer(self.basenode, update_lm=self.update_lm
+            s, cdelays = spoke.serializer(self.basenode, update_lm=self.update_lm
                                         ).deserialize(spoke, fields)
+            delays.extend(cdelays)
+
             paths[language] = slug
             contents.append((language, s.instance))
 
@@ -298,7 +302,7 @@ class Importer(object):
             #n.set(s.instance, language=language)
 
         if contents:
-            ## Add on root on stead of new node
+            ## Add on root in stead of new node
             if paths.values()[0] == "":
                 n = node
             elif paths.keys()[0] is None:

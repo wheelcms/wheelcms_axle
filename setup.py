@@ -1,13 +1,12 @@
 from setuptools import setup, find_packages
 import os
 
-version = '0.8'
+version = '0.8.3'
 
 setup(name='wheelcms_axle',
       version=version,
       description="WheelCMS core package",
-      long_description=open("README.txt").read() + "\n" +
-                       open(os.path.join("docs", "HISTORY.txt")).read(),
+      long_description=open("README.md").read(),
       classifiers=[
         "Programming Language :: Python",
         ],

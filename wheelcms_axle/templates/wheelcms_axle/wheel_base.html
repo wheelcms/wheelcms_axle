@@ -53,6 +53,24 @@
       var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
     })();
   </script>
+  <script type="text/javascript">
+    {# this script will have no effect after a submit where the content has not been saved, for example in case of a validation error #}
+    $(document).ready(function() {
+      var request_leave = false;
+      $("form.checksave :input").change(function() {
+            request_leave = true;
+      });
+      $("form.checksave .canleave").click(function() {
+            request_leave = false;
+      });
+      $(window).on('beforeunload',
+          function() {
+              if(request_leave) {
+                return '{% trans "unsaved_changes_js_warning" %}';
+              }
+          } );
+    });
+    </script>
   {% endif %}
 {% endblock %}
 
@@ -160,7 +178,7 @@
 {% endblock %}
 
 {% block base_footer %}
-<div class="pull-right">Powered by <a href="http://wheelcms.io/">WheelCMS</div></div>
+<div class="pull-right">Powered by <a href="http://wheelcms.io/">WheelCMS</a></div>
 {% endblock %}
 
 
