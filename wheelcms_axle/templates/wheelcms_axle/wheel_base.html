@@ -14,6 +14,10 @@
 {% endblock %}
 
 {% block bootstrapjs %}
+  {% if not config.themeinfo.js %}
+  {{block.super}}
+  {% endif %}
+
   {{config.themeinfo.js|safe}}
 {% endblock %}
 

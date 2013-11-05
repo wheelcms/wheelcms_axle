@@ -4,7 +4,7 @@ from django.conf import settings
 class Theme(object):
     DEFAULT_JS = "bootstrap.js"
 
-    def __init__(self, id, name, css, js=None, extra=""):
+    def __init__(self, id, name, css, js=[], extra=""):
         self.id = id
         self.name = name
         if isinstance(css, (str, unicode)):
