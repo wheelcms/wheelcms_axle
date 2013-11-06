@@ -571,7 +571,14 @@ class NodeBase(models.Model):
         ## strip any leading / since django will add that as well
         language = language or self.preferred_language
 
-        return reverse('wheel_main', kwargs={'instance':self.get_path(language).lstrip('/')})
+        active_language = translation.get_language()
+        try:
+            if language:
+                translation.activate(language)
+            return reverse('wheel_main', kwargs={'instance':self.get_path(language).lstrip('/')})
+        finally:
+            if language:
+                translation.activate(active_language)
 
     def __unicode__(self):
         """ readable representation """
