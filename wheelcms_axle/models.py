@@ -102,6 +102,8 @@ def log_create(sender, instance, created, **kwargs):
     """ Log the creation of a new user """
     if created:
         stracks.user(instance).log("? has been created")
+    ## make sure it has a wheel profile
+    WheelProfile.objects.get_or_create(user=instance)
 
 
 @receiver(signup_complete, dispatch_uid='stracks.log_signup')
@@ -119,3 +121,4 @@ def log_login(sender, request, user, **kwargs):
 def log_logout(sender, request, user, **kwargs):
     """ Log the user logging out """
     stracks.user(user).log("? has logged out", action=stracks.logout())
+
