@@ -483,7 +483,7 @@ class NodeBase(models.Model):
                 count = 0
 
                 while Paths.objects.filter(path=newpath, language=language).exists():
-                    newpath = mypath + slug + "_" + str(count)
+                    newpath = mypath + '/' +  slug + "_" + str(count)
                     count += 1
 
                 #if testmode:

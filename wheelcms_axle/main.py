@@ -670,6 +670,8 @@ class MainHandler(WheelRESTHandler):
             accum_success = []
             accum_failure = []
 
+            # import pdb; pdb.set_trace()
+            
             for p in clipboard:
                 n = Node.objects.get(tree_path=p)
                 if n:

@@ -597,6 +597,35 @@ class TestNodeCopyPaste(object):
         assert res.path == "/src/target/root"
         assert res != src
 
+    def test_move_node_duplicate_name(self, client):
+        """ Move a node somewhere where there's already a similar slug """
+        # issue #789
+        root = Node.root()
+        src = root.add("src")
+        src_c = src.add("child")
+        root_child = root.add("child")
+
+        res, success, failed = root.paste(src_c)
+
+        assert Node.get('/child') == root_child
+        assert src_c.parent() == root
+        assert src_c.path.startswith('/')
+
+    def test_copy_node_duplicate_name(self, client):
+        """ Move a node somewhere where there's already a similar slug """
+        # issue #789
+        root = Node.root()
+        src = root.add("src")
+        src_c = src.add("child")
+        root_child = root.add("child")
+
+        res, success, failed = root.paste(src_c, copy=True)
+
+        assert Node.get('/child') == root_child
+        assert res
+        assert res.parent() == root
+        assert res.path.startswith('/')
+
 class TestNodeTranslation(object):
     """ test translation related stuff """
     def test_preferred_language_child(self, client):
