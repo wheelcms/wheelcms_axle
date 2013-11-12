@@ -12,7 +12,6 @@
 <link rel="stylesheet" href="{% static "css/upload/jquery.fileupload-ui.css" %}" media="screen, projection, print"/>
 <link rel="stylesheet" href="{% static "tagmanager/bootstrap-tagsinput.css" %}" media="screen, projection, print"/>
 <link rel="stylesheet" href="{% static "tagmanager/typeahead.js-bootstrap.css" %}" media="screen, projection, print"/>
-<link rel="stylesheet" href="{% static "tagmanager/fix.css" %}" media="screen, projection, print"/>
 <link rel="stylesheet" href="{% static "css/upload/jquery.fileupload-ui.css" %}" media="screen, projection, print"/>
 
 {% endfragment %}
@@ -520,9 +519,8 @@
           this.tagsinput('add', datum.value);
           this.tagsinput('input').typeahead('setQuery', '');
         }, $('.tagManager')));
-
-        // $("#browseModal").modal("show");
     });
+
 </script>
 
 {% endfragment %}
