@@ -119,6 +119,7 @@ class BaseForm(forms.ModelForm):
 
         if 'tags' in self.fields:
             self.fields['tags'].widget.attrs['class'] = "tagManager"
+            self.fields['tags'].widget.attrs['data-role'] = "tagsinput"
             self.fields['tags'].required = False
 
         ## workaround for https://code.djangoproject.com/ticket/21173
