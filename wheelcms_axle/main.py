@@ -608,7 +608,7 @@ class MainHandler(WheelRESTHandler):
     def handle_reorder(self, rel, target, ref):
         if not self.hasaccess() or not self.post:
             return self.forbidden()
-        
+
         targetnode = Node.objects.get(tree_path=target)
         referencenode = Node.objects.get(tree_path=ref)
 
