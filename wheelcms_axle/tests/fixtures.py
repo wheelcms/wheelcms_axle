@@ -21,3 +21,9 @@ def localtyperegistry(request):
 def localtemplateregistry(request):
     template_registry.set(TemplateRegistry())
 
+from django.conf import settings
+
+@pytest.fixture()
+def multilang_ENNL():
+    settings.CONTENT_LANGUAGES = (('en', 'English'), ('nl', 'Nederlands'), ('fr', 'Francais'))
+    settings.FALLBACK = 'en'
