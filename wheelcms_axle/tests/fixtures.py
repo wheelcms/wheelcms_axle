@@ -25,6 +25,7 @@ from django.conf import settings
 
 @pytest.fixture()
 def multilang_ENNL(request):
+    """ Provide a settings fixture with EN/NL configured """
     old_lang = settings.CONTENT_LANGUAGES
     old_fallback = settings.FALLBACK
 
