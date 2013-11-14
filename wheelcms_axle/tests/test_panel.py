@@ -17,10 +17,10 @@ storage = SimpleUploadedFile("foo.png",
                              'GIF87a\x01\x00\x01\x00\x80\x01\x00\x00\x00\x00ccc,\x00'
                              '\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;')
 
-from .test_spoke import BaseLocalRegistry
+import pytest
 
-
-class TestPanel(BaseLocalRegistry):
+@pytest.mark.usefixtures("localregistry")
+class TestPanel(object):
     """
         Test different panel invocation scenario's
     """

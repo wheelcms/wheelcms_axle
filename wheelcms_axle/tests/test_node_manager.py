@@ -1,11 +1,13 @@
-from .test_spoke import BaseLocalRegistry
 from .models import Type1, Type1Type
 from wheelcms_axle.node import Node
 
 from django.utils import timezone
 from datetime import timedelta
 
-class TestNodeManager(BaseLocalRegistry):
+import pytest
+
+@pytest.mark.usefixtures("localregistry")
+class TestNodeManager(object):
     """
         Test the Node query Manager which provides methods to find
         public (published, not expired) and attached content

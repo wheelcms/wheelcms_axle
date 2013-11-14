@@ -18,6 +18,8 @@ from wheelcms_axle.content import TypeRegistry, type_registry
 from wheelcms_axle.templates import TemplateRegistry, template_registry
 from wheelcms_axle.spoke import Spoke
 
+import pytest
+
 DEFAULT = "wheelcms_axle/content_view.html"
 
 filedata = SimpleUploadedFile("foo.png",
@@ -28,23 +30,9 @@ filedata2 = SimpleUploadedFile("foo2.png",
            'GIF87a\x01\x00\x01\x00\x80\x01\x00\x00\x00\x00ccc,\x00'
            '\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02E\x01\x00;')
 
-class BaseLocalRegistry(object):
-    """
-        Make sure registries are local to the test
-    """
-    type = None
-    types = ()
 
-    def setup(self):
-        """ override the global registry """
-        self.registry = TypeRegistry()
-        type_registry.set(self.registry)
-        if self.type:
-            self.registry.register(self.type)
-        for type in self.types:
-            self.registry.register(type)
-
-class BaseSpokeTest(BaseLocalRegistry):
+@pytest.mark.usefixtures("localregistry")
+class BaseSpokeTest(object):
     """
         Basic spoke testing
     """
@@ -79,7 +67,8 @@ class BaseSpokeTest(BaseLocalRegistry):
         return fields  ## for additional tests
 
 
-class BaseSpokeTemplateTest(BaseLocalRegistry):
+@pytest.mark.usefixtures("localregistry")
+class BaseSpokeTemplateTest(object):
     """
         Test template related validation/behaviour
     """
@@ -93,7 +82,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
 
     def setup(self):
         """ create clean local registries, make sure it's used globally """
-        super(BaseSpokeTemplateTest, self).setup()
+        # super(BaseSpokeTemplateTest, self).setup()
 
         self.reg = TemplateRegistry()
         template_registry.set(self.reg)
@@ -466,7 +455,8 @@ class TestImplicitAddition(object):
 
         assert T1 in T2.addable_children()
 
-class TestFileContent(BaseLocalRegistry):
+@pytest.mark.usefixtures("localregistry")
+class TestFileContent(object):
     """ verify File based content can be found in a single query """
     types = (OtherTestFileType, OtherTestImageType, TestFileType, TestImageType)
 
@@ -490,7 +480,8 @@ class TestFileContent(BaseLocalRegistry):
         files = FileContent.instances.all()
         assert set(x.content() for x in files) == set((file1, file2, file3))
 
-class TestImageContent(BaseLocalRegistry):
+@pytest.mark.usefixtures("localregistry")
+class TestImageContent(object):
     """ verify Image based content can be found in a single query """
     types = (OtherTestFileType, OtherTestImageType, TestFileType, TestImageType)
 
