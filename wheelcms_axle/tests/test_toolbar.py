@@ -259,9 +259,9 @@ class TestToolbar(object):
         assert set(clipboard['items']) == set((t1, t2))
 
 from django.utils import translation
-from .fixtures import multilang_ENNLFR
+from .fixtures import multilang_ENNLFR, active_language
 
-@pytest.mark.usefixtures("localtyperegistry", "multilang_ENNLFR")
+@pytest.mark.usefixtures("localtyperegistry", "multilang_ENNLFR", "active_language")
 class TestTranslations(object):
     types = (Type1Type, Type2Type)
 

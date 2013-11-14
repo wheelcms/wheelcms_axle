@@ -51,3 +51,12 @@ def multilang_ENNLFR(request):
         settings.FALLBACK = old_fallback
     request.addfinalizer(fin)
 
+from django.utils import translation
+
+@pytest.fixture()
+def active_language(request):
+    old_lang = translation.get_language()
+    def fin():
+        translation.activate(old_lang)
+    request.addfinalizer(fin)
+

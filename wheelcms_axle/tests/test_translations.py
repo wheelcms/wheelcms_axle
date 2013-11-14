@@ -1,11 +1,11 @@
 from wheelcms_axle.node import Node, DuplicatePathException
 from django.utils import translation
-from .fixtures import multilang_ENNLFR
+from .fixtures import multilang_ENNLFR, active_language
 
 import pytest
 
 
-@pytest.mark.usefixtures("multilang_ENNLFR")
+@pytest.mark.usefixtures("multilang_ENNLFR", "active_language")
 class TestRootNode(object):
     def test_disabled(self, client):
         """ multi language support disabled """
@@ -45,7 +45,7 @@ class TestRootNode(object):
 
     ## root cannot be renamed
 
-@pytest.mark.usefixtures("multilang_ENNLFR")
+@pytest.mark.usefixtures("multilang_ENNLFR", "active_language")
 class TestNode(object):
     def test_node(self, client):
         translation.activate('en')

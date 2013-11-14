@@ -581,9 +581,9 @@ class TestActions(object):
         assert n1.position > n3.position
         assert n3.position > n2.position
 
-from .fixtures import multilang_ENNL
+from .fixtures import multilang_ENNL, active_language
 
-@pytest.mark.usefixtures("multilang_ENNL")
+@pytest.mark.usefixtures("multilang_ENNL", "active_language")
 class TestTranslations(object):
     def test_translated(self, client):
         """ /a can point to either dutch or english content on different
