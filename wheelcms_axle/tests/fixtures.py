@@ -1,5 +1,5 @@
 from wheelcms_axle.node import Node
-from wheelcms_axle.content import TypeRegistry, type_registry
+from wheelcms_axle.content import type_registry, TypeRegistry
 from wheelcms_axle.templates import TemplateRegistry, template_registry
 
 import pytest
@@ -25,6 +25,20 @@ from django.conf import settings
 
 @pytest.fixture()
 def multilang_ENNL(request):
+    """ Provide a settings fixture with EN/NL configured """
+    old_lang = settings.CONTENT_LANGUAGES
+    old_fallback = settings.FALLBACK
+
+    settings.CONTENT_LANGUAGES = (('en', 'English'), ('nl', 'Nederlands'),)#  ('fr', 'Francais'))
+    settings.FALLBACK = 'en'
+
+    def fin():
+        settings.CONTENT_LANGUAGES = old_lang
+        settings.FALLBACK = old_fallback
+    request.addfinalizer(fin)
+
+@pytest.fixture()
+def multilang_ENNLFR(request):
     """ Provide a settings fixture with EN/NL configured """
     old_lang = settings.CONTENT_LANGUAGES
     old_fallback = settings.FALLBACK

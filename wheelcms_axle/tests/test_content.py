@@ -9,14 +9,11 @@ from wheelcms_axle.content import Content, ContentCopyFailed
 from wheelcms_axle.content import ContentCopyNotSupported
 from wheelcms_axle.tests.models import Type1, Type2, TypeM2M, TypeUnique
 
-from django.conf import settings
+from .fixtures import multilang_ENNL
 
+@pytest.mark.usefixtures("multilang_ENNL")
 class TestContent(object):
     """ Test content / content-node related stuff """
-    def setup(self):
-        settings.CONTENT_LANGUAGES = (('en', 'English'), ('nl', 'Nederlands'), ('fr', 'Francais'))
-        settings.FALLBACK = 'en'
-
     def test_duplicate_content(self, client):
         """ two content objects for the same language 
              cannot point to the same node """

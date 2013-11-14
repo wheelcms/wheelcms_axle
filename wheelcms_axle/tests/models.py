@@ -79,15 +79,6 @@ type_registry.register(OtherTestImageType)
 type_registry.register(TypeM2MType)
 type_registry.register(TypeUniqueType)
 
-from wheelcms_axle.content import TypeRegistry
-
-class TestTypeRegistry(TypeRegistry):
-    """
-        A type registry without HayStack registration
-    """
-    def register(self, t):
-        self[t.name()] = t
-
 from wheelcms_axle.models import Configuration as BaseConfiguration
 from wheelcms_axle.registries.configuration import configuration_registry
 

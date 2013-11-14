@@ -6,25 +6,22 @@ from django.contrib.auth.models import User
 from wheelcms_axle.node import Node
 from wheelcms_axle.content import type_registry
 from wheelcms_axle.toolbar import Toolbar
-from wheelcms_axle.tests.models import Type1, Type1Type, Type2Type, TestTypeRegistry
+from wheelcms_axle.tests.models import Type1, Type1Type, Type2Type
 
 from wheelcms_axle.spoke import Spoke
 
 from .test_handler import superuser_request
 from twotest.util import create_request
 
-class BaseToolbarTest(object):
-    def setup(self):
-        self.registry = TestTypeRegistry()
-        type_registry.set(self.registry)
-        self.registry.register(Type1Type)
-        self.registry.register(Type2Type)
+import pytest
 
-
-class TestToolbar(BaseToolbarTest):
+@pytest.mark.usefixtures("localtyperegistry")
+class TestToolbar(object):
     """
         Test toolbar child restrictions, context buttons
     """
+    types = (Type1Type, Type2Type)
+
     def allchildren(self, children):
         """ match against all registered children """
         return set(x['name'] for x in children) == \
@@ -55,8 +52,6 @@ class TestToolbar(BaseToolbarTest):
         """
             A single childtype allowed
         """
-        registry = self.registry
-
         class DummyNode(object):
             def content(self):
                 class DummyContent(object):
@@ -69,12 +64,13 @@ class TestToolbar(BaseToolbarTest):
                 class DummyType(Spoke):
                     model = DummyContent
                     children = (Type1Type,)
+                    add_to_index = False
 
                     @classmethod
                     def name(self):
                         return DummyContent.get_name()
 
-                registry.register(DummyType)
+                type_registry.register(DummyType)
 
                 return DummyContent()
 
@@ -89,8 +85,6 @@ class TestToolbar(BaseToolbarTest):
         """
             No children at all allowed
         """
-        registry = self.registry
-
         class DummyNode(object):
             def content(self):
                 class DummyContent(object):
@@ -103,12 +97,13 @@ class TestToolbar(BaseToolbarTest):
                 class DummyType(Spoke):
                     model = DummyContent
                     children = ()
+                    add_to_index = False
 
                     @classmethod
                     def name(self):
                         return DummyContent.get_name()
 
-                registry.register(DummyType)
+                type_registry.register(DummyType)
 
                 return DummyContent()
 
@@ -150,12 +145,13 @@ class TestToolbar(BaseToolbarTest):
             model = DummyContent
             children = ()
             implicit_add = False
+            add_to_index = False
 
             @classmethod
             def title(cls):
                 return ''
 
-        self.registry.register(DummyType)
+        type_registry.register(DummyType)
 
 
         node = Node.root()
@@ -180,7 +176,6 @@ class TestToolbar(BaseToolbarTest):
     def test_primary(self, client):
         """ a type with primary should behave differently """
 
-        registry = self.registry
 
         class DummyNode(object):
             def content(self):
@@ -195,12 +190,13 @@ class TestToolbar(BaseToolbarTest):
                     model = DummyContent
                     children = (Type1Type, Type2Type)
                     primary = Type1Type
+                    add_to_index = False
 
                     @classmethod
                     def name(self):
                         return DummyContent.get_name()
 
-                registry.register(DummyType)
+                type_registry.register(DummyType)
 
                 return DummyContent()
 
@@ -263,14 +259,11 @@ class TestToolbar(BaseToolbarTest):
         assert set(clipboard['items']) == set((t1, t2))
 
 from django.utils import translation
-from django.conf import settings
+from .fixtures import multilang_ENNLFR
 
-class TestTranslations(BaseToolbarTest):
-    def setup(self):
-        super(TestTranslations, self).setup()
-
-        settings.CONTENT_LANGUAGES = (('en', 'English'), ('nl', 'Nederlands'), ('fr', 'Francais'))
-        settings.FALLBACK = False
+@pytest.mark.usefixtures("localtyperegistry", "multilang_ENNLFR")
+class TestTranslations(object):
+    types = (Type1Type, Type2Type)
 
     def test_show_translate(self, client):
         root = Node.root()
