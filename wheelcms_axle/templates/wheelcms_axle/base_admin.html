@@ -508,17 +508,21 @@
 
     $(document).ready(function() {
         /*
-         * enable the tagmanager. We fiddle a bit with the
-         * original/generated (hidden) field. We want to preserve the
-         * original fieldname for the created hidden field that
-         * will get the actual tags
+         * Messy hack; bootstrap3 broke all existing tags/typeahead combo's.
+         * Make sure tag gets added and input gets cleared.
+         * Assumes there's a single tag input.
+         * Dropdown remains broken - gets clipped by accordeon.
          */
         $(".tagManager").tagsinput('input').typeahead(
-          {name: "tags", local: {{typeahead_tags|safe}} }
-        ).bind('typeahead:selected', $.proxy(function (obj, datum) {
-          this.tagsinput('add', datum.value);
-          this.tagsinput('input').typeahead('setQuery', '');
-        }, $('.tagManager')));
+          {name: "tags", source: {{typeahead_tags|safe}},
+           updater:$.proxy(function (value) {
+          $(".tagManager").tagsinput('add', value);
+          $("div.bootstrap-tagsinput input").val("");
+          
+        })});
+        $("div.bootstrap-tagsinput").css("width", "100%");
+        $("div.bootstrap-tagsinput input").addClass('input-xxlarge form-control'
+        ).css("width", "100%");
     });
 
 </script>
