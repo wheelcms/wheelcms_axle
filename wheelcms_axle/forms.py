@@ -121,6 +121,9 @@ class BaseForm(forms.ModelForm):
             self.fields['tags'].widget.attrs['class'] = "tagManager"
             self.fields['tags'].widget.attrs['data-role'] = "tagsinput"
             self.fields['tags'].widget.attrs['data-provide'] = "typeahead"
+            ## The placeholder is used to size the tag input, which will
+            ## default to 1 if unspecified.
+            self.fields['tags'].widget.attrs['placeholder'] = " " * 30
             self.fields['tags'].required = False
 
         ## workaround for https://code.djangoproject.com/ticket/21173
