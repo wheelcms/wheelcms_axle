@@ -24,6 +24,15 @@ def localtemplateregistry(request):
 from django.conf import settings
 
 @pytest.fixture()
-def multilang_ENNL():
+def multilang_ENNL(request):
+    old_lang = settings.CONTENT_LANGUAGES
+    old_fallback = settings.FALLBACK
+
     settings.CONTENT_LANGUAGES = (('en', 'English'), ('nl', 'Nederlands'), ('fr', 'Francais'))
     settings.FALLBACK = 'en'
+
+    def fin():
+        settings.CONTENT_LANGUAGES = old_lang
+        settings.FALLBACK = old_fallback
+    request.addfinalizer(fin)
+
