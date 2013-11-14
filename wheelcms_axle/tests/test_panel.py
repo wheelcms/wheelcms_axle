@@ -19,7 +19,7 @@ storage = SimpleUploadedFile("foo.png",
 
 import pytest
 
-@pytest.mark.usefixtures("localregistry")
+@pytest.mark.usefixtures("localtyperegistry")
 class TestPanel(object):
     """
         Test different panel invocation scenario's

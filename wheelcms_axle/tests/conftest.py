@@ -1,2 +1,2 @@
 from twotest.fixtures import client, django_client
-from .fixtures import root, localregistry
+from .fixtures import root, localtyperegistry, localtemplateregistry

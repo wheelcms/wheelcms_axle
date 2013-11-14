@@ -6,7 +6,7 @@ from datetime import timedelta
 
 import pytest
 
-@pytest.mark.usefixtures("localregistry")
+@pytest.mark.usefixtures("localtyperegistry")
 class TestNodeManager(object):
     """
         Test the Node query Manager which provides methods to find

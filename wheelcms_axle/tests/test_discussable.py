@@ -1,7 +1,7 @@
 from .models import Type1, Type2, Type1Type, Type2Type
 import pytest
 
-@pytest.mark.usefixtures("localregistry")
+@pytest.mark.usefixtures("localtyperegistry")
 class TestDiscussable(object):
     types = (Type1Type, Type2Type)
 
