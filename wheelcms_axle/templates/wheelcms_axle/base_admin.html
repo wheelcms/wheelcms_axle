@@ -10,8 +10,8 @@
 <link rel="stylesheet" href="{% static "css/wheel3.css" %}" media="screen, projection, print"/>
 <link rel="stylesheet" href="{% static "css/wheel_content.css" %}" media="screen, projection, print"/>
 <link rel="stylesheet" href="{% static "css/upload/jquery.fileupload-ui.css" %}" media="screen, projection, print"/>
-<link rel="stylesheet" href="{% static "tagmanager/bootstrap-tagmanager.css" %}" media="screen, projection, print"/>
-<link rel="stylesheet" href="{% static "css/upload/jquery.fileupload-ui.css" %}" media="screen, projection, print"/>
+<link rel="stylesheet" href="{% static "tagmanager/bootstrap-tagsinput.css" %}" media="screen, projection, print"/>
+
 {% endfragment %}
 {% fragment "javascript" %}
 
@@ -23,7 +23,8 @@
 <script src="{% static "js/upload/jquery.fileupload-process.js" %}"></script>
 <script src="{% static "js/upload/jquery.fileupload-resize.js" %}"></script>
 <script src="{% static "js/upload/jquery.fileupload-validate.js" %}"></script>
-<script src="{% static "tagmanager/bootstrap-tagmanager.js" %}"></script>
+<script src="{% static "tagmanager/bootstrap-tagsinput.js" %}"></script>
+<script src="{% static "tagmanager/typeahead.js" %}"></script>
 
 <script type="text/javascript" charset="utf-8">
     var upload_modal = (function() {
@@ -505,28 +506,23 @@
 
     $(document).ready(function() {
         /*
-         * enable the tagmanager. We fiddle a bit with the
-         * original/generated (hidden) field. We want to preserve the
-         * original fieldname for the created hidden field that
-         * will get the actual tags
+         * Messy hack; bootstrap3 broke all existing tags/typeahead combo's.
+         * Make sure tag gets added and input gets cleared.
+         * Assumes there's a single tag input.
+         * Dropdown remains broken - gets clipped by accordeon.
          */
-        $(".tagManager").each(function(i, v) {
-           var $v = $(v);
-           var name = $v.attr("name");
-           $v.attr("name", name + "-taginput");
-           var vals = $v.val().split(/[,]+/);
-           $v.val("");
-           $v.tagsManager(
-                {prefilled:vals,
-                 preventSubmitOnEnter:true,
-                 typeahead:true,
-                 typeaheadSource:{{typeahead_tags|safe}},
-                 hiddenTagListName:name,
-                 blinkBGColor_1: '#FFFF9C',
-                 blinkBGColor_2: '#CDE69C'});
-        });
-        // $("#browseModal").modal("show");
+        $(".tagManager").tagsinput('input').typeahead(
+          {name: "tags", source: {{typeahead_tags|safe}},
+           updater:$.proxy(function (value) {
+          $(".tagManager").tagsinput('add', value);
+          $("div.bootstrap-tagsinput input").val("");
+          
+        })});
+        $("div.bootstrap-tagsinput").css("width", "100%");
+        $("div.bootstrap-tagsinput input").addClass('form-control'
+        );
     });
+
 </script>
 
 {% endfragment %}
