@@ -97,14 +97,21 @@ import stracks
 ##     stracksclient.warning("Authentication failed", data=credentials)
 ##
 
+from django.db.utils import DatabaseError
+import logging
+
 @receiver(post_save, sender=User)
 def log_create(sender, instance, created, **kwargs):
     """ Log the creation of a new user """
     if created:
         stracks.user(instance).log("? has been created")
     ## make sure it has a wheel profile
-    WheelProfile.objects.get_or_create(user=instance)
-
+    try:
+        WheelProfile.objects.get_or_create(user=instance)
+    except DatabaseError:
+        logging.error("Failed to create profile for %s, perhaps migrations haven't run yet?" % instance)
+        from django.db import connection
+        connection._rollback()
 
 @receiver(signup_complete, dispatch_uid='stracks.log_signup')
 def log_signup(sender, signal, user, **kwargs):
