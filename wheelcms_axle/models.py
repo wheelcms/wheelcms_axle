@@ -113,6 +113,14 @@ def log_create(sender, instance, created, **kwargs):
         from django.db import connection
         connection._rollback()
 
+from south.signals import post_migrate
+
+@receiver(post_migrate)
+def create_profiles(app, **kwargs):
+    if app == "wheelcms_axle":
+        for u in User.objects.all():
+            WheelProfile.objects.get_or_create(user=u)
+
 @receiver(signup_complete, dispatch_uid='stracks.log_signup')
 def log_signup(sender, signal, user, **kwargs):
     """ Log the creation of a new user """
