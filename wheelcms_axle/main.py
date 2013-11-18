@@ -395,6 +395,7 @@ class MainHandler(WheelRESTHandler):
             self.context['bells'] = self.context['tabs'] = True
             self.context['handler'] = self
             self.context['bells_template'] = self.render_template("wheelcms_axle/bells.html")
+            self.context['bells_edit'] = True
 
         formclass =  typeinfo.form
         slug = instance.slug(language=language)
@@ -1047,3 +1048,18 @@ class MainHandler(WheelRESTHandler):
         return self.redirect(node.get_absolute_url(language=language) + rest,
                              info="Switched to %s" % language)
 
+    @json
+    @applyrequest
+    def handle_bell(self, type):
+        if not self.hasaccess():
+            return self.forbidden()
+
+        from wheel_cms.models import TwitterBellForm, HTMLBellForm
+
+        form = None
+        if type == "Twitter":
+            form = TwitterBellForm()
+        elif type == "HTML":
+            form = HTMLBellForm()
+
+        return dict(form=form.as_p())

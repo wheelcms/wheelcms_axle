@@ -1,4 +1,5 @@
 {% extends "wheelcms_axle/base_admin.html" %}
+{% load fragments %}
 {# base template for create/edit templates #}
 
 {% block base_main %}
@@ -8,15 +9,15 @@
 
 {% if tabs %}
 <ul class="nav nav-tabs">
-  <li class="active"><a href="#content" data-toggle="tab">Metadata</a></li>
-  <li><a href="#bells" data-toggle="tab">Bells</a></li>
+  <li><a href="#content" data-toggle="tab">Metadata</a></li>
+  <li class="active"><a href="#bells" data-toggle="tab">Bells</a></li>
 </ul>
 {% endif %}
 
 {% block form_form %}
 <div class="tab-content">
 
-<div id="content" class="tab-pane active">
+<div id="content" class="tab-pane ">
   <form role="form" method="post" action="{{form_action|default:'.'}}" class="form-horizontal checksave"
     {% if form.is_multipart %}enctype="multipart/form-data"{%endif%}>
     {% csrf_token %}
@@ -77,13 +78,37 @@
 </div>
 
 {% if bells %}
-<div class="tab-pane" id="bells">
+<div class="tab-pane active" id="bells">
 <h1>BELLS</h1>
 {{bells_template|safe}}
 </div>
 {% endif %}
 
 </div>
+
+
+{% fragment "javascript" %}
+<script type="text/javascript" encoding="utf-8">
+    $(".newbell").change(function() {
+        var $this = $(this);
+
+        console.log($this.val());
+        var data = $.ajax({
+            url:"bell?type=" + $this.val(),
+            dataType:"json",
+            async: false}).responseText
+        data = $.parseJSON(data);
+        var form = data.form;
+        $this.parent(".slot").append("<form>" + form + "<button class='savebell'>Save</button><button class='cancelbell'>Cancel</button></form>");
+    });
+    $('.slot').on('click', ".savebell", function() {
+        // ajax-submit form, retrieve data, replace
+        console.log("OK");
+        return false;
+    });
+
+</script>
+{% endfragment %}
 {% endblock %}
 
 {% endblock %}
