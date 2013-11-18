@@ -390,9 +390,11 @@ class MainHandler(WheelRESTHandler):
 
         ## Bells and whistles magic
         ## check if content meets criteria (which?)
-        self.context['bells'] = self.context['tabs'] = True
-        self.context['handler'] = self
-        self.context['bells_template'] = self.render_template("wheelcms_axle/bells.html")
+
+        if hasattr(content, 'bells'):
+            self.context['bells'] = self.context['tabs'] = True
+            self.context['handler'] = self
+            self.context['bells_template'] = self.render_template("wheelcms_axle/bells.html")
 
         formclass =  typeinfo.form
         slug = instance.slug(language=language)
