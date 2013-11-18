@@ -6,7 +6,16 @@
 
 {% block form_header %}{% endblock %}
 
+{% if tabs %}
+<ul class="nav nav-tabs">
+  <li class="active"><a href="#content" data-toggle="tab">Metadata</a></li>
+  <li><a href="#bells" data-toggle="tab">Bells</a></li>
+</ul>
+{% endif %}
+
 {% block form_form %}
+<div class="tab-content">
+
 <div id="content" class="tab-pane active">
   <form role="form" method="post" action="{{form_action|default:'.'}}" class="form-horizontal checksave"
     {% if form.is_multipart %}enctype="multipart/form-data"{%endif%}>
@@ -65,6 +74,15 @@
       </div>
     </div>
   </form>
+</div>
+
+{% if bells %}
+<div class="tab-pane" id="bells">
+<h1>BELLS</h1>
+{{bells_template|safe}}
+</div>
+{% endif %}
+
 </div>
 {% endblock %}
 
