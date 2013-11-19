@@ -1063,3 +1063,29 @@ class MainHandler(WheelRESTHandler):
             form = HTMLBellForm()
 
         return dict(form=form.as_p())
+
+    @json
+    @applyrequest
+    def handle_bell_post(self, type, slot):
+        from wheel_cms.models import TwitterBellForm, HTMLBellForm
+        form = view = None
+
+        if type == "HTML":
+            form = HTMLBellForm(self.request.POST)
+            if form.is_valid():
+                o = form.save(commit=False)
+                o.content = self.content()
+                o.slot = slot
+                o.save()
+                view = self.render_template("htmlbell.html", bell=o)
+        elif type == "Twitter":
+            form = TwitterBellForm(self.request.POST)
+            if form.is_valid():
+                o = form.save(commit=False)
+                o.content = self.content()
+                o.slot = slot
+                o.save()
+                view = self.render_template("twitterbell.html", bell=o)
+
+        return dict(form=form.as_p(), valid=form.is_valid(), view=view)
+

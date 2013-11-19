@@ -17,7 +17,7 @@
 {% block form_form %}
 <div class="tab-content">
 
-<div id="content" class="tab-pane ">
+<div id="content" class="tab-pane {% if not tabs %}active {% endif %}">
   <form role="form" method="post" action="{{form_action|default:'.'}}" class="form-horizontal checksave"
     {% if form.is_multipart %}enctype="multipart/form-data"{%endif%}>
     {% csrf_token %}
@@ -78,7 +78,7 @@
 </div>
 
 {% if bells %}
-<div class="tab-pane active" id="bells">
+<div class="tab-pane {% if tabs %}active {% endif %}" id="bells">
 <h1>BELLS</h1>
 {{bells_template|safe}}
 </div>
@@ -91,19 +91,45 @@
 <script type="text/javascript" encoding="utf-8">
     $(".newbell").change(function() {
         var $this = $(this);
+        var type = $this.val();
 
-        console.log($this.val());
+        console.log(type);
         var data = $.ajax({
-            url:"bell?type=" + $this.val(),
+            url:"bell?type=" + type,
             dataType:"json",
             async: false}).responseText
         data = $.parseJSON(data);
         var form = data.form;
-        $this.parent(".slot").append("<form>" + form + "<button class='savebell'>Save</button><button class='cancelbell'>Cancel</button></form>");
+        var container = $this.parent(".slot");
+        var slot = container.data('slot');
+
+        container.append("<form>"
+        + "<input type='hidden' name='type' value='" + type + "'>"
+        + "<input type='hidden' name='slot' value='" + slot + "'>"
+        + "{% csrf_token %}"
+        + form
+        + "<button class='savebell'>Save</button><button class='cancelbell'>Cancel</button></form>");
     });
     $('.slot').on('click', ".savebell", function() {
         // ajax-submit form, retrieve data, replace
-        console.log("OK");
+        var $this = $(this);
+        var data = $this.parent("form").serializeArray();
+        $.ajax({
+            url: "bell_post",
+            type: "POST",
+            data: data,
+            dataType:"json",
+            success: function(data, status, jqXHR) {
+                // if the result is not is_valid, update the form,
+                // else show the view
+                if(data.valid) {
+                    $this.parent("form").html(data.view);
+                }
+                else {
+                    $this.parent("form").html(data.form);
+                }
+            }
+        });
         return false;
     });
 
