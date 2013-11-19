@@ -391,11 +391,16 @@ class MainHandler(WheelRESTHandler):
         ## Bells and whistles magic
         ## check if content meets criteria (which?)
 
+
         if hasattr(content, 'bells'):
+            ## Do more magic?
+            language = self.active_language()
+            spoke = self.spoke(language=language)
             self.context['bells'] = self.context['tabs'] = True
             self.context['handler'] = self
-            self.context['bells_template'] = self.render_template("wheelcms_axle/bells.html")
-            self.context['bells_edit'] = True
+            ## we can't render spoke.view_template() since it will include all base templates
+            ## and so on.
+            self.context['bells_template'] = self.render_template(spoke.bell_base, bells_edit=True)
 
         formclass =  typeinfo.form
         slug = instance.slug(language=language)
@@ -537,6 +542,7 @@ class MainHandler(WheelRESTHandler):
             self.context['toolbar'] = Toolbar(self.instance, self.request)
 
         if spoke:
+            self.context['bells_template'] = self.render_template(spoke.bell_base)
             ## update the context with addtional data from the spoke
             self.context.update(spoke.context(self, self.request, self.instance))
             tpl = spoke.view_template()
@@ -1054,38 +1060,31 @@ class MainHandler(WheelRESTHandler):
         if not self.hasaccess():
             return self.forbidden()
 
-        from wheel_cms.models import TwitterBellForm, HTMLBellForm
+        from wheel_cms.models import whistle_map
+        form = view = None
 
-        form = None
-        if type == "Twitter":
-            form = TwitterBellForm()
-        elif type == "HTML":
-            form = HTMLBellForm()
-
-        return dict(form=form.as_p())
+        whistle = whistle_map.get(type)
+        if whistle:
+            form = whistle.form(self.request.POST)
+            return dict(form=form.as_p())
+        return dict()
 
     @json
     @applyrequest
     def handle_bell_post(self, type, slot):
-        from wheel_cms.models import TwitterBellForm, HTMLBellForm
+        from wheel_cms.models import whistle_map
         form = view = None
 
-        if type == "HTML":
-            form = HTMLBellForm(self.request.POST)
+        whistle = whistle_map.get(type)
+        if whistle:
+            form = whistle.form(self.request.POST)
             if form.is_valid():
                 o = form.save(commit=False)
                 o.content = self.content()
                 o.slot = slot
                 o.save()
-                view = self.render_template("htmlbell.html", bell=o)
-        elif type == "Twitter":
-            form = TwitterBellForm(self.request.POST)
-            if form.is_valid():
-                o = form.save(commit=False)
-                o.content = self.content()
-                o.slot = slot
-                o.save()
-                view = self.render_template("twitterbell.html", bell=o)
+                w = whistle(o)
+                view = w.render_view()
 
-        return dict(form=form.as_p(), valid=form.is_valid(), view=view)
-
+            return dict(form=form.as_p(), valid=form.is_valid(), view=view)
+        return dict(valid=False)
