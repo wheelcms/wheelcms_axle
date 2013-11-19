@@ -542,7 +542,8 @@ class MainHandler(WheelRESTHandler):
             self.context['toolbar'] = Toolbar(self.instance, self.request)
 
         if spoke:
-            self.context['bells_template'] = self.render_template(spoke.bell_base)
+            if hasattr(spoke, "bell_base"):
+                self.context['bells_template'] = self.render_template(spoke.bell_base)
             ## update the context with addtional data from the spoke
             self.context.update(spoke.context(self, self.request, self.instance))
             tpl = spoke.view_template()
