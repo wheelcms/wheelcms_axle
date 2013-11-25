@@ -169,7 +169,7 @@ class Toolbar(object):
             content = self.instance.content(language=lang)
 
             ## In view mode toch edit tonen om vertaling te maken!
-            base_url = "switch_admin_language?path=" + self.instance.tree_path + "&language=" + lang
+            base_url = "switch_admin_language?path=" + self.instance.tree_path + "&switchto=" + lang
             if lang == active_language:
                 active = option
             else:

@@ -300,9 +300,9 @@ class TestTranslations(object):
         ## Do some matching magic using endswith to work around language / base prefixing.
         ## We're mosly interested in create/view/edit actions anyway
         assert translations['translated'][0]['id'] == "nl"
-        assert translations['translated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=nl')
+        assert translations['translated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&switchto=nl')
         assert translations['untranslated'][0]['id'] == 'fr'
-        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=fr')
+        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&switchto=fr')
 
     def test_translations_edit(self, client):
         root = Node.root()
@@ -323,9 +323,9 @@ class TestTranslations(object):
         ## Do some matching magic using endswith to work around language / base prefixing.
         ## We're mosly interested in create/view/edit actions anyway
         assert translations['translated'][0]['id'] == "nl"
-        assert translations['translated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=nl&rest=edit')
+        assert translations['translated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&switchto=nl&rest=edit')
         assert translations['untranslated'][0]['id'] == 'fr'
-        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=fr&rest=edit')
+        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&switchto=fr&rest=edit')
 
     def test_translations_list(self, client):
         root = Node.root()
@@ -346,9 +346,9 @@ class TestTranslations(object):
         ## Do some matching magic using endswith to work around language / base prefixing.
         ## We're mosly interested in create/view/edit actions anyway
         assert translations['translated'][0]['id'] == "nl"
-        assert translations['translated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=nl&rest=list')
+        assert translations['translated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&switchto=nl&rest=list')
         assert translations['untranslated'][0]['id'] == 'fr'
-        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=fr&rest=list')
+        assert translations['untranslated'][0]['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&switchto=fr&rest=list')
 
     def test_translations_create(self, client):
         root = Node.root()
@@ -376,4 +376,4 @@ class TestTranslations(object):
         for ut in translations['untranslated']:
             l = ut['id']
             assert l in ('nl', 'fr', 'en', 'any')
-            assert ut['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&language=' + l + '&rest=' + urllib2.quote('create?type=sometype'))
+            assert ut['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&switchto=' + l + '&rest=' + urllib2.quote('create?type=sometype'))
