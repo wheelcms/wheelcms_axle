@@ -1026,16 +1026,17 @@ class MainHandler(WheelRESTHandler):
 
 
     @applyrequest
-    def handle_switch_admin_language(self, language, path=None, rest=""):
+    def handle_switch_admin_language(self, switchto, path=None, rest=""):
+        
         if not self.hasaccess():
             return self.forbidden()
 
-        self.request.session['admin_language'] = language
+        self.request.session['admin_language'] = switchto
         if path:
             node = Node.objects.get(tree_path=path)
         else:
             node = self.instance
 
-        return self.redirect(node.get_absolute_url(language=language) + rest,
-                             info="Switched to %s" % language)
+        return self.redirect(node.get_absolute_url(language=switchto) + rest,
+                             info="Switched to %s" % switchto)
 

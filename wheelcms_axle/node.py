@@ -313,7 +313,20 @@ class NodeBase(models.Model):
 
     def get_path(self, language=None):
         language = language or self.preferred_language or get_language()
-        return Paths.objects.get(node=self, language=language).path
+        try:
+            return Paths.objects.get(node=self, language=language).path
+        except Paths.DoesNotExist:
+            ## The path may not exist because at the time of the creation of
+            ## the node that language may not have been enabled yet.
+            ## Create the path using any of the existis paths for this node.
+            ## This is a bit arbitrary; using FALLBACK_LANGUAGE might make
+            ## more sense but that might not exist either. XXX
+            fallback = Paths.objects.filter(node=self)
+            if fallback.exists():
+                p = Paths(node=self, language=language, path=fallback[0].path)
+                p.save()
+                return p.path
+            raise
 
     def save(self, *args, **kw):
         ## If the object has not yet been saved (ever), create the node's paths
