@@ -59,11 +59,13 @@
 
 {% block searchnav %}{% endblock %}
 {% block rightnav %}
+  {% block rightnavsearch %}
   <form class="navbar-form navbar-right" action="{% url "haystack_search" %}">
     <div class="form-group">
       <input type="text" name="q" class="form-control search-query " placeholder="Search">
     </div>
   </form>
+  {% endblock %}
   {% block language_selector %}
     {# language selection #}
     {% with langdata=languages %}
