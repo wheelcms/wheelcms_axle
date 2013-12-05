@@ -1,0 +1,82 @@
+/*
+ * Make sure the browse Modal is sufficiently wide
+ */
+#browseModal .modal-dialog {
+    width: 900px;
+    height: 400px;
+}
+
+/*
+ * Make sure the iframe is large enough
+ */
+iframe#external_iframe {
+    height: 400px;
+}
+
+#panel0, #panel1, #panel2 {
+    height: 300px;
+    overflow: auto;
+}
+
+/*
+ * Content that cannot be selected in the browse Modal (e.g. non-images
+ * when chosing an image
+ */
+.disabled-content {
+    color: grey;
+    font-style: italic;
+}
+/*
+ * Image in panel
+ */
+.detail-image {
+    width: 120px;
+}
+
+
+/* make help text in forms a bit smaller */
+form .help-block {
+    font-size: 0.8em;
+}
+
+.footer {
+    background-color: rgba(0, 0, 0, 0.8);
+    color: rgb(145, 145, 145);
+    padding: 20px 0px 20px 0px;
+    margin-top: 50px;
+}
+
+.footer h5 {
+    color: rgb(230, 230, 230);
+}
+
+.footer .vcard {
+    list-style: none;
+    margin: 0;
+    color: rgb(215, 215, 215);
+}
+
+/*
+ * generic result listing styling, as used for contents view on page
+ */
+table.result-listing tr.state-private {
+    font-style: italic;
+}
+
+table.result-listing span.title {
+    font-weight: bold;
+    display: block;
+}
+table.result-listing p {
+    margin: 0 0 10px;
+}
+
+table.result-listing span.byline {
+    font-size: 0.8em;
+    color: #666;
+}
+
+table.result-listing img.icon {
+    margin-right: 5px;
+}
+

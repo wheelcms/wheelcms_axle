@@ -608,7 +608,7 @@ class MainHandler(WheelRESTHandler):
     def handle_reorder(self, rel, target, ref):
         if not self.hasaccess() or not self.post:
             return self.forbidden()
-        
+
         targetnode = Node.objects.get(tree_path=target)
         referencenode = Node.objects.get(tree_path=ref)
 
@@ -670,6 +670,8 @@ class MainHandler(WheelRESTHandler):
             accum_success = []
             accum_failure = []
 
+            # import pdb; pdb.set_trace()
+            
             for p in clipboard:
                 n = Node.objects.get(tree_path=p)
                 if n:
@@ -733,11 +735,6 @@ class MainHandler(WheelRESTHandler):
 
         return self.redirect(self.instance.get_absolute_url() + 'list',
                              info="%d item(s) deleted" % count)
-
-    def handle_popup(self):
-        """ popup experiments - #524 """
-        return self.template("wheelcms_axle/popup.html",
-                             original="/data/powerful-editing")
 
     @applyrequest
     def handle_panel_selection_details(self, path, type, klass="", title="",
@@ -829,6 +826,7 @@ class MainHandler(WheelRESTHandler):
             mode can be either "link" (any content) or "image" (only image
             based content)
         """
+        language = self.active_language()
         if not self.hasaccess():
             return self.forbidden()
 
@@ -854,7 +852,7 @@ class MainHandler(WheelRESTHandler):
         path = strip_action(path)
         original = strip_action(original)
 
-        node = start = Node.get(path)
+        node = start = Node.get(path)# , language=language)
         panels = []
 
         ## first panel: bookmarks/shortcuts
@@ -1028,16 +1026,17 @@ class MainHandler(WheelRESTHandler):
 
 
     @applyrequest
-    def handle_switch_admin_language(self, language, path=None, rest=""):
+    def handle_switch_admin_language(self, switchto, path=None, rest=""):
+        
         if not self.hasaccess():
             return self.forbidden()
 
-        self.request.session['admin_language'] = language
+        self.request.session['admin_language'] = switchto
         if path:
             node = Node.objects.get(tree_path=path)
         else:
             node = self.instance
 
-        return self.redirect(node.get_absolute_url(language=language) + rest,
-                             info="Switched to %s" % language)
+        return self.redirect(node.get_absolute_url(language=switchto) + rest,
+                             info="Switched to %s" % switchto)
 

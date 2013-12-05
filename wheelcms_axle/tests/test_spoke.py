@@ -14,9 +14,11 @@ from wheelcms_axle.models import FileContent, ImageContent, ContentClass
 
 
 from wheelcms_axle.node import Node
-from wheelcms_axle.content import TypeRegistry, type_registry
-from wheelcms_axle.templates import TemplateRegistry, template_registry
+from wheelcms_axle.content import type_registry
+from wheelcms_axle.templates import template_registry
 from wheelcms_axle.spoke import Spoke
+
+import pytest
 
 DEFAULT = "wheelcms_axle/content_view.html"
 
@@ -28,23 +30,9 @@ filedata2 = SimpleUploadedFile("foo2.png",
            'GIF87a\x01\x00\x01\x00\x80\x01\x00\x00\x00\x00ccc,\x00'
            '\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02E\x01\x00;')
 
-class BaseLocalRegistry(object):
-    """
-        Make sure registries are local to the test
-    """
-    type = None
-    types = ()
 
-    def setup(self):
-        """ override the global registry """
-        self.registry = TypeRegistry()
-        type_registry.set(self.registry)
-        if self.type:
-            self.registry.register(self.type)
-        for type in self.types:
-            self.registry.register(type)
-
-class BaseSpokeTest(BaseLocalRegistry):
+@pytest.mark.usefixtures("localtyperegistry")
+class BaseSpokeTest(object):
     """
         Basic spoke testing
     """
@@ -79,7 +67,8 @@ class BaseSpokeTest(BaseLocalRegistry):
         return fields  ## for additional tests
 
 
-class BaseSpokeTemplateTest(BaseLocalRegistry):
+@pytest.mark.usefixtures("localtyperegistry", "localtemplateregistry")
+class BaseSpokeTemplateTest(object):
     """
         Test template related validation/behaviour
     """
@@ -91,27 +80,18 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         """ return formdata files required for validation to succeed """
         return {}
 
-    def setup(self):
-        """ create clean local registries, make sure it's used globally """
-        super(BaseSpokeTemplateTest, self).setup()
-
-        self.reg = TemplateRegistry()
-        template_registry.set(self.reg)
-
-        self.root = Node.root()
-
-    def test_empty(self, client):
+    def test_empty(self, client, root):
         """ An empty registry """
-        form = self.type.form(parent=self.root)
+        form = self.type.form(parent=root)
         assert 'template' not in form.fields
         model = self.type.model()
         model.save()
         assert self.type(model).view_template() == DEFAULT
 
-    def test_single(self, client):
+    def test_single(self, client, root):
         """ An single template registered """
-        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
-        form = self.type.form(parent=self.root)
+        template_registry.register(self.type, "foo/bar", "foo bar", default=False)
+        form = self.type.form(parent=root)
         assert 'template' in form.fields
         assert form.fields['template'].choices == [('foo/bar', 'foo bar')]
         model = self.type.model()
@@ -122,50 +102,50 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         """ If there's a default, it should be used """
         model = self.type.model()
         model.save()
-        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
-        self.reg.register(self.type, "foo/bar2", "foo bar", default=True)
-        self.reg.register(self.type, "foo/bar3", "foo bar", default=False)
+        template_registry.register(self.type, "foo/bar", "foo bar", default=False)
+        template_registry.register(self.type, "foo/bar2", "foo bar", default=True)
+        template_registry.register(self.type, "foo/bar3", "foo bar", default=False)
         assert self.type(model).view_template() == "foo/bar2"
 
     def test_explicit(self, client):
         """ unless there's an explicit other selection """
-        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
-        self.reg.register(self.type, "foo/bar2", "foo bar", default=True)
-        self.reg.register(self.type, "foo/bar3", "foo bar", default=False)
+        template_registry.register(self.type, "foo/bar", "foo bar", default=False)
+        template_registry.register(self.type, "foo/bar2", "foo bar", default=True)
+        template_registry.register(self.type, "foo/bar3", "foo bar", default=False)
         model = self.type.model(template="foo/bar3")
         model.save()
         assert self.type(model).view_template() == "foo/bar3"
 
-    def test_form_excluded(self, client):
+    def test_form_excluded(self, client, root):
         """ verify certain fields are excluded from the form """
-        form = self.type.form(parent=self.root, data={'template':"bar/foo"})
+        form = self.type.form(parent=root, data={'template':"bar/foo"})
         assert 'node' not in form.fields
         assert 'meta_type' not in form.fields
         assert 'owner' not in form.fields
         assert 'classess' not in form.fields
 
-    def test_form_validation_fail(self, client):
+    def test_form_validation_fail(self, client, root):
         """ Only registered templates are allowed """
-        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
-        form = self.type.form(parent=self.root, data={'template':"bar/foo",
+        template_registry.register(self.type, "foo/bar", "foo bar", default=False)
+        form = self.type.form(parent=root, data={'template':"bar/foo",
                                                       'language':'en'})
         assert not form.is_valid()
         assert 'template' in form.errors
 
-    def test_form_validation_language(self, client):
+    def test_form_validation_language(self, client, root):
         """ language is required """
-        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         data = self.valid_data()
         data['template'] = 'foo/bar'
-        form = self.type.form(parent=self.root, data=data)
+        form = self.type.form(parent=root, data=data)
         assert not form.is_valid()
         assert 'language' in form.errors
 
     def test_form_validation_success(self, client):
         """ In the end it should succeed """
-        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
-        self.reg.register(self.type, "foo/bar2", "foo bar", default=True)
-        self.reg.register(self.type, "foo/bar3", "foo bar", default=False)
+        template_registry.register(self.type, "foo/bar", "foo bar", default=False)
+        template_registry.register(self.type, "foo/bar2", "foo bar", default=True)
+        template_registry.register(self.type, "foo/bar3", "foo bar", default=False)
         p = Node.root()
         data = self.valid_data()
         data['slug'] = 's'
@@ -180,7 +160,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
 
     def test_slug_exists(self, client):
         """ a slug has been chosen that's already in use """
-        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
         p.add('foo')
         data = self.valid_data()
@@ -197,7 +177,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
 
     def test_slug_generate(self, client):
         """ test slug generation """
-        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
         data = self.valid_data()
         data['title'] = 'Hello World'
@@ -210,7 +190,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
 
     def test_slug_generate_dashes(self, client):
         """ test slug generation """
-        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
         data = self.valid_data()
         data['title'] = 'foo -- bar  -  cccc'
@@ -224,7 +204,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
 
     def test_slug_generate_stopwords(self, client):
         """ test slug generation """
-        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
         data = self.valid_data()
         data['title'] = 'a world the are'
@@ -238,7 +218,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
 
     def test_slug_generate_stopwords_empty(self, client):
         """ test slug generation - only stopwords """
-        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
         data = self.valid_data()
         data['title'] = 'are'
@@ -252,7 +232,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
 
     def test_slug_generate_stopwords_empty_dashes(self, client):
         """ test slug generation - only stopwords """
-        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
         data = self.valid_data()
         data['title'] = 'are - a - they'
@@ -266,7 +246,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
 
     def test_slug_generate_complex(self, client):
         """ test slug generation """
-        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
         data = self.valid_data()
         data['title'] = 'Hello World, What\'s up?'
@@ -281,7 +261,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
 
     def test_slug_generate_conflict(self, client):
         """ slug generation should not create duplicate slugs """
-        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
         p.add('foo')
         data = self.valid_data()
@@ -333,7 +313,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
 
     def test_slug_generate_reserved(self, client):
         """ slug generation should not create reserved names """
-        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
         data = self.valid_data()
         data['slug'] = ''
@@ -350,7 +330,7 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
     def test_slug_generate_reserved_existing(self, client):
         """ slug generation should not create reserved names or existing
             names, combined """
-        self.reg.register(self.type, "foo/bar", "foo bar", default=False)
+        template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
         p.add('foo')
         data = self.valid_data()
@@ -370,10 +350,10 @@ class BaseSpokeTemplateTest(BaseLocalRegistry):
         def ctx(ins):
             return dict(a="1")
 
-        self.reg.register(self.type, "foo/bar", "foo bar",
+        template_registry.register(self.type, "foo/bar", "foo bar",
                           default=False, context=ctx)
 
-        context_method = self.reg.context.get((self.type, "foo/bar"))
+        context_method = template_registry.context.get((self.type, "foo/bar"))
         assert context_method
         assert context_method(None) == dict(a="1")
 
@@ -404,15 +384,11 @@ class ModellessSpoke(Spoke):
     def name(cls):
         return cls.__name__.lower()
 
+@pytest.mark.usefixtures("localtyperegistry")
 class TestImplicitAddition(object):
     """
         Test implicit/explicit addition of children
     """
-    def setup(self):
-        """ local registry, install it globally """
-        self.registry = TypeRegistry()
-        type_registry.set(self.registry)
-
     def test_explicit(self, client):
         """ Simple case, no restrictions """
         class T1(ModellessSpoke):
@@ -421,8 +397,8 @@ class TestImplicitAddition(object):
         class T2(ModellessSpoke):
             children = None
 
-        self.registry.register(T1)
-        self.registry.register(T2)
+        type_registry.register(T1)
+        type_registry.register(T2)
 
         assert T1 in T2.addable_children()
 
@@ -434,8 +410,8 @@ class TestImplicitAddition(object):
         class T2(ModellessSpoke):
             children = None
 
-        self.registry.register(T1)
-        self.registry.register(T2)
+        type_registry.register(T1)
+        type_registry.register(T2)
 
         assert T1 not in T2.addable_children()
 
@@ -447,8 +423,8 @@ class TestImplicitAddition(object):
         class T2(ModellessSpoke):
             children = (T1, )
 
-        self.registry.register(T1)
-        self.registry.register(T2)
+        type_registry.register(T1)
+        type_registry.register(T2)
 
         assert T1 in T2.addable_children()
 
@@ -461,12 +437,13 @@ class TestImplicitAddition(object):
         class T2(ModellessSpoke):
             explicit_children = (T1, )
 
-        self.registry.register(T1)
-        self.registry.register(T2)
+        type_registry.register(T1)
+        type_registry.register(T2)
 
         assert T1 in T2.addable_children()
 
-class TestFileContent(BaseLocalRegistry):
+@pytest.mark.usefixtures("localtyperegistry")
+class TestFileContent(object):
     """ verify File based content can be found in a single query """
     types = (OtherTestFileType, OtherTestImageType, TestFileType, TestImageType)
 
@@ -490,7 +467,8 @@ class TestFileContent(BaseLocalRegistry):
         files = FileContent.instances.all()
         assert set(x.content() for x in files) == set((file1, file2, file3))
 
-class TestImageContent(BaseLocalRegistry):
+@pytest.mark.usefixtures("localtyperegistry")
+class TestImageContent(object):
     """ verify Image based content can be found in a single query """
     types = (OtherTestFileType, OtherTestImageType, TestFileType, TestImageType)
 

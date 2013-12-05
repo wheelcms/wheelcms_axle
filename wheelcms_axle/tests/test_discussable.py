@@ -1,7 +1,8 @@
-from .test_spoke import BaseLocalRegistry
 from .models import Type1, Type2, Type1Type, Type2Type
+import pytest
 
-class TestDiscussable(BaseLocalRegistry):
+@pytest.mark.usefixtures("localtyperegistry")
+class TestDiscussable(object):
     types = (Type1Type, Type2Type)
 
     def test_default_enabled(self, client):

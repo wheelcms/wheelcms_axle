@@ -1,13 +1,13 @@
 $(document).ready(function() {
     // make rows clickable if they have a data-url
-    $(".clickrow").live('click', function() {
+    $(".clickrow").on('click', function() {
         document.location = $(this).data('url');
     });
 
     // Check if any accordions need to be opened if it contains a form
     // with errors
-    $(".control-group.error").each(function(i, v) {
-        $(v).parents(".accordion-body").removeClass("collapsed").addClass("collapse").addClass("in");
+    $(".accordion-inner:has('.has-error')").each(function(i, v) {
+        $(v).parent().addClass("in");
     });
 });
 

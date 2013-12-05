@@ -1,17 +1,19 @@
 {# base template that includes editing controls #}
 {% extends "wheelcms_axle/base.html" %}
 {% load staticfiles %}
+{% load fragments %}
 
-{% block base_stylesheets  %}
-{{ block.super }}
 
-<link rel="stylesheet" href="{% static "tagmanager/bootstrap-tagmanager.css" %}" media="screen, projection, print"/>
+{% block fragments %}
+{{block.super}}
+{% fragment "base_stylesheets"  %}
+<link rel="stylesheet" href="{% static "css/wheel3.css" %}" media="screen, projection, print"/>
+<link rel="stylesheet" href="{% static "css/wheel_content.css" %}" media="screen, projection, print"/>
 <link rel="stylesheet" href="{% static "css/upload/jquery.fileupload-ui.css" %}" media="screen, projection, print"/>
-{% endblock %}
+<link rel="stylesheet" href="{% static "tagmanager/bootstrap-tagsinput.css" %}" media="screen, projection, print"/>
 
-{% block javascript %}
-
-{{ block.super }}
+{% endfragment %}
+{% fragment "javascript" %}
 
 <script src="{% static "js/upload/jquery.ui.widget.js" %}"></script>
 <script src="{% static "js/upload/load-image.min.js" %}"></script>
@@ -21,7 +23,8 @@
 <script src="{% static "js/upload/jquery.fileupload-process.js" %}"></script>
 <script src="{% static "js/upload/jquery.fileupload-resize.js" %}"></script>
 <script src="{% static "js/upload/jquery.fileupload-validate.js" %}"></script>
-<script src="{% static "tagmanager/bootstrap-tagmanager.js" %}"></script>
+<script src="{% static "tagmanager/bootstrap-tagsinput.js" %}"></script>
+<script src="{% static "tagmanager/typeahead.js" %}"></script>
 
 <script type="text/javascript" charset="utf-8">
     var upload_modal = (function() {
@@ -53,7 +56,7 @@
             var upload = null;
 
             var fileinput = $("#fileupload input[type=file]");
-            fileinput.replaceWith('<div id="filepreview" ></div><span class="btn btn-success fileinput-button"><i class="icon-plus icon-white"></i><span id="filelabel">Add file</span><input id="' + fileinput.attr('id') + '" type="file" name="' + fileinput.attr('name') + '"></span>');
+            fileinput.replaceWith('<div id="filepreview" ></div><span class="btn btn-success fileinput-button"><i class="glyphicon glyphicon-plus icon-white"></i><span id="filelabel">Add file</span><input id="' + fileinput.attr('id') + '" type="file" name="' + fileinput.attr('name') + '"></span>');
             //var preview = $("#fileupload input[type=file]").parent(".controls")
             $('#fileupload').fileupload({
                 url: 'fileup',
@@ -125,13 +128,13 @@
 
             if(mode == "any") {
                 header.text("Upload content");
-                types.html('<select class="select_type"> ' +
+                types.html('<select class="select_type form-control"> ' +
                            '<option value="wheelcms_spokes.image">an Image</option> ' +
                            '<option value="wheelcms_spokes.file">a File</option> ' +
                            '</select>');
             } else {
                 header.text("Upload an image");
-                types.html('<select class="select_type"> ' +
+                types.html('<select class="select_type form-control"> ' +
                            '<option value="wheelcms_spokes.image">an Image</option> ' +
                            '</select>');
             }
@@ -155,7 +158,6 @@
         var initialized = false;
         var current_tab = "browse_local";
 
-
         function fix_sizes() {
             /*
              * Make sure the "panels" div takes up exactly the remaining space.
@@ -166,19 +168,10 @@
             var tabs = $("#browseModal .nav-tabs").outerHeight(true);
             var remainder = total - header - tabs;
             $("#panels").height(remainder);
-
-            var iframe = $("#external_iframe");
-
-            // XXX -10 is a hack - iframe scrollbars?
-            iframe.outerHeight(total-tabs-10);
-            iframe.outerWidth(iframe.parent().innerWidth());
-
-            $("#browse_external_image").height(total-tabs);
-
         }
 
         function modal_shown() {
-            fix_sizes()
+            fix_sizes();
         }
 
         function load_panels(path, panelid) {
@@ -211,7 +204,6 @@
                 panel.html(paneldata);
             }
             $(".crumbcontainer").html(crumbs);
-            setTimeout(fix_sizes, 250);
             // find the current selection and see if it's selectable
             select_state($("tr[data-url='" + path + "']").data("selectable") == "yes");
         }
@@ -286,7 +278,6 @@
 
             select_state(false);
 
-            setTimeout(fix_sizes, 250);
 
             if(initialized) {
                 return;
@@ -297,11 +288,11 @@
             /*
              * stuff to do once the modal actually shows
              */
-            modal.on('shown', modal_shown);
+            modal.on('shown.bs.modal', modal_shown);
             /*
              * handle tab changes
              */
-            modal.find('a[data-toggle="tab"]').on('shown', tab_selected);
+            modal.find('a[data-toggle="tab"]').on('shown.bs.tab', tab_selected);
 
             /*
              * Track changes on the external link input so we can
@@ -359,7 +350,7 @@
             /*
              * cliking an entry in a panel should load the subpanel/content
              */
-            $("tr.entry").live('click', function() {
+            $("#browse_local").on('click', "tr.entry", function() {
                 var path = $(this).data('url');
                 var panelid = parseInt($(this).parents("div.panel").data('panel'));
                 load_panels(path, panelid);
@@ -374,7 +365,7 @@
             /*
              * clicking a path component in the breadcrumb should take you there
              */
-            $("a.crumb").live('click', function() {
+            $("#browse_local").on('click', "a.crumb", function() {
                 var path = $(this).data('url');
                 var panelid = parseInt($(this).parents("div.panel").data('panel'));
                 load_panels(path, panelid);
@@ -515,154 +506,167 @@
 
     $(document).ready(function() {
         /*
-         * enable the tagmanager. We fiddle a bit with the
-         * original/generated (hidden) field. We want to preserve the
-         * original fieldname for the created hidden field that
-         * will get the actual tags
+         * Messy hack; bootstrap3 broke all existing tags/typeahead combo's.
+         * Make sure tag gets added and input gets cleared.
+         * Assumes there's a single tag input.
+         * Dropdown remains broken - gets clipped by accordeon.
          */
-        $(".tagManager").each(function(i, v) {
-           var $v = $(v);
-           var name = $v.attr("name");
-           $v.attr("name", name + "-taginput");
-           var vals = $v.val().split(/[,]+/);
-           $v.val("");
-           $v.tagsManager(
-                {prefilled:vals,
-                 preventSubmitOnEnter:true,
-                 typeahead:true,
-                 typeaheadSource:{{typeahead_tags|safe}},
-                 hiddenTagListName:name,
-                 blinkBGColor_1: '#FFFF9C',
-                 blinkBGColor_2: '#CDE69C'});
-        });
+        $(".tagManager").tagsinput('input').typeahead(
+          {name: "tags", source: {{typeahead_tags|safe}},
+           updater:$.proxy(function (value) {
+          $(".tagManager").tagsinput('add', value);
+          $("div.bootstrap-tagsinput input").val("");
+          
+        })});
+        $("div.bootstrap-tagsinput").css("width", "100%");
+        $("div.bootstrap-tagsinput input").addClass('form-control'
+        );
     });
+
 </script>
 
+{% endfragment %}
 {% endblock %}
-
 {% block base_main %}
 
 <!-- Button to trigger modal -->
 
-<div id="browseModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="browseModalLabel" aria-hidden="true">
-  <div class="modal-body tabbable">
-    <ul class="nav nav-tabs">
-      <li id="local_tab" class="active"><a href="#browse_local" data-toggle="tab">Local / Browse</a></li>
-      <li id="link_tab" class=""><a href="#browse_external_link" data-toggle="tab">External Link</a></li>
-      <li id="image_tab" class=""><a href="#browse_external_image" data-toggle="tab">External Image</a></li>
-      <li class="pull-right"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button></a>
-    </ul>
+<div id="browseModal" class="modal fade" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body tabbable">
+        <ul class="nav nav-tabs">
+          <li id="local_tab" class="active">
+            <a href="#browse_local" data-toggle="tab">Local / Browse</a></li>
+          <li id="link_tab" class="">
+            <a href="#browse_external_link" data-toggle="tab">External Link</a></li>
+          <li id="image_tab" class="">
+            <a href="#browse_external_image" data-toggle="tab">External Image</a></li>
+          <li class="pull-right">
+            <button type="button" class="close" data-dismiss="modal">×</button></a>
+        </ul>
 
-    <div class="tab-content">
-      <div id="browse_local" class="tab-pane active">
-        <div class="row-fluid" id="browsecrumbs">
-          <div class="row12 crumbcontainer">
+        <div class="tab-content">
+          <div id="browse_local" class="tab-pane active">
+            <div class="row" id="browsecrumbs">
+              <div class="col-sm-12 crumbcontainer">
+              </div>
+            </div>
+            <div class="row" id="panels">
+              <div class="col-sm-3 panel panel0" data-panel="0" id="panel0">
+              </div>
+              <div class="col-sm-4 panel panel1" data-panel="1" id="panel1">
+              </div>
+              <div class="col-sm-3 panel panel2" data-panel="2" id="panel2">
+              </div>
+            </div>
+          </div>
+          <div id="browse_external_link" class="tab-pane">
+            <div class="row">
+              <div class="col-sm-6">
+                <form>
+                  <legend>External URL</legend>
+                  <label class="control-label" for="external_url">URL</label>
+                  <div class="input-append">
+                    <input id="external_url" type="text" name="url" maxlength="256" />
+                    <button id="external_url_preview" class="btn">Preview <i class="glyphicon glyphicon-chevron-right"></i></button>
+                  </div>
+                  <div class="help-block">
+                    Not all sites (e.g. facebook) may support preview/embedding
+                  </div>
+                </form>
+              </div>
+              <div class="col-sm-6">
+                <iframe width="100%" id="external_iframe" src=""></iframe>
+              </div>
+            </div>
+          </div>
+          <div id="browse_external_image" class="tab-pane">
+            <div class="row">
+              <div class="col-sm-6">
+                <form>
+                  <legend>External Image</legend>
+                  <label class="control-label" for="external_image_url">URL</label>
+                  <div class="input-append">
+                    <input id="external_image_url" type="text" name="url" maxlength="256" />
+                    <button id="external_image_url_preview" class="btn">Preview <i class="glyphicon glyphicon-chevron-right"></i></button>
+                  </div>
+                  <div class="help-block">
+                    Not all sites (e.g. facebook) may support preview/embedding
+                  </div>
+                </form>
+              </div>
+              <div class="col-sm-6">
+                <img id="external_image" width="100%" src="{% static 'img/preview.png' %}" class="img-polaroid">
+              </div>
+            </div>
           </div>
         </div>
-        <div class="row-fluid" id="panels">
-          <div class="span3 panel panel0" data-panel="0" id="panel0">
-          </div>
-          <div class="span4 panel panel1" data-panel="1" id="panel1">
-          </div>
-          <div class="span5 panel panel2" data-panel="2" id="panel2">
-          </div>
-        </div>
+      </div> <!-- modal-body -->
+      <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+        <button class="btn btn-info modal_upload">Upload</button>
+        <button class="btn btn-primary modal_select">Select</button>
       </div>
-      <div id="browse_external_link" class="tab-pane">
-        <div class="row-fluid">
-          <div class="span6">
-            <form>
-              <legend>External URL</legend>
-              <label class="control-label" for="external_url">URL</label>
-              <div class="input-append">
-                <input id="external_url" type="text" name="url" maxlength="256" />
-                <button id="external_url_preview" class="btn">Preview <i class="icon-chevron-right"></i></button>
-              </div>
-              <div class="help-block">
-                Not all sites (e.g. facebook) may support preview/embedding
-              </div>
-            </form>
-          </div>
-          <div class="span6">
-            <iframe width="90%" id="external_iframe" src=""></iframe>
-          </div>
-        </div>
-      </div>
-      <div id="browse_external_image" class="tab-pane">
-        <div class="row-fluid">
-          <div class="span6">
-            <form>
-              <legend>External Image</legend>
-              <label class="control-label" for="external_image_url">URL</label>
-              <div class="input-append">
-                <input id="external_image_url" type="text" name="url" maxlength="256" />
-                <button id="external_image_url_preview" class="btn">Preview <i class="icon-chevron-right"></i></button>
-              </div>
-              <div class="help-block">
-                Not all sites (e.g. facebook) may support preview/embedding
-              </div>
-            </form>
-          </div>
-          <div class="span6">
-            <img id="external_image" src="{% static 'img/preview.png' %}" class="img-polaroid">
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="modal-footer">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-    <button class="btn btn-info modal_upload">Upload</button>
-    <button class="btn btn-primary modal_select">Select</button>
-  </div>
+   </div> <!-- modal-content -->
+ </div> <!-- modal-dialog -->
 </div>
 
-<div id="uploadModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3 id="uploadModalLabel">Upload a file</h3>
-  </div>
-  <div class="modal-body">
-    <div class="row-fluid">
-      <div class="span12 upload-alert">
+<div id="uploadModal" class="modal fade" tabindex="-1" role="dialog"
+     aria-labelledby="uploadModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="uploadModalLabel">Upload a file</h3>
       </div>
-    </div>
-    <div class="row-fluid">
-      <div class="span12 form-horizontal">
-        <div class="control-group">
-          <label class="control-label" for="select_type">Upload</label>
-          <div class="controls upload_types">
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-lg-12 upload-alert">
+          </div>
+        </div>
+        <div class="form-horizontal">
+          <div class="form-group">
+            <label class="control-label col-lg-2" for="select_type">Upload</label>
+            <div class="col-lg-10">
+              <div class="controls upload_types">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-12 uploadform">
           </div>
         </div>
       </div>
-    </div>
-    <div class="row-fluid">
-      <div class="span12 uploadform">
+      <div class="modal-footer">
+        <button class="btn modal_close" data-dismiss="modal" aria-hidden="true">Close</button>
+        <button class="btn btn-primary modal_select">Save</button>
       </div>
-    </div>
-  </div>
-  <div class="modal-footer">
-    <button class="btn modal_close" data-dismiss="modal" aria-hidden="true">Close</button>
-    <button class="btn btn-primary modal_select">Save</button>
-  </div>
+    </div> <!-- modal-dialog -->
+  </div> <!-- modal-content -->
 </div>
 
-<div id="detailsModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3>Selection properties</h3>
-  </div>
-  <div class="modal-body" id="detailsModalBody">
-  </div>
-  <div class="modal-footer">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-    <button class="btn btn-info modal_change">Change selection</button>
-    <button class="btn btn-primary modal_select">Select</button>
-  </div>
-</div>
+<div id="detailsModal" class="modal fade" role="dialog" aria-labelledby="modal-header#h3"
+     aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3>Selection properties</h3>
+      </div>
+      <div class="modal-body" id="detailsModalBody">
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+        <button class="btn btn-info modal_change">Change selection</button>
+        <button class="btn btn-primary modal_select">Select</button>
+      </div>
+    </div> <!-- modal-dialog -->
+  </div> <!-- modal-content -->
+</div> <!-- detailsModal -->
 
 
 {{ block.super }}
 
-{% block base_main_edit %} {# block that automatically includes controls #} {% endblock %}
 {% endblock %}

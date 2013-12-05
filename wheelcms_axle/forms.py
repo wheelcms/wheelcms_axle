@@ -16,13 +16,16 @@ from wheelcms_axle import translate
 from tinymce.widgets import TinyMCE as BaseTinyMCE
 
 from taggit.utils import parse_tags
+from django.utils.safestring import mark_safe
 
 class TinyMCE(BaseTinyMCE):
     def render(self, name, value, attrs=None):
         ## this will always overwrite content_css; modifiying it will
         ## be a problem when the theme changes.
         self.mce_attrs['content_css'] = self.theme_css()
-        return super(TinyMCE, self).render(name, value, attrs)
+        widget = super(TinyMCE, self).render(name, value, attrs)
+        widget = widget.replace("tinyMCE.init(", "tinyMCE_init_delayed(")
+        return mark_safe(widget)
 
     def theme_css(self):
         theme = Configuration.config().themeinfo()
@@ -116,6 +119,11 @@ class BaseForm(forms.ModelForm):
 
         if 'tags' in self.fields:
             self.fields['tags'].widget.attrs['class'] = "tagManager"
+            self.fields['tags'].widget.attrs['data-role'] = "tagsinput"
+            self.fields['tags'].widget.attrs['data-provide'] = "typeahead"
+            ## The placeholder is used to size the tag input, which will
+            ## default to 1 if unspecified.
+            self.fields['tags'].widget.attrs['placeholder'] = " " * 30
             self.fields['tags'].required = False
 
         ## workaround for https://code.djangoproject.com/ticket/21173

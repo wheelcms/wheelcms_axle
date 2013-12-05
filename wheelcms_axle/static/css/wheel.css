@@ -2,6 +2,10 @@
  * Browse modal customization
  */
 
+#browseModal {
+    width: 900px;
+}
+/*
 #browseModal .modal-body {
     height: 500px;
 }
@@ -10,6 +14,9 @@
     width: 900px;
     margin: -250px 0 0 -450px;
 }
+
+BS3 disabled
+*/
 
 /*
  * The cerulean theme specifies a top of 10% which hides the toppart of
@@ -24,15 +31,16 @@
 }*/
 
 /* only way I know to take precedence over bootstrap styles */
-#panel0, #panel1, #panel2 {
+/*#panel0, #panel1, #panel2 {
     height: 100%;
     overflow: auto;
 }
-
+ BS3 disabled
 #panels {
     height: 80%;
 }
 
+*/
 /*
  * Image in panel
  */

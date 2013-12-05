@@ -1,12 +1,12 @@
 {% extends 'wheelcms_axle/base.html' %}
+{% load fieldtype %} {# for addcss, should be moved #}
 
 {% block breadcrumb %}
 <div class="row">
-  <div class="span12">
+  <div class="col-lg-12">
     <ul class="breadcrumb">
         <li>
             <a href="{{root.get_absolute_url}}">Home</a>
-        <span class="divider">/</span>
         </li>
         <li>
           Search
@@ -21,24 +21,28 @@
 
 {% block base_main %}
 <div class="row">
-  <div class="span12">
+  <div class="col-lg-12">
     <h3>Search</h3>
   </div>
 </div>
 <div class="row">
-  <div class="span12">
-    <form method="get" action="." class="input-append">
-        {{form.q}}
-        <button type="submit" class="btn btn-primary">
-        <i class="icon-search icon-white"></i>
-        Search
-        </button>
+  <div class="col-lg-6">
+    <form method="get" action=".">
+      <div class="input-group">
+        {{form.q|addcss:'form-control'}}
+        <span class="input-group-btn">
+          <button type="submit" class="btn btn-primary">
+          <i class="glyphicon glyphicon-search icon-white"></i>
+          Search
+          </button>
+        </span>
+      </div>
     </form>
   </div>
 </div>
 {% if query %}
 <div class="row">
-  <div class="span12">
+  <div class="col-lg-12">
     <table id="search_result_table" class="result-listing table table-hover">
     <tr>
       <th>Results ({{paginator.count}})</th>

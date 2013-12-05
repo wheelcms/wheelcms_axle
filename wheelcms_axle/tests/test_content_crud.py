@@ -1,15 +1,13 @@
-from django.conf import settings
-
 from wheelcms_axle.models import Node
 from wheelcms_axle.tests.models import Type1
 from wheelcms_axle.forms import formfactory
 
-class BaseTest(object):
-    def setup(self):
-        settings.CONTENT_LANGUAGES = (('en', 'English'), ('nl', 'Nederlands'))
-        settings.FALLBACK = 'en'
+from .fixtures import multilang_ENNL
 
-class TestContentCreate(BaseTest):
+import pytest
+
+@pytest.mark.usefixtures("multilang_ENNL")
+class TestContentCreate(object):
     type = Type1
 
     def test_success(self, client):
@@ -68,7 +66,8 @@ class TestContentCreate(BaseTest):
 
         assert set((x[0] for x in form.fields['language'].choices)) == set(('en', 'nl', 'any'))
 
-class TestContentUpdate(BaseTest):
+@pytest.mark.usefixtures("multilang_ENNL")
+class TestContentUpdate(object):
     type = Type1
 
     def test_available_languages(self, client):

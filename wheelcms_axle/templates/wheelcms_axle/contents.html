@@ -76,30 +76,34 @@
 <form class="contentsform" method="post" action="contents_actions_delete">
 {% csrf_token %}
 
-<div id="delete_modal" class="modal hide fade" tabindex="-1" role="dialog">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-    <h3>Delete?</h3>
-  </div>
-  <div class="modal-body">
-    <h4>Do you really want to delete:</h4>
-    <table class="table table-condensed table-striped table-bordered">
-    <thead>
-     <tr>
-      <th>Name</th>
-      <th>Type</th>
-     </tr>
-    <tbody id="delete_modal_list">
-    </tbody>
-    </table>
-    {% if 0 %}
-    <button class="btn">Advanced..</button>
-    {# show/hide separate section with detach / trashcan option(s) #}
-    {% endif %}
-  </div>
-  <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">Cancel</a>
-    <button id="delete_modal_confirm" class="btn btn-primary">Delete</button>
+<div id="delete_modal" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>Delete?</h3>
+      </div>
+      <div class="modal-body">
+        <h4>Do you really want to delete:</h4>
+        <table class="table table-condensed table-striped table-bordered">
+        <thead>
+         <tr>
+          <th>Name</th>
+          <th>Type</th>
+         </tr>
+        <tbody id="delete_modal_list">
+        </tbody>
+        </table>
+        {% if 0 %}
+        <button class="btn">Advanced..</button>
+        {# show/hide separate section with detach / trashcan option(s) #}
+        {% endif %}
+      </div>
+      <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">Cancel</a>
+        <button id="delete_modal_confirm" class="btn btn-primary">Delete</button>
+      </div>
+    </div>
   </div>
 </div>
 </form>
@@ -123,7 +127,7 @@
     <tbody class="sortable">
       {% if not instance.isroot %}
       <tr class="clickrow" data-url="{{instance.parent.get_absolute_url}}list">
-        <td><i class="icon-circle-arrow-left"></i></td>
+        <td><i class="glyphicon glyphicon-circle-arrow-left"></i></td>
         <td colspan="4">.. (parent)</td>
       </tr>
       {% endif %}
@@ -149,24 +153,24 @@
               </td>
               <td class="clickrow" data-url="{{content.get_absolute_url}}contents">{{spoke.state.label}}</td>
               <td>
-                  <a href="{{content.get_absolute_url}}edit"><i class="icon-edit"></i></a>
-                  <a href="{{content.get_absolute_url}}"><i class="icon-eye-open"></i></a>
+                  <a href="{{content.get_absolute_url}}edit"><i class="glyphicon glyphicon-edit"></i></a>
+                  <a href="{{content.get_absolute_url}}"><i class="glyphicon glyphicon-eye-open"></i></a>
                   <a href="#" data-title="{{content.title}}"
                               data-type="{{spoke.title}}"
-                              data-path="{{child.ipath}}" class="contents_item_remove"><i class="icon-remove"></i></a>
+                              data-path="{{child.ipath}}" class="contents_item_remove"><i class="glyphicon glyphicon-remove"></i></a>
               </td>
             </tr>
           {% else %}
             {# unattached node #}
             <tr>
               <td></td>
-              <td data-url="{{child.get_absolute_url}}" class="clickrow"><i class="icon-magnet"></i>Unattached node {{child.get_absolute_url}}</td>
+              <td data-url="{{child.get_absolute_url}}" class="clickrow"><i class="glyphicon glyphicon-magnet"></i>Unattached node {{child.get_absolute_url}}</td>
               <td data-url="{{child.get_absolute_url}}" class="clickrow" colspan="2">unattached</td>
               <td>
-                  <a href="{{child.get_absolute_url}}"><i class="icon-eye-open"></i></a>
+                  <a href="{{child.get_absolute_url}}"><i class="glyphicon glyphicon-eye-open"></i></a>
                   <a href="#" data-title="Unattached node {{child.get_absolute_url}}"
                               data-type="Node"
-                              data-path="{{child.ipath}}" class="contents_item_remove"><i class="icon-remove"></i></a>
+                              data-path="{{child.ipath}}" class="contents_item_remove"><i class="glyphicon glyphicon-remove"></i></a>
               </td>
             </tr>
           {% endif %}

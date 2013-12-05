@@ -37,11 +37,20 @@ class ActionRegistry(dict):
             niet op path P' en spoke S
         """
         entries = super(ActionRegistry, self).get(action)
+
         if entries:
+            ## Match spoke against an actual instance first
             for (h, epath, espoke) in entries:
                 if epath and path != epath:
                     continue
                 if espoke and spoke != espoke:
+                    continue
+                return h
+            ## and then against a spoke type class
+            for (h, epath, espoke) in entries:
+                if epath and path != epath:
+                    continue
+                if espoke and espoke != spoke.__class__:
                     continue
                 return h
 
