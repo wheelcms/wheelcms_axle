@@ -14,3 +14,5 @@ install:
 # command to run tests, e.g. python setup.py test
 script:
     - python quicktest.py
+after_success:
+  coveralls

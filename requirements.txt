@@ -8,3 +8,4 @@ stracks_api
 Pillow
 git+git://github.com/iivvoo/two.ol
 git+git://github.com/iivvoo/two.bootstrap
+coveralls
