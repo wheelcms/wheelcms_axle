@@ -578,7 +578,7 @@ class MainHandler(WheelRESTHandler):
             for lang, langtitle in translate.languages():
                 langcontent = child.content(language=lang)
                 c["translations"].append((lang, langcontent,
-                                          "switch_admin_language?path=" + child.tree_path + "&language=" + lang + "&rest=edit"))
+                                          "switch_admin_language?path=" + child.tree_path + "&switchto=" + lang + "&rest=edit"))
                 if lang == active:
                     c["active"] = langcontent
             if not c['active']:
