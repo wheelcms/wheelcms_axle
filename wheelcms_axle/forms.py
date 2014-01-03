@@ -203,7 +203,9 @@ class BaseForm(forms.ModelForm):
         data = self.data.getlist('allowed')
         if self.data.get('no_subcontent'):
             return None
-        return ",".join(data)
+        if data:
+            return ",".join(data)
+        return ""
 
     def clean_slug(self):
         if self.attach:

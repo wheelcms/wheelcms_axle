@@ -18,6 +18,8 @@ from wheelcms_axle.content import type_registry
 from wheelcms_axle.templates import template_registry
 from wheelcms_axle.spoke import Spoke
 
+from .utils import MockedQueryDict
+
 import pytest
 
 DEFAULT = "wheelcms_axle/content_view.html"
@@ -29,7 +31,6 @@ filedata = SimpleUploadedFile("foo.png",
 filedata2 = SimpleUploadedFile("foo2.png",
            'GIF87a\x01\x00\x01\x00\x80\x01\x00\x00\x00\x00ccc,\x00'
            '\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02E\x01\x00;')
-
 
 @pytest.mark.usefixtures("localtyperegistry")
 class BaseSpokeTest(object):
@@ -74,7 +75,7 @@ class BaseSpokeTemplateTest(object):
     """
     def valid_data(self):
         """ return formdata required for validation to succeed """
-        return {}
+        return MockedQueryDict()
 
     def valid_files(self):
         """ return formdata files required for validation to succeed """
@@ -127,8 +128,9 @@ class BaseSpokeTemplateTest(object):
     def test_form_validation_fail(self, client, root):
         """ Only registered templates are allowed """
         template_registry.register(self.type, "foo/bar", "foo bar", default=False)
-        form = self.type.form(parent=root, data={'template':"bar/foo",
-                                                      'language':'en'})
+        form = self.type.form(parent=root,
+                              data=MockedQueryDict({'template':"bar/foo",
+                                                    'language':'en'}))
         assert not form.is_valid()
         assert 'template' in form.errors
 

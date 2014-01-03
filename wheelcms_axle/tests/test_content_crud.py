@@ -4,6 +4,8 @@ from wheelcms_axle.forms import formfactory
 
 from .fixtures import multilang_ENNL
 
+from .utils import MockedQueryDict
+
 import pytest
 
 @pytest.mark.usefixtures("multilang_ENNL")
@@ -14,7 +16,8 @@ class TestContentCreate(object):
         """ simple case where create succeeds """
         root = Node.root()
         form = formfactory(Type1)(parent=root,
-                                  data=dict(title="hello", slug="world",
+                                  data=MockedQueryDict(title="hello",
+                                            slug="world",
                                             language="en"))
         assert form.is_valid()
         assert form.cleaned_data['slug'] == "world"
@@ -25,7 +28,8 @@ class TestContentCreate(object):
         """ title is missing """
         root = Node.root()
         form = formfactory(Type1)(parent=root,
-                                  data=dict(slug="world", language="en"))
+                                  data=MockedQueryDict(slug="world",
+                                                       language="en"))
         assert not form.is_valid()
         assert 'title' in form.errors
 
@@ -33,7 +37,7 @@ class TestContentCreate(object):
         """ invalid characters in slug """
         root = Node.root()
         form = formfactory(Type1)(parent=root,
-                                  data=dict(title="hello",
+                                  data=MockedQueryDict(title="hello",
                                             slug="world$", language="en"))
         assert not form.is_valid()
         assert 'slug' in form.errors
@@ -43,7 +47,7 @@ class TestContentCreate(object):
         root = Node.root()
         root.add('world')
         form = formfactory(Type1)(parent=root,
-                                  data=dict(title="hello",
+                                  data=MockedQueryDict(title="hello",
                                             slug="world", language="en"))
         assert not form.is_valid()
         assert 'slug' in form.errors
@@ -52,7 +56,10 @@ class TestContentCreate(object):
         """ test tag suport on content """
         root = Node.root()
         form = formfactory(Type1)(parent=root,
-                                  data=dict(title="hello", slug="world", tags="hello, world", language="en"))
+                                  data=MockedQueryDict(title="hello",
+                                                       slug="world",
+                                                       tags="hello, world",
+                                                       language="en"))
         assert form.is_valid()
         assert form.cleaned_data['slug'] == "world"
         tp1 = form.save()
