@@ -17,7 +17,7 @@ from .actions import action
 
 from two.ol.util import classproperty
 
-import warnings
+from warnings import warn
 
 
 class SpokeCharField(indexes.CharField):
@@ -116,7 +116,8 @@ class Spoke(object):
 
     @property
     def o(self):
-        warnings.warn("%s.o is obsolete, please use %s.instance" % self, DeprecationWarning)
+        warn("{0}.o is obsolete, please use {0}.instance".format(self),
+             DeprecationWarning)
         return self.instance
 
     def icon_base(self):
