@@ -80,6 +80,9 @@ class ContentBase(models.Model):
     ## explicit comment enable/disable
     discussable = models.NullBooleanField(blank=True, null=True, default=None)
 
+    ## allowed subcontent types
+    allowed = models.TextField(default=None, null=True, blank=True)
+
     class Meta:
         abstract = True
 
@@ -147,7 +150,8 @@ class ContentBase(models.Model):
     @classmethod
     def get_name(cls):
         ## include app_label ? #486
-        return "%s.%s" % (cls._meta.app_label.lower(), cls._meta.object_name.lower())
+        return "%s.%s" % (cls._meta.app_label.lower(),
+                          cls._meta.object_name.lower())
 
     def get_absolute_url(self):
         if self.node is None:
@@ -174,7 +178,8 @@ class ClassContentManager(models.Manager):
         self.name = name
 
     def get_query_set(self):
-        return ContentClass.objects.get_or_create(name=self.name)[0].content.all()
+        return ContentClass.objects.get_or_create(
+               name=self.name)[0].content.all()
 
 
 class FileContent(Content):
