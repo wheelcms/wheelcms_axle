@@ -10,7 +10,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'Content.allowed'
         db.add_column('wheelcms_axle_content', 'allowed',
-                      self.gf('django.db.models.fields.TextField')(default=None, null=True, blank=True),
+                      self.gf('django.db.models.fields.TextField')(default="", null=True, blank=True),
                       keep_default=False)
 
 

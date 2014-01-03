@@ -1,5 +1,6 @@
 import re
 import mimetypes
+import operator
 
 from django import forms
 from django.conf import settings
@@ -43,6 +44,16 @@ class TagWidget(forms.TextInput):
 
         return super(TagWidget, self).render(name, value, attrs)
 
+class SubcontentField(forms.MultipleChoiceField):
+    """
+        Make this a MultiValueField together with no_subcontent and
+        an appropriate MultiWidget?
+    """
+    def prepare_value(self, value):
+        if value:
+            return value.split(",")
+        return ()
+
 class BaseForm(forms.ModelForm):
     light = False  ## by default it's not a light form
 
@@ -51,7 +62,8 @@ class BaseForm(forms.ModelForm):
 
     initial_advanced_fields =  ["created", "modified", "publication",
                                 "expire", "state", "template", "navigation",
-                                "important", "discussable"]
+                                "important", "discussable",
+                                "allowed", "no_subcontent"]
 
     def content_fields(self):
         return set(self.fields) - set(self.advanced_fields)
@@ -72,6 +84,16 @@ class BaseForm(forms.ModelForm):
                                       (False, 'Disable'),
                                       (True, 'Enable')),
                                       widget=forms.widgets.RadioSelect)
+
+    allowed = SubcontentField(required=False,
+                                   help_text="Which types of sub "
+                                   "content are allowed. No selection "
+                                   "means content defaults will apply",
+                                   choices=(), # filled in __init__
+                                   widget=forms.widgets.SelectMultiple
+                                   )
+    no_subcontent = forms.BooleanField(required=False,
+                                       help_text="Do not allow any sub content.")
 
     # just an experiment, to have a required field in the advanced section
     # important = forms.Field(required=True)
@@ -150,6 +172,15 @@ class BaseForm(forms.ModelForm):
         for e in type_registry.extenders(self.Meta.model):
             e.extend_form(self, *args, **kwargs)
 
+        if "allowed" in self.fields:
+            self.fields["allowed"].choices = ((t.name(), t.title)
+                for t in sorted(type_registry.values(),
+                                key=operator.attrgetter("title")))
+            if self.instance:
+                allowed = self.instance.allowed
+                if allowed is None and "no_subcontent" in self.fields:
+                        self.fields["no_subcontent"].initial = True
+
     def enlarge_field(self, field):
         field.widget.attrs['class'] = 'input-xxlarge'
 
@@ -167,6 +198,12 @@ class BaseForm(forms.ModelForm):
         """
         spoke = type_registry.get(self._meta.model.get_name())
         return spoke.workflowclass.default
+
+    def clean_allowed(self):
+        data = self.data.getlist('allowed')
+        if self.data.get('no_subcontent'):
+            return None
+        return ",".join(data)
 
     def clean_slug(self):
         if self.attach:
