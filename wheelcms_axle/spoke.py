@@ -17,6 +17,8 @@ from .actions import action
 
 from two.ol.util import classproperty
 
+import warnings
+
 
 class SpokeCharField(indexes.CharField):
     def __init__(self, spoke, *args, **kw):
@@ -110,8 +112,12 @@ class Spoke(object):
     type_icon = icon = "page.png"
 
     def __init__(self, o):
-        self.o = o
-        self.instance = o  ## keep self.o for backward compat
+        self.instance = o
+
+    @property
+    def o(self):
+        warnings.warn("%s.o is obsolete, please use %s.instance" % self, DeprecationWarning)
+        return self.instance
 
     def icon_base(self):
         return settings.STATIC_URL + "img/icons"
