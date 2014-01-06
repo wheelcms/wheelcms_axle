@@ -347,6 +347,7 @@ class MainHandler(WheelRESTHandler):
         return self.template("wheelcms_axle/create.html")
 
     def update(self):
+        # import pytest; pytest.set_trace()
         action = self.kw.get('action', '')
         language = self.active_language()
 

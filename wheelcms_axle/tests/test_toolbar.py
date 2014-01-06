@@ -13,6 +13,8 @@ from wheelcms_axle.spoke import Spoke
 from .test_handler import superuser_request
 from twotest.util import create_request
 
+from .utils import DummyContent
+
 import pytest
 
 @pytest.mark.usefixtures("localtyperegistry")
@@ -54,12 +56,6 @@ class TestToolbar(object):
         """
         class DummyNode(object):
             def content(self):
-                class DummyContent(object):
-                    meta_type = 'dummycontent'
-
-                    @classmethod
-                    def get_name(cls):
-                        return "test." + cls.meta_type
 
                 class DummyType(Spoke):
                     model = DummyContent
@@ -67,8 +63,8 @@ class TestToolbar(object):
                     add_to_index = False
 
                     @classmethod
-                    def name(self):
-                        return DummyContent.get_name()
+                    def name(cls):
+                        return cls.model.get_name()
 
                 type_registry.register(DummyType)
 
@@ -87,20 +83,13 @@ class TestToolbar(object):
         """
         class DummyNode(object):
             def content(self):
-                class DummyContent(object):
-                    meta_type = 'dummycontent'
-
-                    @classmethod
-                    def get_name(cls):
-                        return "test." + cls.meta_type
-
                 class DummyType(Spoke):
                     model = DummyContent
                     children = ()
                     add_to_index = False
 
                     @classmethod
-                    def name(self):
+                    def name(cls):
                         return DummyContent.get_name()
 
                 type_registry.register(DummyType)
@@ -134,12 +123,6 @@ class TestToolbar(object):
             should still not allow creation of non-implicit_add
             types """
 
-        class DummyContent(object):
-            meta_type = 'dummycontent'
-
-            @classmethod
-            def get_name(cls):
-                return "test." + cls.meta_type
 
         class DummyType(Spoke):
             model = DummyContent
@@ -179,13 +162,6 @@ class TestToolbar(object):
 
         class DummyNode(object):
             def content(self):
-                class DummyContent(object):
-                    meta_type = 'dummycontent'
-
-                    @classmethod
-                    def get_name(cls):
-                        return "test." + cls.meta_type
-
                 class DummyType(Spoke):
                     model = DummyContent
                     children = (Type1Type, Type2Type)
@@ -193,8 +169,8 @@ class TestToolbar(object):
                     add_to_index = False
 
                     @classmethod
-                    def name(self):
-                        return DummyContent.get_name()
+                    def name(cls):
+                        return cls.model.get_name()
 
                 type_registry.register(DummyType)
 

@@ -3,6 +3,7 @@ from django.conf import settings
 
 from wheelcms_axle import translate
 
+
 def get_active_language(request=None):
     """
         The active language is either forced in settings,

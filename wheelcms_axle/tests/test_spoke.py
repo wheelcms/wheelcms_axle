@@ -18,7 +18,7 @@ from wheelcms_axle.content import type_registry
 from wheelcms_axle.templates import template_registry
 from wheelcms_axle.spoke import Spoke
 
-from .utils import MockedQueryDict
+from .utils import MockedQueryDict, DummyContent
 
 import pytest
 
@@ -386,6 +386,11 @@ class ModellessSpoke(Spoke):
     def name(cls):
         return cls.__name__.lower()
 
+class DummyModel(object):
+    def __init__(self, allowed=None):
+        self.allowed = allowed
+
+
 @pytest.mark.usefixtures("localtyperegistry")
 class TestImplicitAddition(object):
     """
@@ -402,7 +407,7 @@ class TestImplicitAddition(object):
         type_registry.register(T1)
         type_registry.register(T2)
 
-        assert T1 in T2.addable_children()
+        assert T1 in T2(DummyContent()).addable_children()
 
     def test_non_implicit(self, client):
         """ T1 cannot be added explicitly """
@@ -415,7 +420,7 @@ class TestImplicitAddition(object):
         type_registry.register(T1)
         type_registry.register(T2)
 
-        assert T1 not in T2.addable_children()
+        assert T1 not in T2(DummyContent()).addable_children()
 
     def test_non_implicit_but_children(self, client):
         """ T1 cannot be added explicitly but is in T2's children """
@@ -428,7 +433,7 @@ class TestImplicitAddition(object):
         type_registry.register(T1)
         type_registry.register(T2)
 
-        assert T1 in T2.addable_children()
+        assert T1 in T2(DummyContent()).addable_children()
 
     def test_non_implicit_but_exp_children(self, client):
         """ T1 cannot be added explicitly but is in T2's explicit
@@ -442,7 +447,51 @@ class TestImplicitAddition(object):
         type_registry.register(T1)
         type_registry.register(T2)
 
-        assert T1 in T2.addable_children()
+        assert T1 in T2(DummyContent()).addable_children()
+
+    def test_config_nosub(self, client):
+        """ instance has config, no subcontent """
+        class T1(ModellessSpoke):
+            implicit_add = False
+
+        class T2(ModellessSpoke):
+            explicit_children = (T1, )
+
+        type_registry.register(T1)
+        type_registry.register(T2)
+
+        assert T2(DummyContent(allowed="")).addable_children() == ()
+
+    def test_config_noconf(self, client):
+        """ instance has config, no subcontent """
+        class T1(ModellessSpoke):
+            implicit_add = False
+
+        class T2(ModellessSpoke):
+            explicit_children = (T1, )
+
+        type_registry.register(T1)
+        type_registry.register(T2)
+
+        addable = T2(DummyContent(allowed=None)).addable_children()
+        assert T1 in addable
+        assert T2 in addable
+
+
+    def test_config_simpleconf(self, client):
+        """ instance overrides default. In stead of all implicit content,
+            only allow T1 """
+        class T1(ModellessSpoke):
+            implicit_add = False
+
+        class T2(ModellessSpoke):
+            explicit_children = None
+
+        type_registry.register(T1)
+        type_registry.register(T2)
+
+        assert T1 in T2(DummyContent(allowed="t1")).addable_children()
+        assert T2 not in T2(DummyContent(allowed="t1")).addable_children()
 
 @pytest.mark.usefixtures("localtyperegistry")
 class TestFileContent(object):

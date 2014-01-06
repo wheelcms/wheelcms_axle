@@ -193,7 +193,8 @@ class Spoke(object):
 
     def view_template(self):
         if not self.instance.template or \
-           not template_registry.valid_for_model(self.model, self.instance.template):
+           not template_registry.valid_for_model(self.model,
+                                                 self.instance.template):
             default = template_registry.defaults.get(self.model)
             if default:
                 return default
@@ -219,20 +220,39 @@ class Spoke(object):
         for i in self.instance._meta.fields:
             yield (i.name, getattr(self.instance, i.name))
 
-    @classmethod
-    def addable_children(cls):
-        """ return spokes that can be added as children """
+    def addable_children(self):
+        """
+            Return the spokes that can be added to the current instance.
+            This can be either the spoke's class default, or an instance
+            specific config (instance.allowed).
+
+            If the specific config is an empty string, no subcontent is
+            allowed.
+
+            If the specific config is a list of comma separated type names,
+            those are allowed (even non-implicit ones)
+
+            If the specific config is None, de class default applies.
+        """
         def addable(t):
             """ check it it's addable, implicitly or explicitly """
             if t.implicit_add:
                 return True
-            explicit = set(cls.children or ()) | set(cls.explicit_children or ())
+            explicit = set(self.children or ()) | \
+                       set(self.explicit_children or ())
             return t in explicit
 
-        if cls.children is None:
-            ch = [t for t in type_registry.values() if addable(t)]
+        if self.instance.allowed == "":
+            ch = ()
+        elif self.instance.allowed is None:
+            # Class default
+            if self.children is None:
+                ch = [t for t in type_registry.values() if addable(t)]
+            else:
+                ch = self.children
         else:
-            ch = cls.children
+            ch = [type_registry.get(p)
+                  for p in self.instance.allowed.split(",")]
 
         return ch
 
