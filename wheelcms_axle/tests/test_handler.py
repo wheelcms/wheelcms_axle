@@ -602,10 +602,16 @@ class TestTranslations(object):
         res = MainHandler.coerce(dict(instance="a"))
         assert res['instance'] == n2
 
-    def test_create_translation(self, client):
+    def test_create_translation_get(self, client):
+        """
+            Creating a translation on existing content is actually
+            an update operation (it's handled by the update() method.
+            Test the GET of the translation form
+        """
         root = Node.root()
         Type1(node=root, language="en").save()
-        request = superuser_request("/edit", method="POST", type=Type1.get_name())
+        request = superuser_request("/edit", method="GET",
+                                    type=Type1.get_name())
         request.session = {'admin_language':'nl'}
 
         instance = MainHandlerTestable.coerce(dict(instance=""))
@@ -616,6 +622,31 @@ class TestTranslations(object):
         f = update['context']['form']
 
         assert f.initial['language'] == 'nl'
+
+    def test_create_translation_post(self, client):
+        """
+            Creating a translation on existing content is actually
+            an update operation (it's handled by the update() method.
+            Test the POST of the form, the actual creation of the
+            translation
+        """
+        root = Node.root()
+        Type1(node=root, language="en").save()
+        request = superuser_request("/edit", method="POST",
+                                    type=Type1.get_name(),
+                                    title="Translation NL",
+                                    language="nl")
+        request.session = {'admin_language':'nl'}
+
+        instance = MainHandlerTestable.coerce(dict(instance=""))
+        handler = MainHandlerTestable(request=request, instance=instance,
+                                      post=True)
+        pytest.raises(Redirect, handler.update)
+
+        translated = root.content(language="nl")
+        assert translated is not None
+        assert translated.title == "Translation NL"
+        assert translated.owner == request.user
 
 from .test_spoke import filedata, filedata2
 from .models import TestImage, TestImageType

@@ -405,16 +405,20 @@ class MainHandler(WheelRESTHandler):
 
             if form.is_valid():
                 try:
-                    content = form.save()
+                    if create_translation:
+                        content = form.save(commit=False)
+                    else:  # ordinary update
+                        content = form.save()
                 except OSError, e:
                     self.context['error_message'] = "An error occured " \
                             "while saving: %s" % str(e)
 
                 if create_translation:
                     if self.user().is_authenticated():
-                        content.user = self.user()
+                        content.owner = self.user()
                     content.node = self.instance
                     content.save()
+                    form.save_m2m()
 
                 ## handle changed slug
                 slug = form.cleaned_data.get('slug', None)
