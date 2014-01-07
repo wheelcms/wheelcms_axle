@@ -12,9 +12,8 @@ import pytest
 class TestContentCreate(object):
     type = Type1
 
-    def test_success(self, client):
+    def test_success(self, client, root):
         """ simple case where create succeeds """
-        root = Node.root()
         form = formfactory(Type1)(parent=root,
                                   data=MockedQueryDict(title="hello",
                                             slug="world",
@@ -24,27 +23,24 @@ class TestContentCreate(object):
         tp1 = form.save()
         assert tp1.title == "hello"
 
-    def test_title_missing(self, client):
+    def test_title_missing(self, client, root):
         """ title is missing """
-        root = Node.root()
         form = formfactory(Type1)(parent=root,
                                   data=MockedQueryDict(slug="world",
                                                        language="en"))
         assert not form.is_valid()
         assert 'title' in form.errors
 
-    def test_slug_invalid(self, client):
+    def test_slug_invalid(self, client, root):
         """ invalid characters in slug """
-        root = Node.root()
         form = formfactory(Type1)(parent=root,
                                   data=MockedQueryDict(title="hello",
                                             slug="world$", language="en"))
         assert not form.is_valid()
         assert 'slug' in form.errors
 
-    def test_slug_used(self, client):
+    def test_slug_used(self, client, root):
         """ slug already exists in parent """
-        root = Node.root()
         root.add('world')
         form = formfactory(Type1)(parent=root,
                                   data=MockedQueryDict(title="hello",
@@ -52,9 +48,8 @@ class TestContentCreate(object):
         assert not form.is_valid()
         assert 'slug' in form.errors
 
-    def test_tags(self, client):
+    def test_tags(self, client, root):
         """ test tag suport on content """
-        root = Node.root()
         form = formfactory(Type1)(parent=root,
                                   data=MockedQueryDict(title="hello",
                                                        slug="world",
@@ -67,19 +62,17 @@ class TestContentCreate(object):
         assert "hello" in tp1.tags.values_list("name", flat=True)
         assert "world" in tp1.tags.values_list("name", flat=True)
 
-    def test_available_languages(self, client):
-        root = Node.root()
+    def test_available_languages(self, client, root):
         form = formfactory(Type1)(parent=root,node=root)
 
         assert set((x[0] for x in form.fields['language'].choices)) == \
                set(('en', 'nl', 'any'))
 
-    def test_allowed_subcontent_empty(self, client):
+    def test_allowed_subcontent_empty(self, client, root):
         """
             If no subcontent is explicitly selected, allowed should
             be saved as NULL which will be interpreted as "use class defaults"
         """
-        root = Node.root()
         form = formfactory(Type1)(parent=root,
                                   data=MockedQueryDict(title="hello",
                                                        slug="world",
@@ -90,12 +83,11 @@ class TestContentCreate(object):
         tp1 = form.save()
         assert tp1.allowed is None
 
-    def test_allowed_subcontent_selection(self, client):
+    def test_allowed_subcontent_selection(self, client, root):
         """
             If an explicit selection is made, this selection should
             be saved as comma separated string
         """
-        root = Node.root()
         form = formfactory(Type1)(parent=root,
                                   data=MockedQueryDict(
                                      title="hello",
@@ -107,14 +99,13 @@ class TestContentCreate(object):
         tp1 = form.save()
         assert tp1.allowed == "tests.type1,tests.type2"
 
-    def test_allowed_subcontent_nosubcontent(self, client):
+    def test_allowed_subcontent_nosubcontent(self, client, root):
         """
             If the "no_sucontent" checkbox is checked, no subcontent
             is allowed, which is saved as an empty string (not NULL!)
 
             Regardless of an "allowed" selection!
         """
-        root = Node.root()
         form = formfactory(Type1)(parent=root,
                                   data=MockedQueryDict(
                                      title="hello",
@@ -142,8 +133,7 @@ class TestContentCreate(object):
 class TestContentUpdate(object):
     type = Type1
 
-    def test_available_languages(self, client):
-        root = Node.root()
+    def test_available_languages(self, client, root):
         t = self.type(node=root, title="EN trans", language="en").save()
 
         form = formfactory(Type1)(parent=root,node=root)
@@ -151,8 +141,7 @@ class TestContentUpdate(object):
         assert 'en' not in set((x[0] for x in form.fields['language'].choices))
         assert 'nl' in set((x[0] for x in form.fields['language'].choices))
 
-    def test_available_languages_any(self, client):
-        root = Node.root()
+    def test_available_languages_any(self, client, root):
         self.type(node=root, title="EN trans", language="en").save()
         self.type(node=root, title="ANY trans", language="any").save()
 
@@ -162,10 +151,9 @@ class TestContentUpdate(object):
         assert 'any' not in set((x[0] for x in form.fields['language'].choices))
         assert 'nl' in set((x[0] for x in form.fields['language'].choices))
 
-    def test_available_languages_current(self, client):
+    def test_available_languages_current(self, client, root):
         """ language can, of course, be selected if it's the content being
             editted """
-        root = Node.root()
         en = self.type(node=root, title="EN trans", language="en").save()
         any = self.type(node=root, title="ANY trans", language="any").save()
 
