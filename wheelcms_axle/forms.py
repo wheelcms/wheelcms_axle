@@ -178,7 +178,7 @@ class BaseForm(forms.ModelForm):
                                 key=operator.attrgetter("title")))
             if self.instance:
                 allowed = self.instance.allowed
-                if allowed is None and "no_subcontent" in self.fields:
+                if allowed == "" and "no_subcontent" in self.fields:
                         self.fields["no_subcontent"].initial = True
 
     def enlarge_field(self, field):
@@ -202,10 +202,10 @@ class BaseForm(forms.ModelForm):
     def clean_allowed(self):
         data = self.data.getlist('allowed')
         if self.data.get('no_subcontent'):
-            return None
+            return ""
         if data:
             return ",".join(data)
-        return ""
+        return None
 
     def clean_slug(self):
         if self.attach:

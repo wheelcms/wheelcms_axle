@@ -2,7 +2,7 @@ from wheelcms_axle.models import Node
 from wheelcms_axle.tests.models import Type1
 from wheelcms_axle.forms import formfactory
 
-from .fixtures import multilang_ENNL
+from .fixtures import multilang_ENNL, root
 
 from .utils import MockedQueryDict
 
@@ -71,7 +71,72 @@ class TestContentCreate(object):
         root = Node.root()
         form = formfactory(Type1)(parent=root,node=root)
 
-        assert set((x[0] for x in form.fields['language'].choices)) == set(('en', 'nl', 'any'))
+        assert set((x[0] for x in form.fields['language'].choices)) == \
+               set(('en', 'nl', 'any'))
+
+    def test_allowed_subcontent_empty(self, client):
+        """
+            If no subcontent is explicitly selected, allowed should
+            be saved as NULL which will be interpreted as "use class defaults"
+        """
+        root = Node.root()
+        form = formfactory(Type1)(parent=root,
+                                  data=MockedQueryDict(title="hello",
+                                                       slug="world",
+                                                       tags="hello, world",
+                                                       language="en",
+                                                       allowed=[]))
+        assert form.is_valid()
+        tp1 = form.save()
+        assert tp1.allowed is None
+
+    def test_allowed_subcontent_selection(self, client):
+        """
+            If an explicit selection is made, this selection should
+            be saved as comma separated string
+        """
+        root = Node.root()
+        form = formfactory(Type1)(parent=root,
+                                  data=MockedQueryDict(
+                                     title="hello",
+                                     slug="world",
+                                     tags="hello, world",
+                                     language="en",
+                                     allowed=["tests.type1", "tests.type2"]))
+        assert form.is_valid()
+        tp1 = form.save()
+        assert tp1.allowed == "tests.type1,tests.type2"
+
+    def test_allowed_subcontent_nosubcontent(self, client):
+        """
+            If the "no_sucontent" checkbox is checked, no subcontent
+            is allowed, which is saved as an empty string (not NULL!)
+
+            Regardless of an "allowed" selection!
+        """
+        root = Node.root()
+        form = formfactory(Type1)(parent=root,
+                                  data=MockedQueryDict(
+                                     title="hello",
+                                     slug="world",
+                                     tags="hello, world",
+                                     language="en",
+                                     allowed=["tests.type1", "tests.type2"],
+                                     no_subcontent=True))
+        assert form.is_valid()
+        tp1 = form.save()
+        assert tp1.allowed == ""
+
+    def test_allowed_subcontent_selection_existing(self, client, root):
+        """
+            Verify the selection is correctly initialized from a
+            comma separated string
+        """
+        t = Type1(node=root, title="test", language="en",
+                  allowed="tests.type1,tests.type2").save()
+        form = formfactory(Type1)(parent=root, instance=t)
+        assert set(form['allowed'].value()) == \
+               set(('tests.type1', 'tests.type2'))
 
 @pytest.mark.usefixtures("multilang_ENNL")
 class TestContentUpdate(object):

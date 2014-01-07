@@ -477,7 +477,6 @@ class TestImplicitAddition(object):
         assert T1 in addable
         assert T2 in addable
 
-
     def test_config_simpleconf(self, client):
         """ instance overrides default. In stead of all implicit content,
             only allow T1 """
