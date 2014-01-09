@@ -515,7 +515,7 @@ class TestImplicitAddition(object):
         type_registry.register(T2)
 
         t = T1(DummyContent())
-        t.allowed((T1, T2))
+        t.allow_content((T1, T2))
 
         assert T1 in t.addable_children()
         assert T2 in t.addable_children()

@@ -224,7 +224,7 @@ class Spoke(object):
         for i in self.instance._meta.fields:
             yield (i.name, getattr(self.instance, i.name))
 
-    def allowed(self, types):
+    def allow_content(self, types):
         """ Set which children are allowed as subcontent """
         self.instance.allowed = ",".join(t.name() for t in types)
 
