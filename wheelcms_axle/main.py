@@ -579,7 +579,7 @@ class MainHandler(WheelRESTHandler):
         children = []
 
         for child in self.instance.children():
-            c = dict(active=None, translations=[], ipath=child.tree_path)
+            c = dict(node=child, active=None, translations=[], ipath=child.tree_path)
             for lang, langtitle in translate.languages():
                 langcontent = child.content(language=lang)
                 c["translations"].append((lang, langcontent,

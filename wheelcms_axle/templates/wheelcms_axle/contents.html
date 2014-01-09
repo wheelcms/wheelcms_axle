@@ -164,11 +164,11 @@
             {# unattached node #}
             <tr>
               <td></td>
-              <td data-url="{{child.get_absolute_url}}" class="clickrow"><i class="glyphicon glyphicon-magnet"></i>Unattached node {{child.get_absolute_url}}</td>
-              <td data-url="{{child.get_absolute_url}}" class="clickrow" colspan="2">unattached</td>
+              <td data-url="{{child.node.get_absolute_url}}" class="clickrow"><i class="glyphicon glyphicon-magnet"></i>Unattached node {{child.node.slug}}</td>
+              <td data-url="{{child.node.get_absolute_url}}" class="clickrow" colspan="2">unattached</td>
               <td>
                   <a href="{{child.get_absolute_url}}"><i class="glyphicon glyphicon-eye-open"></i></a>
-                  <a href="#" data-title="Unattached node {{child.get_absolute_url}}"
+                  <a href="#" data-title="Unattached node {{child.node.get_absolute_url}}"
                               data-type="Node"
                               data-path="{{child.ipath}}" class="contents_item_remove"><i class="glyphicon glyphicon-remove"></i></a>
               </td>
