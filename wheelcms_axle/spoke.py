@@ -154,6 +154,10 @@ class Spoke(object):
 
         return name.strip() or owner.username
 
+    def save(self, *a, **kw):
+        """ save the instance """
+        self.instance.save(*a, **kw)
+
     @classmethod
     def index(cls):
         """ generate the search index definition """
@@ -219,6 +223,10 @@ class Spoke(object):
         """ iterate over fields in model """
         for i in self.instance._meta.fields:
             yield (i.name, getattr(self.instance, i.name))
+
+    def allowed(self, types):
+        """ Set which children are allowed as subcontent """
+        self.instance.allowed = ",".join(t.name() for t in types)
 
     def addable_children(self):
         """

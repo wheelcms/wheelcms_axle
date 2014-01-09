@@ -67,6 +67,17 @@ class BaseSpokeTest(object):
 
         return fields  ## for additional tests
 
+    def test_spoke_save(self, client):
+        """
+            A spoke can save its instance
+        """
+        M = self.type.model
+
+        model = M()
+        spoke = self.type(model)
+        spoke.save()
+        assert M.objects.all()[0] == model
+
 
 @pytest.mark.usefixtures("localtyperegistry", "localtemplateregistry")
 class BaseSpokeTemplateTest(object):
@@ -491,6 +502,23 @@ class TestImplicitAddition(object):
 
         assert T1 in T2(DummyContent(allowed="t1")).addable_children()
         assert T2 not in T2(DummyContent(allowed="t1")).addable_children()
+
+    def test_config_spoke_allowed(self, client):
+        """ Use the allowed() method on spokes """
+        class T1(ModellessSpoke):
+            implicit_add = False
+
+        class T2(ModellessSpoke):
+            explicit_children = None
+
+        type_registry.register(T1)
+        type_registry.register(T2)
+
+        t = T1(DummyContent())
+        t.allowed((T1, T2))
+
+        assert T1 in t.addable_children()
+        assert T2 in t.addable_children()
 
 @pytest.mark.usefixtures("localtyperegistry")
 class TestFileContent(object):
