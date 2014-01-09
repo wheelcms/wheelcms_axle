@@ -71,6 +71,11 @@
                 <a class="btn btn-info" href="{{instance.get_absolute_url}}"><i class="glyphicon glyphicon-eye-open"></i> {% trans "content_view" %} </a>
                 {% endif %}
               </div>
+              {% if 0 %}
+              <div class="btn-group dropup navbar-btn">
+                <a class="btn btn-warning" href="{{instance.get_absolute_url}}"><i class="glyphicon glyphicon-eye-open"></i> {% trans "Publish" %} </a>
+              </div>
+              {% endif %}
           </li>
         </ul> <!-- navbar (left) -->
         <ul class="nav navbar-nav navbar-right">
