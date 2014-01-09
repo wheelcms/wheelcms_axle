@@ -66,7 +66,7 @@ class ContentBase(models.Model):
     ## one could argue that this can be a property on a node
     navigation = models.BooleanField(default=False)
 
-    meta_type = models.CharField(max_length=20)
+    meta_type = models.CharField(max_length=100)
 
     ## can be null for now, should move to null=False eventually
     owner = models.ForeignKey(User, null=True)
@@ -87,7 +87,21 @@ class ContentBase(models.Model):
         abstract = True
 
     def save(self, update_lm=True, *a, **b):
+        """
+            Store the meta type of this class. The meta_type is used to
+            resolve a derived class from the base content type.
+
+            Since there may be multiple levels of inheritance, some magic
+            is required to store a "path" to the final derived class
+        """
         mytype = self.__class__.__name__.lower()
+        for base in self.__class__.__bases__:
+            if issubclass(base, Content):
+                if base is Content:
+                    break
+                elif not base._meta.abstract:
+                    mytype = base.__name__.lower() + '/' + mytype
+
         self.meta_type = mytype
 
         ## default does not seem to work as expected?
@@ -137,7 +151,11 @@ class ContentBase(models.Model):
 
     def content(self):
         if self.meta_type:
-            return getattr(self, self.meta_type)
+            base = self
+            for part in self.meta_type.split('/'):
+                base = getattr(base, part)
+            return base
+            # return getattr(self, self.meta_type)
 
     def spoke(self):
         """ return the spoke for this model """

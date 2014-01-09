@@ -39,6 +39,9 @@ class BaseSpokeTest(object):
     """
     type = None
 
+    def create_instance(self):
+        return self.type.model()
+
     @classproperty
     def typename(cls):
         return cls.type.model.get_name()
@@ -47,7 +50,7 @@ class BaseSpokeTest(object):
         """
             Name generation
         """
-        model = self.type.model()
+        model = self.create_instance()
         model.save()
         spoke = self.type(model)
 
@@ -58,7 +61,7 @@ class BaseSpokeTest(object):
             Test the fields() method that iterates over the
             model instances fields
         """
-        model = self.type.model()
+        model = self.create_instance()
         model.save()
         spoke = self.type(model)
         fields = dict(spoke.fields())
@@ -73,7 +76,7 @@ class BaseSpokeTest(object):
         """
         M = self.type.model
 
-        model = M()
+        model = self.create_instance()
         spoke = self.type(model)
         spoke.save()
         assert M.objects.all()[0] == model
@@ -84,6 +87,9 @@ class BaseSpokeTemplateTest(object):
     """
         Test template related validation/behaviour
     """
+    def create_instance(self, **kw):
+        return self.type.model(**kw)
+
     def valid_data(self):
         """ return formdata required for validation to succeed """
         return MockedQueryDict()
@@ -96,7 +102,7 @@ class BaseSpokeTemplateTest(object):
         """ An empty registry """
         form = self.type.form(parent=root)
         assert 'template' not in form.fields
-        model = self.type.model()
+        model = self.create_instance()
         model.save()
         assert self.type(model).view_template() == DEFAULT
 
@@ -106,13 +112,13 @@ class BaseSpokeTemplateTest(object):
         form = self.type.form(parent=root)
         assert 'template' in form.fields
         assert form.fields['template'].choices == [('foo/bar', 'foo bar')]
-        model = self.type.model()
+        model = self.create_instance()
         model.save()
         assert self.type(model).view_template() == 'foo/bar'
 
     def test_default(self, client):
         """ If there's a default, it should be used """
-        model = self.type.model()
+        model = self.create_instance()
         model.save()
         template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         template_registry.register(self.type, "foo/bar2", "foo bar", default=True)
@@ -124,7 +130,7 @@ class BaseSpokeTemplateTest(object):
         template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         template_registry.register(self.type, "foo/bar2", "foo bar", default=True)
         template_registry.register(self.type, "foo/bar3", "foo bar", default=False)
-        model = self.type.model(template="foo/bar3")
+        model = self.create_instance(template="foo/bar3")
         model.save()
         assert self.type(model).view_template() == "foo/bar3"
 
@@ -251,6 +257,7 @@ class BaseSpokeTemplateTest(object):
         data['title'] = 'are - a - they'
         data['template'] = 'foo/bar'
         data['language'] = 'en' ## use english stopwords
+        # import pytest; pytest.set_trace()
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
