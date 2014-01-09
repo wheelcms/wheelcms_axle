@@ -224,11 +224,11 @@ class Spoke(object):
         for i in self.instance._meta.fields:
             yield (i.name, getattr(self.instance, i.name))
 
-    def allow_content(self, types):
+    def allow_spokes(self, types):
         """ Set which children are allowed as subcontent """
         self.instance.allowed = ",".join(t.name() for t in types)
 
-    def addable_children(self):
+    def allowed_spokes(self):
         """
             Return the spokes that can be added to the current instance.
             This can be either the spoke's class default, or an instance
@@ -263,6 +263,12 @@ class Spoke(object):
                   for p in self.instance.allowed.split(",")]
 
         return ch
+
+    def addable_children(self):
+        """ deprecated name """
+        warn("Spoke.addable_children is obsolete, please use allowed_spokes in stead",
+             DeprecationWarning)
+        return self.allowed_spokes()
 
     def searchable_text(self):
         """ collect, if possible, the value of all fields in 'document_fields'

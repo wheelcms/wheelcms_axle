@@ -418,7 +418,7 @@ class TestImplicitAddition(object):
         type_registry.register(T1)
         type_registry.register(T2)
 
-        assert T1 in T2(DummyContent()).addable_children()
+        assert T1 in T2(DummyContent()).allowed_spokes()
 
     def test_non_implicit(self, client):
         """ T1 cannot be added explicitly """
@@ -431,7 +431,7 @@ class TestImplicitAddition(object):
         type_registry.register(T1)
         type_registry.register(T2)
 
-        assert T1 not in T2(DummyContent()).addable_children()
+        assert T1 not in T2(DummyContent()).allowed_spokes()
 
     def test_non_implicit_but_children(self, client):
         """ T1 cannot be added explicitly but is in T2's children """
@@ -444,7 +444,7 @@ class TestImplicitAddition(object):
         type_registry.register(T1)
         type_registry.register(T2)
 
-        assert T1 in T2(DummyContent()).addable_children()
+        assert T1 in T2(DummyContent()).allowed_spokes()
 
     def test_non_implicit_but_exp_children(self, client):
         """ T1 cannot be added explicitly but is in T2's explicit
@@ -458,7 +458,7 @@ class TestImplicitAddition(object):
         type_registry.register(T1)
         type_registry.register(T2)
 
-        assert T1 in T2(DummyContent()).addable_children()
+        assert T1 in T2(DummyContent()).allowed_spokes()
 
     def test_config_nosub(self, client):
         """ instance has config, no subcontent """
@@ -471,7 +471,7 @@ class TestImplicitAddition(object):
         type_registry.register(T1)
         type_registry.register(T2)
 
-        assert T2(DummyContent(allowed="")).addable_children() == ()
+        assert T2(DummyContent(allowed="")).allowed_spokes() == ()
 
     def test_config_noconf(self, client):
         """ instance has config, no subcontent """
@@ -484,7 +484,7 @@ class TestImplicitAddition(object):
         type_registry.register(T1)
         type_registry.register(T2)
 
-        addable = T2(DummyContent(allowed=None)).addable_children()
+        addable = T2(DummyContent(allowed=None)).allowed_spokes()
         assert T1 in addable
         assert T2 in addable
 
@@ -500,8 +500,8 @@ class TestImplicitAddition(object):
         type_registry.register(T1)
         type_registry.register(T2)
 
-        assert T1 in T2(DummyContent(allowed="t1")).addable_children()
-        assert T2 not in T2(DummyContent(allowed="t1")).addable_children()
+        assert T1 in T2(DummyContent(allowed="t1")).allowed_spokes()
+        assert T2 not in T2(DummyContent(allowed="t1")).allowed_spokes()
 
     def test_config_spoke_allowed(self, client):
         """ Use the allowed() method on spokes """
@@ -515,10 +515,10 @@ class TestImplicitAddition(object):
         type_registry.register(T2)
 
         t = T1(DummyContent())
-        t.allow_content((T1, T2))
+        t.allow_spokes((T1, T2))
 
-        assert T1 in t.addable_children()
-        assert T2 in t.addable_children()
+        assert T1 in t.allowed_spokes()
+        assert T2 in t.allowed_spokes()
 
 @pytest.mark.usefixtures("localtyperegistry")
 class TestFileContent(object):

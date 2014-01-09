@@ -604,7 +604,7 @@ class MainHandler(WheelRESTHandler):
 
             This also may behave differently depending on the user's access
         """
-        if self.spoke() and self.spoke().addable_children():
+        if self.spoke() and self.spoke().allowed_spokes():
             return self.redirect(self.instance.get_absolute_url() + 'list')
         return self.redirect(self.instance.get_absolute_url())
 
