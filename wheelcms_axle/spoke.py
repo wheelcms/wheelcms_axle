@@ -154,9 +154,40 @@ class Spoke(object):
 
         return name.strip() or owner.username
 
+    ## Experimental API
+    @property
+    def node(self):
+        """
+            Return the node this Spoke is attached to
+        """
+        return self.instance.node
+
+    @classmethod
+    def fromNode(cls, node, slug=None):
+        """
+            Retrieve a spoke from a node, optionally resolving a childnode
+        """
+        if slug:
+            node = node.child(slug)
+            if node is None:
+                return None
+        content = node.content()
+        if content is None:
+            return None
+        return content.spoke()
+
+    @classmethod
+    def create(cls, **kw):
+        """
+            Create a spoke with its instance, not connected
+            to a specific node.
+        """
+        return cls(cls.model(**kw))
+
     def save(self, *a, **kw):
         """ save the instance """
         self.instance.save(*a, **kw)
+        return self
 
     @classmethod
     def index(cls):
