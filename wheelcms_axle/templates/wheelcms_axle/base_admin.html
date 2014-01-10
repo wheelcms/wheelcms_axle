@@ -1,19 +1,19 @@
 {# base template that includes editing controls #}
 {% extends "wheelcms_axle/base.html" %}
 {% load staticfiles %}
-{% load fragments %}
+{% load granules %}
 
 
-{% block fragments %}
+{% block granules %}
 {{block.super}}
-{% fragment "base_stylesheets"  %}
+{% granule "base_stylesheets"  %}
 <link rel="stylesheet" href="{% static "css/wheel3.css" %}" media="screen, projection, print"/>
 <link rel="stylesheet" href="{% static "css/wheel_content.css" %}" media="screen, projection, print"/>
 <link rel="stylesheet" href="{% static "css/upload/jquery.fileupload-ui.css" %}" media="screen, projection, print"/>
 <link rel="stylesheet" href="{% static "tagmanager/bootstrap-tagsinput.css" %}" media="screen, projection, print"/>
 
-{% endfragment %}
-{% fragment "javascript" %}
+{% endgranule %}
+{% granule "javascript" %}
 
 <script src="{% static "js/upload/jquery.ui.widget.js" %}"></script>
 <script src="{% static "js/upload/load-image.min.js" %}"></script>
@@ -525,7 +525,7 @@
 
 </script>
 
-{% endfragment %}
+{% endgranule %}
 {% endblock %}
 {% block base_main %}
 
