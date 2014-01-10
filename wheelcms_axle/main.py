@@ -522,7 +522,8 @@ class MainHandler(WheelRESTHandler):
         if action:
             ## again, use node's path directly, not get_absolute_url, which is
             ## configuration specific
-            action_handler = action_registry.get(action, self.instance.path, spoke)
+            action_handler = action_registry.get(action, self.instance.path,
+                                                 spoke)
             if action_handler is None:
                 return self.notfound()
 
