@@ -257,7 +257,6 @@ class BaseSpokeTemplateTest(object):
         data['title'] = 'are - a - they'
         data['template'] = 'foo/bar'
         data['language'] = 'en' ## use english stopwords
-        # import pytest; pytest.set_trace()
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
