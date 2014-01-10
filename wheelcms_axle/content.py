@@ -86,6 +86,22 @@ class ContentBase(models.Model):
     class Meta:
         abstract = True
 
+    @classmethod
+    def construct_meta(cls, klass, parts=None):
+        parts = parts or []
+
+        klassname = klass.__name__.lower()
+
+        if klass is Content:
+            return "/".join(parts)
+
+        if not klass._meta.abstract:
+            parts.insert(0, klassname)
+
+        for base in klass.__bases__:
+            if issubclass(base, Content):
+                return cls.construct_meta(base, parts)
+
     def save(self, update_lm=True, *a, **b):
         """
             Store the meta type of this class. The meta_type is used to
@@ -94,13 +110,7 @@ class ContentBase(models.Model):
             Since there may be multiple levels of inheritance, some magic
             is required to store a "path" to the final derived class
         """
-        mytype = self.__class__.__name__.lower()
-        for base in self.__class__.__bases__:
-            if issubclass(base, Content):
-                if base is Content:
-                    break
-                elif not base._meta.abstract:
-                    mytype = base.__name__.lower() + '/' + mytype
+        mytype = self.construct_meta(self.__class__)
 
         self.meta_type = mytype
 
