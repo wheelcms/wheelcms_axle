@@ -112,9 +112,11 @@
       </ul>
     {% endif %}
   {% endblock %} {# right_signin_nav #}
+  {% block contact_nav %}
   <ul class="nav navbar-nav navbar-right">
     <li><a href="{{root.get_absolute_url}}+contact">Contact</a></li>
   </ul>
+  {% endblock %}
 
 {% endblock %} {# rightnav #}
 
