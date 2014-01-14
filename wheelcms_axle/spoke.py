@@ -154,6 +154,41 @@ class Spoke(object):
 
         return name.strip() or owner.username
 
+    ## Experimental API
+    @property
+    def node(self):
+        """
+            Return the node this Spoke is attached to
+        """
+        return self.instance.node
+
+    @classmethod
+    def fromNode(cls, node, slug=None):
+        """
+            Retrieve a spoke from a node, optionally resolving a childnode
+        """
+        if slug:
+            node = node.child(slug)
+            if node is None:
+                return None
+        content = node.content()
+        if content is None:
+            return None
+        return content.spoke()
+
+    @classmethod
+    def create(cls, **kw):
+        """
+            Create a spoke with its instance, not connected
+            to a specific node.
+        """
+        return cls(cls.model(**kw))
+
+    def save(self, *a, **kw):
+        """ save the instance """
+        self.instance.save(*a, **kw)
+        return self
+
     @classmethod
     def index(cls):
         """ generate the search index definition """
@@ -220,7 +255,11 @@ class Spoke(object):
         for i in self.instance._meta.fields:
             yield (i.name, getattr(self.instance, i.name))
 
-    def addable_children(self):
+    def allow_spokes(self, types):
+        """ Set which children are allowed as subcontent """
+        self.instance.allowed = ",".join(t.name() for t in types)
+
+    def allowed_spokes(self):
         """
             Return the spokes that can be added to the current instance.
             This can be either the spoke's class default, or an instance
@@ -255,6 +294,12 @@ class Spoke(object):
                   for p in self.instance.allowed.split(",")]
 
         return ch
+
+    def addable_children(self):
+        """ deprecated name """
+        warn("Spoke.addable_children is obsolete, please use allowed_spokes in stead",
+             DeprecationWarning)
+        return self.allowed_spokes()
 
     def searchable_text(self):
         """ collect, if possible, the value of all fields in 'document_fields'

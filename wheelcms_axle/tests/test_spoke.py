@@ -39,6 +39,9 @@ class BaseSpokeTest(object):
     """
     type = None
 
+    def create_instance(self):
+        return self.type.model()
+
     @classproperty
     def typename(cls):
         return cls.type.model.get_name()
@@ -47,7 +50,7 @@ class BaseSpokeTest(object):
         """
             Name generation
         """
-        model = self.type.model()
+        model = self.create_instance()
         model.save()
         spoke = self.type(model)
 
@@ -58,7 +61,7 @@ class BaseSpokeTest(object):
             Test the fields() method that iterates over the
             model instances fields
         """
-        model = self.type.model()
+        model = self.create_instance()
         model.save()
         spoke = self.type(model)
         fields = dict(spoke.fields())
@@ -67,12 +70,26 @@ class BaseSpokeTest(object):
 
         return fields  ## for additional tests
 
+    def test_spoke_save(self, client):
+        """
+            A spoke can save its instance
+        """
+        M = self.type.model
+
+        model = self.create_instance()
+        spoke = self.type(model)
+        spoke.save()
+        assert M.objects.all()[0] == model
+
 
 @pytest.mark.usefixtures("localtyperegistry", "localtemplateregistry")
 class BaseSpokeTemplateTest(object):
     """
         Test template related validation/behaviour
     """
+    def create_instance(self, **kw):
+        return self.type.model(**kw)
+
     def valid_data(self):
         """ return formdata required for validation to succeed """
         return MockedQueryDict()
@@ -85,7 +102,7 @@ class BaseSpokeTemplateTest(object):
         """ An empty registry """
         form = self.type.form(parent=root)
         assert 'template' not in form.fields
-        model = self.type.model()
+        model = self.create_instance()
         model.save()
         assert self.type(model).view_template() == DEFAULT
 
@@ -95,13 +112,13 @@ class BaseSpokeTemplateTest(object):
         form = self.type.form(parent=root)
         assert 'template' in form.fields
         assert form.fields['template'].choices == [('foo/bar', 'foo bar')]
-        model = self.type.model()
+        model = self.create_instance()
         model.save()
         assert self.type(model).view_template() == 'foo/bar'
 
     def test_default(self, client):
         """ If there's a default, it should be used """
-        model = self.type.model()
+        model = self.create_instance()
         model.save()
         template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         template_registry.register(self.type, "foo/bar2", "foo bar", default=True)
@@ -113,7 +130,7 @@ class BaseSpokeTemplateTest(object):
         template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         template_registry.register(self.type, "foo/bar2", "foo bar", default=True)
         template_registry.register(self.type, "foo/bar3", "foo bar", default=False)
-        model = self.type.model(template="foo/bar3")
+        model = self.create_instance(template="foo/bar3")
         model.save()
         assert self.type(model).view_template() == "foo/bar3"
 
@@ -407,7 +424,7 @@ class TestImplicitAddition(object):
         type_registry.register(T1)
         type_registry.register(T2)
 
-        assert T1 in T2(DummyContent()).addable_children()
+        assert T1 in T2(DummyContent()).allowed_spokes()
 
     def test_non_implicit(self, client):
         """ T1 cannot be added explicitly """
@@ -420,7 +437,7 @@ class TestImplicitAddition(object):
         type_registry.register(T1)
         type_registry.register(T2)
 
-        assert T1 not in T2(DummyContent()).addable_children()
+        assert T1 not in T2(DummyContent()).allowed_spokes()
 
     def test_non_implicit_but_children(self, client):
         """ T1 cannot be added explicitly but is in T2's children """
@@ -433,7 +450,7 @@ class TestImplicitAddition(object):
         type_registry.register(T1)
         type_registry.register(T2)
 
-        assert T1 in T2(DummyContent()).addable_children()
+        assert T1 in T2(DummyContent()).allowed_spokes()
 
     def test_non_implicit_but_exp_children(self, client):
         """ T1 cannot be added explicitly but is in T2's explicit
@@ -447,7 +464,7 @@ class TestImplicitAddition(object):
         type_registry.register(T1)
         type_registry.register(T2)
 
-        assert T1 in T2(DummyContent()).addable_children()
+        assert T1 in T2(DummyContent()).allowed_spokes()
 
     def test_config_nosub(self, client):
         """ instance has config, no subcontent """
@@ -460,7 +477,7 @@ class TestImplicitAddition(object):
         type_registry.register(T1)
         type_registry.register(T2)
 
-        assert T2(DummyContent(allowed="")).addable_children() == ()
+        assert T2(DummyContent(allowed="")).allowed_spokes() == ()
 
     def test_config_noconf(self, client):
         """ instance has config, no subcontent """
@@ -473,7 +490,7 @@ class TestImplicitAddition(object):
         type_registry.register(T1)
         type_registry.register(T2)
 
-        addable = T2(DummyContent(allowed=None)).addable_children()
+        addable = T2(DummyContent(allowed=None)).allowed_spokes()
         assert T1 in addable
         assert T2 in addable
 
@@ -489,8 +506,25 @@ class TestImplicitAddition(object):
         type_registry.register(T1)
         type_registry.register(T2)
 
-        assert T1 in T2(DummyContent(allowed="t1")).addable_children()
-        assert T2 not in T2(DummyContent(allowed="t1")).addable_children()
+        assert T1 in T2(DummyContent(allowed="t1")).allowed_spokes()
+        assert T2 not in T2(DummyContent(allowed="t1")).allowed_spokes()
+
+    def test_config_spoke_allowed(self, client):
+        """ Use the allowed() method on spokes """
+        class T1(ModellessSpoke):
+            implicit_add = False
+
+        class T2(ModellessSpoke):
+            explicit_children = None
+
+        type_registry.register(T1)
+        type_registry.register(T2)
+
+        t = T1(DummyContent())
+        t.allow_spokes((T1, T2))
+
+        assert T1 in t.allowed_spokes()
+        assert T2 in t.allowed_spokes()
 
 @pytest.mark.usefixtures("localtyperegistry")
 class TestFileContent(object):

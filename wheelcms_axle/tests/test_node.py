@@ -576,6 +576,11 @@ class TestNodeCopyPaste(object):
         assert res.parent() == root
         assert res.path.startswith('/')
 
+    def test_get_absolute_url(self, client, root):
+        """ related to issue #799 - get_absolute_url on unattached node """
+        child = root.add('foo')
+        assert child.get_absolute_url() == '/foo/'
+
 class TestNodeTranslation(object):
     """ test translation related stuff """
     def test_preferred_language_child(self, client, root):
@@ -613,3 +618,10 @@ class TestNodeTranslation(object):
         sub.preferred_language = "nl"
         assert sub == sub_nl
 
+    def test_get_absolute_url(self, client, root):
+        """ related to issue #799 - get_absolute_url on unattached node,
+            multilingual """
+        child = root.add(langslugs=dict(en="fooen", nl="foonl"))
+
+        assert child.get_absolute_url(language='en') == '/fooen/'
+        assert child.get_absolute_url(language='nl') == '/foonl/'

@@ -522,7 +522,8 @@ class MainHandler(WheelRESTHandler):
         if action:
             ## again, use node's path directly, not get_absolute_url, which is
             ## configuration specific
-            action_handler = action_registry.get(action, self.instance.path, spoke)
+            action_handler = action_registry.get(action, self.instance.path,
+                                                 spoke)
             if action_handler is None:
                 return self.notfound()
 
@@ -534,7 +535,8 @@ class MainHandler(WheelRESTHandler):
 
         if spoke:
             ## update the context with addtional data from the spoke
-            self.context.update(spoke.context(self, self.request, self.instance))
+            self.context.update(spoke.context(self, self.request,
+                                self.instance))
             tpl = spoke.view_template()
             ctx = template_registry.context.get((spoke.__class__, tpl))
             if ctx:
@@ -579,7 +581,7 @@ class MainHandler(WheelRESTHandler):
         children = []
 
         for child in self.instance.children():
-            c = dict(active=None, translations=[], ipath=child.tree_path)
+            c = dict(node=child, active=None, translations=[], ipath=child.tree_path)
             for lang, langtitle in translate.languages():
                 langcontent = child.content(language=lang)
                 c["translations"].append((lang, langcontent,
@@ -604,7 +606,7 @@ class MainHandler(WheelRESTHandler):
 
             This also may behave differently depending on the user's access
         """
-        if self.spoke() and self.spoke().addable_children():
+        if self.spoke() and self.spoke().allowed_spokes():
             return self.redirect(self.instance.get_absolute_url() + 'list')
         return self.redirect(self.instance.get_absolute_url())
 

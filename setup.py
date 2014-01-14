@@ -22,6 +22,7 @@ setup(name='wheelcms_axle',
       install_requires=[
           'setuptools',
           'pytest',
+          'mock',
       ],
       entry_points={
       },

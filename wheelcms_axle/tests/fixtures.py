@@ -16,6 +16,8 @@ def localtyperegistry(request):
         registry.register(request.cls.type)
     for type in getattr(request.cls, 'types', []):
         registry.register(type)
+    for type in getattr(request.cls, 'extra_types', []):
+        registry.register(type)
 
 @pytest.fixture()
 def localtemplateregistry(request):

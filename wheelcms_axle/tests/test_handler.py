@@ -9,6 +9,8 @@ import pytest
 from twotest.util import create_request
 from django.contrib.auth.models import User
 
+from .fixtures import root
+
 class MainHandlerTestable(MainHandler):
     """ intercept template() call to avoid rendering """
     def render_template(self, template, **context):
@@ -289,6 +291,29 @@ class TestMainHandler(object):
 
         form = handler.context['form']
         assert form.is_valid()
+
+    def test_handle_list(self, client, root):
+        """ issue #799 - no raw node is returned for getting slug or path """
+        t = Type1(node=root.add("attached"), title="Attached").save()
+        u = root.add("unattached")
+
+        request = superuser_request("/list", method="GET")
+
+        handler = MainHandlerTestable(request=request, instance=root)
+
+        res = handler.handle_list()
+        path = res['path']
+        context = res['context']
+
+        assert path == "wheelcms_axle/contents.html"
+        assert 'children' in context
+        children = context['children']
+        assert len(children) == 2
+
+        assert children[0]['active'] == t
+        assert children[1]['active'] is None
+        assert children[1]['node'] == u
+
 
 class TestBreadcrumb(object):
     """ test breadcrumb generation by handler """

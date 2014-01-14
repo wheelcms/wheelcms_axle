@@ -55,7 +55,7 @@ class Toolbar(object):
             ch = [t for t in type_registry.values() if t.implicit_add]
             primary = None
         else:
-            ch = type(self.instance.content()).addable_children()
+            ch = type(self.instance.content()).allowed_spokes()
             primary = type.primary
 
         return [dict(name=c.name(),

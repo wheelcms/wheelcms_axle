@@ -2,7 +2,7 @@
 {% load url from future %}
 {% load i18n %}
 {% load topnav %}
-{% load fragments %}
+{% load granules %}
 {% load staticfiles %}
 
 {% block htmltitle %}
@@ -25,14 +25,14 @@
   <!-- {{settings.BUILD}} {{settings.BRANCH}} {{settings.VERSION }} -->
   <meta name="generator" content="WheelCMS {{settings.VERSION}}">
 
-  {% fragments "head" %}
+  {% granules "head" %}
 {% endblock %}
 
 {% block base_stylesheets %}
     {{config.themeinfo.extra|safe}}
     {{block.super}}
     <link rel="stylesheet" href="{% static "css/wheel3.css" %}" media="screen, projection, print"/>
-    {% fragments "base_stylesheets" %}
+    {% granules "base_stylesheets" %}
 {% endblock %}
 
 {% block extra_head %}
@@ -45,7 +45,7 @@
     function tinyMCE_init_delayed(conf) {
         delayed_confs.push(conf);
     }
-  {% fragments "head_javascript" %}
+  {% granules "head_javascript" %}
   </script>
 {% endblock %} {# extra_head #}
 
@@ -164,7 +164,7 @@
           }
       });
     </script>
-  {% fragments "javascript" %}
+  {% granules "javascript" %}
 
 {% endblock %}
 
