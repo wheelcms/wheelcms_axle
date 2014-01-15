@@ -90,8 +90,8 @@
                 }
                 else {
                     // if anything went wrong, it must have been with the uploaded file
-                    $(".upload-alert").text(data.result.errors.storage);
-                    $(".upload-alert").addClass("alert");
+                    $(".upload-alert").text(data.result.errors);
+                    $(".upload-alert").addClass("alert alert-danger");
                 }
             });
 

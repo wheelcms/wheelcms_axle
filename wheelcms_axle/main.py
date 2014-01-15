@@ -1027,14 +1027,16 @@ class MainHandler(WheelRESTHandler):
             sub.set(p)
             return dict(status="ok", path=sub.get_absolute_url())
 
-        ## for now, assume that if something went wrong, it's with the uploaded file
-        return dict(status="error",
-                    errors=dict(storage=self.form.errors['storage'].pop()))
+        ## for now, assume that if something went wrong,
+        ## it's with the uploaded file
+        error = "Unknown error"
+        if 'storage' in self.form.errors:
+            error = self.form.errors['storage'].pop()
+        return dict(status="error", errors=error)
 
 
     @applyrequest
     def handle_switch_admin_language(self, switchto, path=None, rest=""):
-        
         if not self.hasaccess():
             return self.forbidden()
 

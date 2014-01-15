@@ -297,6 +297,21 @@ def formfactory(type):
         class Meta(BaseForm.Meta):
             model = type
             exclude = BaseForm.Meta.exclude + ["created", "modified"]
+
+        def __init__(self, *args, **kw):
+            """ make the title field not required """
+            super(Form, self).__init__(enlarge=False, *args, **kw)
+            if self.light:
+                self.fields['slug'].widget = forms.HiddenInput()
+                self.fields['template'].widget = forms.HiddenInput()
+                self.fields['discussable'].widget = forms.HiddenInput()
+                if 'allowed' in self.fields:
+                    del self.fields['allowed']
+                if 'no_subcontent' in self.fields:
+                    del self.fields['no_subcontent']
+                if 'tags' in self.fields:
+                    del self.fields['tags']  ## not tagselection
+
     return Form
 
 def FileFormfactory(type, light=False):
@@ -323,16 +338,9 @@ def FileFormfactory(type, light=False):
 
         def __init__(self, *args, **kw):
             """ make the title field not required """
-            super(Form, self).__init__(enlarge=False, *args, **kw)
+            super(Form, self).__init__(*args, **kw)
             self.fields['title'].required = False
             self.fields['storage'].label = "Upload"
-            if light:
-                self.fields['slug'].widget = forms.HiddenInput()
-                self.fields['template'].widget = forms.HiddenInput()
-                self.fields['discussable'].widget = forms.HiddenInput()
-
-            if 'tags' in self.fields:
-                del self.fields['tags']  ## not tagselection
 
         def clean_title(self):
             """ generate title based on filename if necessary """
