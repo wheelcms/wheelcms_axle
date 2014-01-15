@@ -1,0 +1,106 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-10-09 11:09+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: models.py:27
+msgid "user"
+msgstr "user"
+
+#: userena_custom.py:6
+msgid "Twitter"
+msgstr "Twitter"
+
+#: userena_custom.py:7
+msgid "Google+"
+msgstr "Google+"
+
+#: userena_custom.py:8
+msgid "LinkedIn"
+msgstr "LinkedIn"
+
+#: templates/wheelcms_axle/configuration.html:5
+#: templates/wheelcms_axle/configuration.html:16
+#: templates/wheelcms_axle/configuration.html:27
+#: templates/wheelcms_axle/toolbar.html:78
+msgid "site_settings"
+msgstr "Settings"
+
+#: templates/wheelcms_axle/configuration.html:13
+msgid "nav_home"
+msgstr "Home"
+
+#: templates/wheelcms_axle/configuration.html:47
+msgid "form_save"
+msgstr "Save"
+
+#: templates/wheelcms_axle/toolbar.html:15
+msgid "toolbar_brand"
+msgstr "WheelCMS"
+
+#: templates/wheelcms_axle/toolbar.html:24
+msgid "content_attach"
+msgstr "Attach"
+
+#: templates/wheelcms_axle/toolbar.html:42
+#: templates/wheelcms_axle/toolbar.html:49
+msgid "content_create"
+msgstr "Create"
+
+#: templates/wheelcms_axle/toolbar.html:61
+msgid "content_translate"
+msgstr "Translate"
+
+#: templates/wheelcms_axle/toolbar.html:64
+msgid "content_edit"
+msgstr "Edit"
+
+#: templates/wheelcms_axle/toolbar.html:67
+msgid "content_list"
+msgstr "Contents"
+
+#: templates/wheelcms_axle/toolbar.html:71
+msgid "content_view"
+msgstr "View"
+
+#: templates/wheelcms_axle/toolbar.html:89
+msgid "user_profile"
+msgstr "Profile"
+
+#: templates/wheelcms_axle/toolbar.html:91
+msgid "user_logout"
+msgstr "Logout"
+
+#: templates/wheelcms_axle/toolbar.html:103
+msgid "lang_current_language"
+msgstr "Current language"
+
+#: templates/wheelcms_axle/toolbar.html:110
+msgid "lang_switch_to"
+msgstr "Switch to"
+
+#: templates/wheelcms_axle/toolbar.html:117
+msgid "lang_create_trans"
+msgstr "Create translation"
+
+#: templates/wheelcms_axle/wheel_base.html:68
+msgid "language_switch_language"
+msgstr "Language"
+
+#: templates/wheelcms_axle/wheel_base.html:144
+msgid "unsaved_changes_js_warning"
+msgstr "You have unsaved changes. Leaving this page will lose those changes."
