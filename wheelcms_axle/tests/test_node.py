@@ -1,6 +1,8 @@
 from wheelcms_axle.node import Node, DuplicatePathException
-from wheelcms_axle.node import InvalidPathException, CantRenameRoot, CantMoveToOffspring
+from wheelcms_axle.node import InvalidPathException, CantRenameRoot
+from wheelcms_axle.node import CantMoveToOffspring
 from wheelcms_axle.node import NodeNotFound
+from .test_urls import Base
 
 import pytest
 
@@ -399,7 +401,8 @@ class TestNode(object):
 
         assert list(root.children()) == [c2, c3, c4, c1]
 
-class TestNodeCopyPaste(object):
+class TestNodeCopyPaste(Base):
+    urls = 'wheelcms_axle.tests.urls_root'
     ## cut/copy/paste
     def test_move_node(self, client, root):
         """ move a node and its descendants elsewhere """
@@ -581,8 +584,11 @@ class TestNodeCopyPaste(object):
         child = root.add('foo')
         assert child.get_absolute_url() == '/foo/'
 
-class TestNodeTranslation(object):
+
+class TestNodeTranslation(Base):
     """ test translation related stuff """
+    urls = 'wheelcms_axle.tests.urls_root'
+
     def test_preferred_language_child(self, client, root):
         sub = root.add("sub")
         sub_pref = root.child("sub", language="en")
