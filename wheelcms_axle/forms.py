@@ -60,8 +60,9 @@ class BaseForm(forms.ModelForm):
     class Meta:
         exclude = ["node", "meta_type", "owner", "classes"]
 
-    initial_advanced_fields =  ["created", "modified", "publication",
-                                "expire", "state", "template", "navigation",
+    initial_advanced_fields =  ["language", "created", "modified",
+                                "publication", "expire", "state",
+                                "template", "navigation",
                                 "important", "discussable",
                                 "allowed", "no_subcontent"]
 
