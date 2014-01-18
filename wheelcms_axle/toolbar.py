@@ -1,5 +1,7 @@
 import urllib2
 
+from django.conf import settings
+
 from wheelcms_axle.content import type_registry
 from wheelcms_axle.node import Node
 from wheelcms_axle.workflows.default import worklist as default_worklist
@@ -88,6 +90,13 @@ class Toolbar(object):
         return True
 
     def show_translate(self):
+        """
+            The translate button is shown on pages that are not available
+            in the current (admin) language. E.g. a page is written in english
+            but the admin language is set to Spanish, you will get a 'translate'
+            button in stead of an 'edit' button (with the exact same action,
+            though!)
+        """
         if self.status == 'special':  ## special page
             return False
 
@@ -98,7 +107,8 @@ class Toolbar(object):
 
         ## there's an instance, it has (primary) content but not in the
         ## active language
-        if self.instance and self.instance.primary_content() and not self.instance.content(language=active_language):
+        if self.instance and self.instance.primary_content() and not \
+           self.instance.content(language=active_language):
             return True
         return False
 
@@ -155,7 +165,18 @@ class Toolbar(object):
                     items=[Node.objects.get(tree_path=i).content() for i in clipboard])
 
     def translations(self):
+        """
+            Return data for the translations/languages menu. This means
+            "switch to" options for translated languages and "translate to"
+            for untranslated languages.
+
+            If there's no second language (ignoring 'Any'), don't return
+            anything; this will hide the translation menu entirely.
+        """
         if not self.instance or self.status == "special":
+            return None
+
+        if len(settings.CONTENT_LANGUAGES) == 1:
             return None
 
         active = None
