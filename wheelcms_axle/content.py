@@ -87,7 +87,9 @@ class ContentBase(models.Model):
         abstract = True
 
     @classmethod
-    def construct_meta(cls, klass, parts=None):
+    def construct_meta(cls, klass=None, parts=None):
+        klass = klass or cls
+
         parts = parts or []
 
         klassname = klass.__name__.lower()
@@ -110,7 +112,7 @@ class ContentBase(models.Model):
             Since there may be multiple levels of inheritance, some magic
             is required to store a "path" to the final derived class
         """
-        mytype = self.construct_meta(self.__class__)
+        mytype = self.construct_meta()
 
         self.meta_type = mytype
 
