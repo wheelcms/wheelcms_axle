@@ -6,6 +6,15 @@
 
 {% block form_header %}{% endblock %}
 
+{% if tabs %}
+<ul class="nav nav-tabs">
+  {% for tab in tabs %}
+  <li {% if tab.active %}class="active"{% endif %}><a href="{{tab.action}}">{{tab.label}}</a></li>
+  {% endfor %}
+</ul>
+{% endif %}
+
+
 {% block form_form %}
 <div id="content" class="tab-pane active">
   <form role="form" method="post" action="{{form_action|default:'.'}}" class="form-horizontal checksave"

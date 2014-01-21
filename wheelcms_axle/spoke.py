@@ -82,6 +82,8 @@ class Spoke(object):
     model = Content  ## is it smart to set this to Content? A nonsensible default..
     workflowclass = DefaultWorkflow
 
+    basetabs = () ## Optional tabs for the update template
+
     ## None means no restrictions, () means no subcontent allowed
     children = None
 
@@ -113,6 +115,11 @@ class Spoke(object):
 
     def __init__(self, o):
         self.instance = o
+
+    def tabs(self):
+        """ Provide a hook to modify the tabs depending on the spoke
+            context """
+        return self.basetabs
 
     @property
     def o(self):
@@ -225,6 +232,18 @@ class Spoke(object):
     def state(self):
         """ current workflow state information for this spoke """
         return dict(key=self.instance.state, label=self.workflow().state())
+
+    @classmethod
+    def create_template(self, request, parent):
+        """ If we're about to create, there's no actual instance of
+            the spoke yet, hence the classmethod
+            parent may be unattached, so we can't ask for a parent spoke
+            instance
+        """
+        return "wheelcms_axle/create.html"
+
+    def update_template(self):
+        return "wheelcms_axle/update.html"
 
     def view_template(self):
         if not self.instance.template or \

@@ -125,9 +125,10 @@ class MainHandler(WheelRESTHandler):
     def spoke(self, language=None):
         """ return type info for the current content, if any """
         language = language or self.active_language()
-        model = self.instance.content(language=language)
-        if model:
-            return model.spoke()
+        if self.instance:
+            model = self.instance.content(language=language)
+            if model:
+                return model.spoke()
         return None
 
     @context
@@ -344,7 +345,10 @@ class MainHandler(WheelRESTHandler):
         else:
             self.context['breadcrumb'] = self.breadcrumb(operation="Create", details=' "%s"' % typeinfo.title)
         self.context['toolbar'] = Toolbar(self.instance, self.request, status="create")
-        return self.template("wheelcms_axle/create.html")
+
+        template = typeinfo.create_template(self.request, parent)
+
+        return self.template(template)
 
     def update(self):
         # import pytest; pytest.set_trace()
@@ -379,9 +383,13 @@ class MainHandler(WheelRESTHandler):
             typename = pcontent.get_name()
             typeinfo = type_registry.get(typename)
             create_translation = True
+            spoke = pcontent.spoke()
         else:
             typename = content.get_name()
             typeinfo = type_registry.get(typename)
+            spoke = content.spoke()
+
+        self.context['tabs'] = spoke.tabs()
 
         parent = instance.parent()
 
@@ -453,7 +461,8 @@ class MainHandler(WheelRESTHandler):
             self.context['breadcrumb'] = self.breadcrumb(operation="Translate", details=' "%s" (%s)' % (title, typeinfo.title))
         else:
             self.context['breadcrumb'] = self.breadcrumb(operation="Edit", details=' "%s" (%s)' % (content.title, typeinfo.title))
-        return self.template("wheelcms_axle/update.html")
+        template = spoke.update_template()
+        return self.template(template)
 
 
     @context
