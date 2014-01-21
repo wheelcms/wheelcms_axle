@@ -143,7 +143,10 @@
     {# this script will have no effect after a submit where the content has not been saved, for example in case of a validation error #}
     $(document).ready(function() {
       var request_leave = false;
-      $("form.checksave :input").change(function() {
+      $("form.checksave").on("change", function() {
+            request_leave = true;
+      });
+      $("form.checksave").on("keydown", function() {
             request_leave = true;
       });
       $("form.checksave .canleave").click(function() {
@@ -154,6 +157,12 @@
               if(request_leave) {
                 return '{% trans "unsaved_changes_js_warning" %}';
               }
+              for(var ed in tinyMCE.editors) {
+                  if(tinyMCE.editors[ed].isDirty()) {
+                    return '{% trans "unsaved_changes_js_warning" %}';
+                  }
+              }
+
           } );
     });
   </script>
