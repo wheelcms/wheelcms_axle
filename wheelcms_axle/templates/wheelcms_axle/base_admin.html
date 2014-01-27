@@ -542,7 +542,7 @@
     <div class="modal-content">
       <div class="modal-body">
         <tabset>
-          <tab heading="Local / Browse" active="tabs[0].active" ng-show="!tabs[0].disabled">
+          <tab heading="Local / Browse" active="tabs[0].active" ng-hide="$parent.tabs[0].disabled">
             <div class="row" id="browsecrumbs">
               <div class="col-sm-12 crumbcontainer">
               </div>
@@ -556,7 +556,7 @@
               </div>
             </div>
           </tab>
-          <tab heading="External Link" active="tabs[1].active" ng-show="!tabs[1].disabled">
+          <tab heading="External Link" active="tabs[1].active" ng-hide="$parent.tabs[1].disabled">
             <div class="row">
               <div class="col-sm-6">
                 <form>
@@ -576,7 +576,7 @@
               </div>
             </div>
           </tab>
-          <tab heading="External Image" active="tabs[2].active" ng-show="!tabs[2].disabled">
+          <tab heading="External Image" active="tabs[2].active" ng-hide="$parent.tabs[2].disabled">
             <div class="row">
               <div class="col-sm-6">
                 <form>
