@@ -2,6 +2,8 @@
 {# base template for create/edit templates #}
 
 {% block base_main %}
+<div ng-app="wheelcms-admin" ng-controller="AdminCtrl">
+
 {{ block.super }}
 
 {% block form_header %}{% endblock %}
@@ -77,4 +79,5 @@
 </div>
 {% endblock %}
 
+</div> {# ng-app wheelcms-admin ng-controller AdminCtrl #}
 {% endblock %}
