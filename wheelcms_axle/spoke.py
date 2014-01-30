@@ -83,6 +83,7 @@ class Spoke(object):
     workflowclass = DefaultWorkflow
 
     basetabs = () ## Optional tabs for the update template
+    active_tab = "attributes"
 
     ## None means no restrictions, () means no subcontent allowed
     children = None
