@@ -103,7 +103,10 @@ app.directive('optionsDisabled', function($parse) {
     };
 });
 
-app.controller('AdminCtrl', function($scope) {
+app.controller('AdminCtrl', function($rootScope, $scope) {
+    $scope.init = function(urlbase) {
+        $rootScope.urlbase = urlbase;
+    }
 });
 
 

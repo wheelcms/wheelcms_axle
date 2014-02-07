@@ -2,7 +2,7 @@
 {# base template for create/edit templates #}
 
 {% block base_main %}
-<div ng-app="wheelcms-admin" ng-controller="AdminCtrl">
+<div ng-app="wheelcms-admin" ng-init="init('{{spoke.instance.get_absolute_url}}');" ng-controller="AdminCtrl">
 
 {{ block.super }}
 
