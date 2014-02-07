@@ -68,6 +68,41 @@ app.config(['$httpProvider', function($httpProvider) {
     $http.defaults.headers.post['X-CSRFToken'] = $cookies['csrftoken'];
 }); */
 
+/*
+ * Fix for broken <select> tag
+ * http://jsfiddle.net/alalonde/dZDLg/9/ https://github.com/angular/angular.js/issues/638
+ */
+app.directive('optionsDisabled', function($parse) {
+    var disableOptions = function(scope, attr, element, data, fnDisableIfTrue) {
+        // refresh the disabled options in the select element.
+        $("option[value!='?']", element).each(function(i, e) {
+            var locals = {};
+            locals[attr] = data[i];
+            $(this).attr("disabled", fnDisableIfTrue(scope, locals));
+        });
+    };
+    return {
+        priority: 0,
+        require: 'ngModel',
+        link: function(scope, iElement, iAttrs, ctrl) {
+            // parse expression and build array of disabled options
+            var expElements = iAttrs.optionsDisabled.match(/^\s*(.+)\s+for\s+(.+)\s+in\s+(.+)?\s*/);
+            var attrToWatch = expElements[3];
+            var fnDisableIfTrue = $parse(expElements[1]);
+            scope.$watch(attrToWatch, function(newValue, oldValue) {
+                if(newValue)
+                    disableOptions(scope, expElements[2], iElement, newValue, fnDisableIfTrue);
+            }, true);
+            // handle model updates properly
+            scope.$watch(iAttrs.ngModel, function(newValue, oldValue) {
+                var disOptions = $parse(attrToWatch)(scope);
+                if(newValue)
+                    disableOptions(scope, expElements[2], iElement, disOptions, fnDisableIfTrue);
+            });
+        }
+    };
+});
+
 app.controller('AdminCtrl', function($scope) {
 });
 
