@@ -2,16 +2,16 @@
 {# base template for create/edit templates #}
 
 {% block base_main %}
-<div ng-app="wheelcms-admin" ng-controller="AdminCtrl">
+<div ng-app="wheelcms-admin" ng-init="init('{{spoke.instance.get_absolute_url}}');" ng-controller="AdminCtrl">
 
 {{ block.super }}
 
 {% block form_header %}{% endblock %}
 
-{% if tabs %}
+{% if spoke.tabs %}
 <ul class="nav nav-tabs">
-  {% for tab in tabs %}
-  <li {% if tab.active %}class="active"{% endif %}><a href="{{tab.action}}">{{tab.label}}</a></li>
+  {% for tab in spoke.tabs %}
+  <li {% if tab.id == spoke.active_tab %}class="active"{% endif %}><a href="{{spoke.instance.get_absolute_url}}{{tab.action}}">{{tab.label}}</a></li>
   {% endfor %}
 </ul>
 {% endif %}

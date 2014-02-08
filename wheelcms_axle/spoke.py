@@ -83,6 +83,7 @@ class Spoke(object):
     workflowclass = DefaultWorkflow
 
     basetabs = () ## Optional tabs for the update template
+    active_tab = "attributes"
 
     ## None means no restrictions, () means no subcontent allowed
     children = None
@@ -115,6 +116,16 @@ class Spoke(object):
 
     def __init__(self, o):
         self.instance = o
+
+    def __eq__(self, other):
+        """ it may be useful to test equality of spokes in tests """
+        return other and self.__class__ is other.__class__ and \
+               self.instance == other.instance
+
+
+    def __ne__(self, other):
+        """ it may be useful to test equality of spokes in tests """
+        return not self.__eq__(other)
 
     def tabs(self):
         """ Provide a hook to modify the tabs depending on the spoke
@@ -385,3 +396,4 @@ class FileSpoke(Spoke):
 
         response['Content-Disposition'] = 'attachment; filename=%s' % filename
         return response
+

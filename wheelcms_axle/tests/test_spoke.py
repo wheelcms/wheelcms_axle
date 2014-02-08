@@ -90,9 +90,9 @@ class BaseSpokeTemplateTest(object):
     def create_instance(self, **kw):
         return self.type.model(**kw)
 
-    def valid_data(self):
+    def valid_data(self, **kw):
         """ return formdata required for validation to succeed """
-        return MockedQueryDict()
+        return MockedQueryDict(**kw)
 
     def valid_files(self):
         """ return formdata files required for validation to succeed """
@@ -146,16 +146,14 @@ class BaseSpokeTemplateTest(object):
         """ Only registered templates are allowed """
         template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         form = self.type.form(parent=root,
-                              data=MockedQueryDict({'template':"bar/foo",
-                                                    'language':'en'}))
+                              data=self.valid_data(template="bar/foo", language="en"))
         assert not form.is_valid()
         assert 'template' in form.errors
 
     def test_form_validation_language(self, client, root):
         """ language is required """
         template_registry.register(self.type, "foo/bar", "foo bar", default=False)
-        data = self.valid_data()
-        data['template'] = 'foo/bar'
+        data = self.valid_data(template="foo/bar")
         form = self.type.form(parent=root, data=data)
         assert not form.is_valid()
         assert 'language' in form.errors
@@ -166,11 +164,7 @@ class BaseSpokeTemplateTest(object):
         template_registry.register(self.type, "foo/bar2", "foo bar", default=True)
         template_registry.register(self.type, "foo/bar3", "foo bar", default=False)
         p = Node.root()
-        data = self.valid_data()
-        data['slug'] = 's'
-        data['title'] = 't'
-        data['template'] = 'foo/bar3'
-        data['language'] = 'en'
+        data = self.valid_data(slug="s", title="t", template="foo/bar3", language="en")
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
@@ -182,11 +176,7 @@ class BaseSpokeTemplateTest(object):
         template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
         p.add('foo')
-        data = self.valid_data()
-        data['slug'] = 'foo'
-        data['title'] = 't'
-        data['template'] = 'foo/bar'
-        data['language'] = 'en'
+        data = self.valid_data(slug="foo", title="t", template="foo/bar", language="en")
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
@@ -198,10 +188,7 @@ class BaseSpokeTemplateTest(object):
         """ test slug generation """
         template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
-        data = self.valid_data()
-        data['title'] = 'Hello World'
-        data['template'] = 'foo/bar'
-        data['language'] = 'en'
+        data = self.valid_data(title="Hello World", template="foo/bar", language="en")
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
@@ -211,10 +198,8 @@ class BaseSpokeTemplateTest(object):
         """ test slug generation """
         template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
-        data = self.valid_data()
-        data['title'] = 'foo -- bar  -  cccc'
-        data['template'] = 'foo/bar'
-        data['language'] = 'en'
+        data = self.valid_data(title='foo -- bar  -  cccc', template='foo/bar',
+                               language="en")
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
@@ -225,10 +210,8 @@ class BaseSpokeTemplateTest(object):
         """ test slug generation """
         template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
-        data = self.valid_data()
-        data['title'] = 'a world the are'
-        data['template'] = 'foo/bar'
-        data['language'] = 'en' ## use english stopwords
+        data = self.valid_data(title='a world the are', template='foo/bar',
+                               language='en') ## use english stopwords
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
@@ -239,10 +222,8 @@ class BaseSpokeTemplateTest(object):
         """ test slug generation - only stopwords """
         template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
-        data = self.valid_data()
-        data['title'] = 'are'
-        data['template'] = 'foo/bar'
-        data['language'] = 'en' ## use english stopwords
+        ## use english stopwords
+        data = self.valid_data(title="are", template="foo/bar", language="en")
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
@@ -253,10 +234,8 @@ class BaseSpokeTemplateTest(object):
         """ test slug generation - only stopwords """
         template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
-        data = self.valid_data()
-        data['title'] = 'are - a - they'
-        data['template'] = 'foo/bar'
-        data['language'] = 'en' ## use english stopwords
+        ## use english stopwords
+        data = self.valid_data(title="are - a - they", template="foo/bar", language="en")
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
@@ -267,11 +246,10 @@ class BaseSpokeTemplateTest(object):
         """ test slug generation """
         template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
-        data = self.valid_data()
-        data['title'] = 'Hello World, What\'s up?'
-        data['slug'] = ''
-        data['template'] = 'foo/bar'
-        data['language'] = 'en'
+        data = self.valid_data(title='Hello World, What\'s up?',
+                               slug='',
+                               template='foo/bar',
+                               language='en')
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
@@ -283,11 +261,8 @@ class BaseSpokeTemplateTest(object):
         template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
         p.add('foo')
-        data = self.valid_data()
-        data['slug'] = ''
-        data['title'] = 'foo'
-        data['template'] = 'foo/bar'
-        data['language'] = 'en'
+        data = self.valid_data(slug="", title="foo", template="foo/bar",
+                               language="en")
 
         form = self.type.form(parent=p, data=data, files=self.valid_files())
 
@@ -300,11 +275,8 @@ class BaseSpokeTemplateTest(object):
             should result in a validation error
         """
         p = Node.root()
-        data = self.valid_data()
-        data['slug'] = 'foobar'
-        data['title'] = 'foo'
-        data['template'] = 'foo/bar'
-        data['language'] = 'en'
+        data = self.valid_data(slug="foobar", title="foo", template="foo/bar",
+                               language="en")
 
         form = self.type.form(parent=p, data=data, files=self.valid_files(),
             reserved=["foobar"])
@@ -319,11 +291,10 @@ class BaseSpokeTemplateTest(object):
             should be accepted.
         """
         p = Node.root()
-        data = self.valid_data()
-        data['slug'] = 'foobar1'
-        data['title'] = 'foo'
-        data['template'] = 'foo/bar'
-        data['language'] = 'en'
+        data = self.valid_data(slug='foobar1',
+                               title='foo',
+                               template='foo/bar',
+                               language='en')
 
         form = self.type.form(parent=p, data=data, files=self.valid_files(),
             reserved=["foobar"])
@@ -334,11 +305,10 @@ class BaseSpokeTemplateTest(object):
         """ slug generation should not create reserved names """
         template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
-        data = self.valid_data()
-        data['slug'] = ''
-        data['title'] = 'foo'
-        data['template'] = 'foo/bar'
-        data['language'] = 'en'
+        data = self.valid_data(slug='',
+                               title='foo',
+                               template='foo/bar',
+                               language='en')
 
         form = self.type.form(parent=p, data=data, files=self.valid_files(),
                               reserved=["foo"])
@@ -352,11 +322,10 @@ class BaseSpokeTemplateTest(object):
         template_registry.register(self.type, "foo/bar", "foo bar", default=False)
         p = Node.root()
         p.add('foo')
-        data = self.valid_data()
-        data['slug'] = ''
-        data['title'] = 'foo'
-        data['template'] = 'foo/bar'
-        data['language'] = 'en'
+        data = self.valid_data(slug='',
+                               title='foo',
+                               template='foo/bar',
+                               language='en')
 
         form = self.type.form(parent=p, data=data, files=self.valid_files(),
                               reserved=["foo1"])

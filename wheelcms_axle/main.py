@@ -362,6 +362,11 @@ class MainHandler(WheelRESTHandler):
             return self.redirect(instance.get_absolute_url(),
                                  error="Unsupported Language")
 
+        if self.spoke():
+            ## update the context with addtional data from the spoke
+            self.context.update(self.spoke().context(self, self.request,
+                                self.instance))
+
         if action:
             ## match against path, not get_absolute_url which is configuration specific
             action_handler = action_registry.get(action, self.instance.path,
@@ -527,6 +532,11 @@ class MainHandler(WheelRESTHandler):
             if not self.hasaccess():
                 return self.forbidden()
 
+        if spoke:
+            ## update the context with addtional data from the spoke
+            self.context.update(spoke.context(self, self.request,
+                                self.instance))
+
         action = self.kw.get('action', '')
         if action:
             ## again, use node's path directly, not get_absolute_url, which is
@@ -543,9 +553,6 @@ class MainHandler(WheelRESTHandler):
             self.context['toolbar'] = Toolbar(self.instance, self.request)
 
         if spoke:
-            ## update the context with addtional data from the spoke
-            self.context.update(spoke.context(self, self.request,
-                                self.instance))
             tpl = spoke.view_template()
             ctx = template_registry.context.get((spoke.__class__, tpl))
             if ctx:

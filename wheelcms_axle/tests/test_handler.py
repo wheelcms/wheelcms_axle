@@ -16,8 +16,8 @@ class MainHandlerTestable(MainHandler):
     def render_template(self, template, **context):
         return dict(template=template, context=context)
 
-    def template(self, path):
-        return dict(path=path, context=self.context)
+    def template(self, path, **kw):
+        return dict(path=path, context=self.context, kw=kw)
 
     def handle_reserved(self):
         """ should result in 'reserved' being a reserved kw """
