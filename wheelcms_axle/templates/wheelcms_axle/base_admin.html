@@ -534,8 +534,7 @@
 {% endblock %}
 {% block base_main %}
 
-<div id="browseModal" class="modal fade" role="dialog" aria-hidden="true" ng-controller="BrowseCtrl">
-  <div class="modal-dialog">
+<script type="text/ng-template" id="BrowseModal.html">
     <div class="modal-content">
       <div class="modal-body">
         <tabset>
@@ -601,13 +600,9 @@
         <button class="btn btn-primary modal_select">Select</button>
       </div>
    </div> <!-- modal-content -->
- </div> <!-- modal-dialog -->
-</div>
+</script>
 
-<div id="uploadModal" class="modal fade" tabindex="-1" role="dialog"
-     aria-labelledby="uploadModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
+<script type="text/ng-template" id="UploadModal.html">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
         <h3 id="uploadModalLabel">Upload a file</h3>
@@ -635,14 +630,9 @@
         <button class="btn modal_close" data-dismiss="modal" aria-hidden="true">Close</button>
         <button class="btn btn-primary modal_select">Save</button>
       </div>
-    </div> <!-- modal-dialog -->
-  </div> <!-- modal-content -->
-</div>
+</script>
 
-<div id="detailsModal" class="modal fade" role="dialog" aria-labelledby="modal-header#h3" ng-controller="PropsCtrl"
-     aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
+<script type="text/ng-template" id="PropsModal.html">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
         <h3>Selection properties</h3>
@@ -654,9 +644,7 @@
         <button class="btn btn-info modal_change">Change selection</button>
         <button class="btn btn-primary modal_select">Select</button>
       </div>
-    </div> <!-- modal-dialog -->
-  </div> <!-- modal-content -->
-</div> <!-- detailsModal -->
+</script> <!-- detailsModal -->
 
 
 {{ block.super }}

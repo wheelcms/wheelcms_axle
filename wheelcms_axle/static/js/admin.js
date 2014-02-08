@@ -94,36 +94,84 @@ app.directive('optionsDisabled', function($parse) {
             var attrToWatch = expElements[3];
             var fnDisableIfTrue = $parse(expElements[1]);
             scope.$watch(attrToWatch, function(newValue, oldValue) {
-                if(newValue)
+                if(newValue) {
                     disableOptions(scope, expElements[2], iElement, newValue, fnDisableIfTrue);
+                }
             }, true);
+
             // handle model updates properly
             scope.$watch(iAttrs.ngModel, function(newValue, oldValue) {
                 var disOptions = $parse(attrToWatch)(scope);
-                if(newValue)
+                if(newValue) {
                     disableOptions(scope, expElements[2], iElement, disOptions, fnDisableIfTrue);
+                }
             });
         }
     };
 });
 
-app.controller('AdminCtrl', function($rootScope, $scope) {
-    $scope.init = function(urlbase) {
-        $rootScope.urlbase = urlbase;
-    };
-});
-
+/*
+ * props_or_browser is invoked by TinyMCE. Hook it into our AngularJS
+ * controllers
+ */
 function props_or_browser(path, type, options, callback) {
+    var scope =  angular.element($("#wheelcms-admin").get()).scope();
+
     if(path) {
-        var scope = angular.element($("#detailsModal").get()).scope();
-        scope.$apply(function() { scope.show(type, options, callback); });
+        scope.$apply(function() { scope.open_props(path, type, options, callback); });
 
     }
     else {
-        var scope = angular.element($("#browseModal").get()).scope();
-        scope.$apply(function() { scope.show(path, type, options, callback); });
+        scope.$apply(function() { scope.open_browser(path, type, options, callback); });
     }
 }
+
+/*
+ * Admin wide controller, bootstraps the calling of specific
+ * dialogs
+ */
+app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
+    $scope.init = function(urlbase) {
+        $rootScope.urlbase = urlbase;
+    };
+
+    $scope.open_browser = function(path, type, options, callback) {
+        var modalInstance = $modal.open({
+            templateUrl: 'BrowseModal.html',
+            controller: "BrowseCtrl",
+            resolve: {
+                path: function() { return path; },
+                type: function() { return type; },
+                options: function() { return options; },
+                callback: function() { return callback; }
+            }
+        });
+        modalInstance.result.then(function (selected) {
+            callback(selected); // more or less
+        }, function () {
+            // dismissed
+        });
+    };
+
+    $scope.open_props = function(path, type, options, callback) {
+        var modalInstance = $modal.open({
+            templateUrl: 'PropsModal.html',
+            controller: "PropsCtrl",
+            resolve: {
+                path: function() { return path; },
+                type: function() { return type; },
+                options: function() { return options; },
+                callback: function() { return callback; }
+            }
+        });
+        modalInstance.result.then(function (selected) {
+            callback(selected); // more or less
+        }, function () {
+            // dismissed
+        });
+
+    };
+});
 
 app.factory("PropsModal", function() {
 });
@@ -131,23 +179,22 @@ app.factory("PropsModal", function() {
 app.factory("BrowseModal", function() {
 });
 
-app.controller('PropsCtrl', ["$scope", "PropsModal", "$element",
-                             function($scope, PropsModal, $element) {
+app.controller('PropsCtrl', ["$scope", "PropsModal",
+                             function($scope, PropsModal, path, type, properties) {
     $scope.show = function(type, options, callback) {
         console.log("Props Show");
-        $($element).modal();
     };
 }]);
 
-app.controller('BrowseCtrl', ["$scope", "BrowseModal", "$element",
-                              function($scope, BrowseModal, $element) {
+app.controller('BrowseCtrl', ["$scope", "BrowseModal",
+                              function($scope, BrowseModal, path, type, properties) {
+
     $scope.tabs = [ {active: true, disabled: false },
                     {active: false, disabled: false },
                     {active: false, disabled: false }];
 
-    $scope.show = function(path, mode, options, callback) {
+    function init(path, mode, options, callback) {
         console.log("Browse Show");
-        $($element).modal();
 
         $scope.tabs = [ {active: true, disabled: false },
                         {active: false, disabled: false },
@@ -180,12 +227,13 @@ app.controller('BrowseCtrl', ["$scope", "BrowseModal", "$element",
         }
         console.log($scope.tabs);
 
-        
         /* depending on internal/external path, open local/browse or 
          * external tab
          */
 
-    };
+    }
+
+    init(path, type, properties);
 
 }]);
 
