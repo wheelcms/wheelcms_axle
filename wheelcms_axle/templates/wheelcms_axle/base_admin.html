@@ -595,9 +595,9 @@
         </tabset>
       </div> <!-- modal-body -->
       <div class="modal-footer">
-        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-        <button class="btn btn-info modal_upload">Upload</button>
-        <button class="btn btn-primary modal_select">Select</button>
+        <button class="btn" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">Close</button>
+        <button class="btn btn-info modal_upload" ng-click="upload()">Upload</button>
+        <button class="btn btn-primary modal_select" ng-click="ok()">Select</button>
       </div>
    </div> <!-- modal-content -->
 </script>

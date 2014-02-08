@@ -117,9 +117,9 @@ app.directive('optionsDisabled', function($parse) {
 function props_or_browser(path, type, options, callback) {
     var scope =  angular.element($("#wheelcms-admin").get()).scope();
 
+    console.log(path);
     if(path) {
-        scope.$apply(function() { scope.open_props(path, type, options, callback); });
-
+        scope.$apply(function() { scope.open_props(path, type, options, callback, false); });
     }
     else {
         scope.$apply(function() { scope.open_browser(path, type, options, callback); });
@@ -153,7 +153,7 @@ app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
         });
     };
 
-    $scope.open_props = function(path, type, options, callback) {
+    $scope.open_props = function(path, type, options, callback, newselection) {
         var modalInstance = $modal.open({
             templateUrl: 'PropsModal.html',
             controller: "PropsCtrl",
@@ -179,22 +179,21 @@ app.factory("PropsModal", function() {
 app.factory("BrowseModal", function() {
 });
 
-app.controller('PropsCtrl', ["$scope", "PropsModal",
-                             function($scope, PropsModal, path, type, properties) {
+app.controller('PropsCtrl', ["$scope", "$modalInstance", "PropsModal", "path", "type", "options",
+                             function($scope, $modalInstance, PropsModal, path, type, options) {
     $scope.show = function(type, options, callback) {
         console.log("Props Show");
     };
 }]);
 
-app.controller('BrowseCtrl', ["$scope", "BrowseModal",
-                              function($scope, BrowseModal, path, type, properties) {
+app.controller('BrowseCtrl', ["$scope", "$modalInstance", "BrowseModal", "path", "type", "options",
+                              function($scope, $modalInstance, BrowseModal, path, type, options) {
 
     $scope.tabs = [ {active: true, disabled: false },
                     {active: false, disabled: false },
                     {active: false, disabled: false }];
 
-    function init(path, mode, options, callback) {
-        console.log("Browse Show");
+    function init(path, mode, options) {
 
         $scope.tabs = [ {active: true, disabled: false },
                         {active: false, disabled: false },
@@ -233,7 +232,19 @@ app.controller('BrowseCtrl', ["$scope", "BrowseModal",
 
     }
 
-    init(path, type, properties);
+    init(path, type, options);
 
+
+    $scope.ok = function () {
+      $modalInstance.close("result");
+    };
+
+    $scope.ok = function () {
+      $modalInstance.close("upload");
+    };
+
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
 }]);
 
