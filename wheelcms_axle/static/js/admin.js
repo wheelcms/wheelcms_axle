@@ -137,9 +137,9 @@ app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
 
     $scope.open_browser = function(path, type, options, callback) {
         var modalInstance = $modal.open({
-            templateUrl: 'BrowseModal.html',
-            windowClass: "browsemodal",
-            controller: "BrowseCtrl",
+            templateUrl: 'UploadModal.html',
+            windowClass: "",
+            controller: "UploadCtrl",
             resolve: {
                 path: function() { return path; },
                 type: function() { return type; },
@@ -148,11 +148,32 @@ app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
             }
         });
         modalInstance.result.then(function (selected) {
-            callback(selected); // more or less
+            if(selected == "upload") {
+                openUploadModal();
+            }
+            else {
+                console.log("X");
+                console.log(selected);
+                callback(selected); // more or less
+            }
         }, function () {
             // dismissed
         });
     };
+
+    function openUploadModal() {
+        var modalInstance = $modal.open({
+            templateUrl: 'PropsModal.html',
+            controller: "PropsCtrl",
+            resolve: {
+                path: function() { return path; },
+                type: function() { return type; },
+                options: function() { return options; },
+                callback: function() { return callback; }
+            }
+        });
+
+    }
 
     $scope.open_props = function(path, type, options, callback, newselection) {
         var modalInstance = $modal.open({
@@ -166,9 +187,7 @@ app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
             }
         });
         modalInstance.result.then(function (selected) {
-            console.log("X");
-            console.log(selected);
-            callback(selected); // more or less
+
         }, function () {
             console.log("dismiss");
             // dismissed
