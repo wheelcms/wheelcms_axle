@@ -138,6 +138,7 @@ app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
     $scope.open_browser = function(path, type, options, callback) {
         var modalInstance = $modal.open({
             templateUrl: 'BrowseModal.html',
+            windowClass: "browsemodal",
             controller: "BrowseCtrl",
             resolve: {
                 path: function() { return path; },
@@ -171,6 +172,8 @@ app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
         });
 
     };
+
+    $scope.open_browser("", "link", {}, function(res) { console.log(res); });
 });
 
 app.factory("PropsModal", function() {
@@ -179,15 +182,26 @@ app.factory("PropsModal", function() {
 app.factory("BrowseModal", function() {
 });
 
-app.controller('PropsCtrl', ["$scope", "$modalInstance", "PropsModal", "path", "type", "options",
-                             function($scope, $modalInstance, PropsModal, path, type, options) {
+app.controller('PropsCtrl',
+               ["$scope", "$modalInstance", "PropsModal", "path", "type", "options",
+               function($scope, $modalInstance, PropsModal, path, type, options) {
     $scope.show = function(type, options, callback) {
         console.log("Props Show");
     };
 }]);
 
-app.controller('BrowseCtrl', ["$scope", "$modalInstance", "BrowseModal", "path", "type", "options",
-                              function($scope, $modalInstance, BrowseModal, path, type, options) {
+app.controller('BrowseCtrl',
+               ["$scope", "$modalInstance", "$compile", "$http", "BrowseModal", "path",
+                "type", "options",
+               function($scope, $modalInstance, $compile, $http, BrowseModal,
+                        path, type, options) {
+
+    var startpath = ""; // the initial path
+
+    $scope.selected = {};
+    $scope.path = '';
+    $scope.mode = 'link';
+    $scope.selectable = false;
 
     $scope.tabs = [ {active: true, disabled: false },
                     {active: false, disabled: false },
@@ -217,24 +231,88 @@ app.controller('BrowseCtrl', ["$scope", "$modalInstance", "BrowseModal", "path",
 
         if($scope.browse) {
             $scope.tabs[0].active = true;
+            load_panels(path || '');
+
         }
         else if($scope.link_type) {
             $scope.tabs[1].active = true;
+            $scope.selected.external_url = path;
         }
         else {
             $scope.tabs[2].active = true;
         }
-        console.log($scope.tabs);
+
+        $scope.path = path.replace(/\/\+[\w_\-]+$/, '');
+        startpath = $scope.path;
+        $scope.mode = mode;
 
         /* depending on internal/external path, open local/browse or 
          * external tab
          */
 
     }
+    /*
+     * load_panels krijgt een data structuur terug met panels (3 stuks), breadcrumbs en
+     * een indicatie of er geupload kan worden. Dit zou direct overgenomen kunnen worden,
+     * maar het is mooier om alle markup op 1 plek te hebben en puur met data te werken.
+     */
+    function load_panels(path) {
+        $http.get($scope.urlbase + "panel",
+                  {params: {
+                    path: path,
+                    original: startpath,
+                    mode: $scope.mode
+                  }}
+                  ).success(
+        function(data, status, headers, config) {
+            console.log(data);
+            var panels = data.panels;
+            var crumbs = data.crumbs;
+            var upload = data.upload;
+            $scope.selectable = data.selectable;
+            var context_path = data.path;
+
+            for(var i=0; i < 3; i++) {
+                $(".panel"+i).empty();
+            }
+
+            for(var i=0; i < panels.length; i++) {
+                var paneldata = panels[i];
+                var panel = $(".panel" + i);
+                panel.html($compile(paneldata)($scope));
+            }
+            $(".crumbcontainer").html($compile(crumbs)($scope));
+        });
+    }
 
     init(path, type, options);
 
+    $scope.openURL = function(path, selectable) {
+        console.log("klik " + path);
+        load_panels(path);
+        $scope.selectable = selectable;
+    };
 
+    /*
+     * Enablers/disablers
+     */
+    $scope.select_enabled = function() {
+        if($scope.link_type && $scope.selected.external_url) {
+            return true;
+        }
+        else if($scope.browse && $scope.selectable) {
+            return true;
+        }
+        return false;
+    };
+
+    $scope.upload_enabled = function() {
+        return false;
+    };
+
+    /*
+     * Button actions
+     */
     $scope.ok = function () {
       $modalInstance.close("result");
     };

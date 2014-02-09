@@ -538,7 +538,8 @@
     <div class="modal-content">
       <div class="modal-body">
         <tabset>
-          <tab heading="Local / Browse" active="tabs[0].active" ng-hide="$parent.tabs[0].disabled">
+          <tab heading="Local / Browse" active="tabs[0].active"
+            ng-hide="$parent.tabs[0].disabled">
             <div class="row" id="browsecrumbs">
               <div class="col-sm-12 crumbcontainer">
               </div>
@@ -559,7 +560,7 @@
                   <legend>External URL</legend>
                   <label class="control-label" for="external_url">URL</label>
                   <div class="input-append">
-                    <input id="external_url" type="text" ng-model="external_url" name="url" maxlength="256" />
+                    <input id="external_url" type="text" ng-model="selected.external_url" name="url" maxlength="256" />
                     <button id="external_url_preview" class="btn">Preview <i class="glyphicon glyphicon-chevron-right"></i></button>
                   </div>
                   <div class="help-block">
@@ -579,7 +580,7 @@
                   <legend>External Image</legend>
                   <label class="control-label" for="external_image_url">URL</label>
                   <div class="input-append">
-                    <input id="external_image_url" type="text" name="url" maxlength="256" />
+                    <input id="external_image_url" ng-model="selected.external_url" type="text" name="url" maxlength="256" />
                     <button id="external_image_url_preview" class="btn">Preview <i class="glyphicon glyphicon-chevron-right"></i></button>
                   </div>
                   <div class="help-block">
@@ -596,8 +597,8 @@
       </div> <!-- modal-body -->
       <div class="modal-footer">
         <button class="btn" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">Close</button>
-        <button class="btn btn-info modal_upload" ng-click="upload()">Upload</button>
-        <button class="btn btn-primary modal_select" ng-click="ok()">Select</button>
+        <button class="btn btn-info modal_upload" ng-disabled="!upload_enabled()" ng-click="upload()">Upload</button>
+        <button class="btn btn-primary modal_select" ng-disabled="!select_enabled()" ng-click="ok()">Select</button>
       </div>
    </div> <!-- modal-content -->
 </script>

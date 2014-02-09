@@ -853,6 +853,7 @@ class MainHandler(WheelRESTHandler):
         if not self.hasaccess():
             return self.forbidden()
 
+
         ##
         ## No path means a new item is to be selected. Use the current
         ## item as a starting point
@@ -876,6 +877,23 @@ class MainHandler(WheelRESTHandler):
         original = strip_action(original)
 
         node = start = Node.get(path)# , language=language)
+
+        ##
+        ## Selectable means the node is a valid selection. Unattached
+        ## nodes are never selectable and in image mode only image based
+        ## content is a valid selection
+        def is_selectable(node):
+            content = node.content()
+            if content:
+                if mode == "link":
+                    return True
+                elif isinstance(content, ImageContent):
+                    return True
+            return False
+
+        ## Is the starting point a valid selection?
+        start_selectable = is_selectable(node)
+
         panels = []
 
         ## first panel: bookmarks/shortcuts
@@ -900,15 +918,16 @@ class MainHandler(WheelRESTHandler):
             if not content: ## unattached
                 continue
             spoke = content.spoke()
+            selectable = is_selectable(n)
             bookmarks.append(dict(children=[], path=n.get_absolute_url(),
                             title=content.title,
                             meta_type=content.meta_type,
                             content=content,
+                            selectable=selectable,
                             icon=spoke.icon_base() + '/' + spoke.icon,
                             spoke=spoke))
 
-        panels.append(
-                      self.render_template("wheelcms_axle/popup_links.html",
+        panels.append(self.render_template("wheelcms_axle/popup_links.html",
                                            instance=self.instance,
                                            bookmarks=bookmarks
                                            ))
@@ -945,18 +964,13 @@ class MainHandler(WheelRESTHandler):
                 upload = bool(addables)
 
             for child in node.children():
-                selectable = False
-
                 content = child.content()
 
                 if not content:
                     continue  ## ignore unattached nodes
                 spoke = content.spoke()
 
-                if mode == "link":
-                    selectable = True
-                elif isinstance(content, ImageContent):
-                    selectable = True
+                selectable = is_selectable(child)
 
                 selected = path == child.path or \
                            path.startswith(child.path + '/')
@@ -983,17 +997,21 @@ class MainHandler(WheelRESTHandler):
         crumbs = []
         node = start
         while True:
+            content = node.content()
+            selectable = is_selectable(node)
             if node.isroot():
-                crumbs.insert(0, dict(path=node.get_absolute_url(), title="Home"))
+                crumbs.insert(0, dict(path=node.get_absolute_url(),
+                                      selectable=selectable, title="Home"))
                 break
             crumbs.insert(0, dict(path=node.get_absolute_url(),
+                                  selectable=selectable,
                                   title=node.content().title))
             node = node.parent()
 
         crumbtpl = self.render_template("wheelcms_axle/popup_crumbs.html",
                                         crumbs=crumbs)
         return dict(panels=panels, path=start.get_absolute_url(),
-                    crumbs=crumbtpl, upload=upload)
+                    crumbs=crumbtpl, upload=upload, selectable=start_selectable)
 
     @json
     @applyrequest

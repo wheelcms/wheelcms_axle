@@ -7,7 +7,8 @@
   <tbody class="sortable">
     {% for bookmark in bookmarks %}
       <tr class="entry {% if bookmark.selected %}info{%endif%}"
-          data-url="{{bookmark.path}}" data-selectable="{{bookmark.selectable|yesno:'yes,no'}}">
+          data-url="{{bookmark.path}}" data-selectable="{{bookmark.selectable|yesno:'yes,no'}}"
+          ng-click="openURL('{{bookmark.path}}', {{bookmark.selectable|yesno:"true,false"}})">
         <td><img src="{{bookmark.icon}}"> {{bookmark.title}}
             {% if bookmark.selected %}
               <i class="pull-right glyphicon glyphicon-chevron-right"></i>
