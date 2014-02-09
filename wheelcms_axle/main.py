@@ -1010,6 +1010,7 @@ class MainHandler(WheelRESTHandler):
 
         crumbtpl = self.render_template("wheelcms_axle/popup_crumbs.html",
                                         crumbs=crumbs)
+        print "SEL ", path,  start_selectable
         return dict(panels=panels, path=start.get_absolute_url(),
                     crumbs=crumbtpl, upload=upload, selectable=start_selectable)
 

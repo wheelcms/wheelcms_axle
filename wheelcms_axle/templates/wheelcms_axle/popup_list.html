@@ -6,7 +6,6 @@
   <tbody class="sortable">
     {% for child in instance.children %}
       <tr class="entry {% if child.selected %}info{%endif%} {% if not child.selectable %}disabled-content{% endif %}"
-          data-url="{{child.path}}" data-selectable="{{child.selectable|yesno:'yes,no'}}"
           ng-click="openURL('{{child.path}}', {{child.selectable|yesno:"true,false"}})">
         <td><img src="{{child.icon}}"> {{child.title}}
             {% if child.selected %}

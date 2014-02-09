@@ -166,8 +166,11 @@ app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
             }
         });
         modalInstance.result.then(function (selected) {
+            console.log("X");
+            console.log(selected);
             callback(selected); // more or less
         }, function () {
+            console.log("dismiss");
             // dismissed
         });
 
@@ -190,6 +193,10 @@ app.controller('PropsCtrl',
     };
 }]);
 
+/*
+ * selectable
+ * - currently encoded in ng-click-openURL. But also returned by panels, latter suffices?
+ */
 app.controller('BrowseCtrl',
                ["$scope", "$modalInstance", "$compile", "$http", "BrowseModal", "path",
                 "type", "options",
@@ -251,11 +258,6 @@ app.controller('BrowseCtrl',
          */
 
     }
-    /*
-     * load_panels krijgt een data structuur terug met panels (3 stuks), breadcrumbs en
-     * een indicatie of er geupload kan worden. Dit zou direct overgenomen kunnen worden,
-     * maar het is mooier om alle markup op 1 plek te hebben en puur met data te werken.
-     */
     function load_panels(path) {
         $http.get($scope.urlbase + "panel",
                   {params: {
@@ -265,12 +267,11 @@ app.controller('BrowseCtrl',
                   }}
                   ).success(
         function(data, status, headers, config) {
-            console.log(data);
             var panels = data.panels;
             var crumbs = data.crumbs;
             var upload = data.upload;
             $scope.selectable = data.selectable;
-            var context_path = data.path;
+            $scope.path = data.path;
 
             for(var i=0; i < 3; i++) {
                 $(".panel"+i).empty();
@@ -287,10 +288,10 @@ app.controller('BrowseCtrl',
 
     init(path, type, options);
 
-    $scope.openURL = function(path, selectable) {
-        console.log("klik " + path);
-        load_panels(path);
-        $scope.selectable = selectable;
+    $scope.openURL = function(newpath) {
+        console.log("klik " + newpath);
+        load_panels(newpath);
+        $scope.path = newpath;
     };
 
     /*
@@ -314,10 +315,11 @@ app.controller('BrowseCtrl',
      * Button actions
      */
     $scope.ok = function () {
-      $modalInstance.close("result");
+      console.log("OK " + $scope.path);
+      $modalInstance.close($scope.path);
     };
 
-    $scope.ok = function () {
+    $scope.upload = function () {
       $modalInstance.close("upload");
     };
 

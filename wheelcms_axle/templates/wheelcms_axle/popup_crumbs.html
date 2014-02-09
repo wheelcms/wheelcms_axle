@@ -2,7 +2,7 @@
 <ul class="breadcrumb">
   {% for crumb in crumbs %}
   <li><a class="crumb" href="#"
-         ng-click="openURL('{{crumb.path}}', {{crumb.selectable|yesno:"true,false"}})">{{crumb.title}}</a>
+         ng-click="openURL('{{crumb.path}}', {{crumb.selectable|yesno:'true,false'}})">{{crumb.title}}</a>
   </li>
   {% endfor %}
 </ul>
