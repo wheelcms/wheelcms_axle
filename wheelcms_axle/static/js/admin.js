@@ -137,9 +137,9 @@ app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
 
     $scope.open_browser = function(path, type, options, callback) {
         var modalInstance = $modal.open({
-            templateUrl: 'UploadModal.html',
-            windowClass: "",
-            controller: "UploadCtrl",
+            templateUrl: 'BrowseModal.html',
+            windowClass: "browsemodal",
+            controller: "BrowseCtrl",
             resolve: {
                 path: function() { return path; },
                 type: function() { return type; },
@@ -149,7 +149,7 @@ app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
         });
         modalInstance.result.then(function (selected) {
             if(selected == "upload") {
-                openUploadModal();
+                openUploadModal("");
             }
             else {
                 console.log("X");
@@ -161,15 +161,12 @@ app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
         });
     };
 
-    function openUploadModal() {
+    function openUploadModal(path) {
         var modalInstance = $modal.open({
-            templateUrl: 'PropsModal.html',
-            controller: "PropsCtrl",
+            templateUrl: 'UploadModal.html',
+            controller: "UploadCtrl",
             resolve: {
-                path: function() { return path; },
-                type: function() { return type; },
-                options: function() { return options; },
-                callback: function() { return callback; }
+                path: function() { return path; }
             }
         });
 
@@ -209,6 +206,13 @@ app.controller('PropsCtrl',
                function($scope, $modalInstance, PropsModal, path, type, options) {
     $scope.show = function(type, options, callback) {
         console.log("Props Show");
+    };
+}]);
+app.controller('UploadCtrl',
+               ["$scope", "$modalInstance", "PropsModal", "path",
+               function($scope, $modalInstance, PropsModal, path) {
+    $scope.show = function(type, options, callback) {
+        console.log("Upload Show");
     };
 }]);
 
@@ -327,7 +331,7 @@ app.controller('BrowseCtrl',
     };
 
     $scope.upload_enabled = function() {
-        return false;
+        return true;
     };
 
     /*
