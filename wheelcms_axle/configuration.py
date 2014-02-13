@@ -18,11 +18,20 @@ class BaseConfigurationHandler(object):
     model = None
     form = None
 
-    def view(self):
-        pass
+    def view(self, handler):
+        handler.context['tabs'] = handler.construct_tabs(self.id)
+        ## set redirect_to
+        return handler.template("wheelcms_axle/configuration.html")
 
-    def process(self):
-        pass
+    def process(self, handler, instance):
+        handler.context['form'] = form = \
+                 self.form(handler.request.POST, instance=instance)
+        if form.is_valid():
+            form.save()
+            ## include hash, open tab
+            return handler.redirect(reverse('wheel_config'), config=self.id, success="Changes saved")
+        handler.context['tabs'] = self.construct_tabs(self.id)
+        return handler.template("wheelcms_axle/configuration.html")
 
 class ConfigurationForm(forms.ModelForm):
     class Meta:
@@ -65,25 +74,6 @@ class ConfigurationHandler(FormHandler, WheelHandlerMixin):
                              form=form,
                              selected=selected))
 
-        #for (related, (label, model, formclass)) in configs:
-        #    instance = None
-        #    form = None
-        #    selected = False
-
-        #    if related == config:
-        #        if related:
-        #            try:
-        #                instance = getattr(baseconf, related).get()
-        #            except model.DoesNotExist:
-        #                pass
-        #        else:
-        #            instance = baseconf
-        #        form=formclass(instance=instance)
-        #        selected = True
-        #    tabs.append(dict(label=label,
-        #                     related=related,
-        #                     form=form,
-        #                     selected=selected))
         return tabs
 
     @applyrequest
@@ -91,9 +81,9 @@ class ConfigurationHandler(FormHandler, WheelHandlerMixin):
         if not self.hasaccess():
             return self.forbidden()
 
-        self.context['tabs'] = self.construct_tabs(config)
-        ## set redirect_to
-        return self.template("wheelcms_axle/configuration.html")
+        klass = configuration_registry.get(config)
+        return klass().view(self)
+
 
     @applyrequest
     def process(self, config=""):
@@ -107,13 +97,7 @@ class ConfigurationHandler(FormHandler, WheelHandlerMixin):
                 instance = klass.model(main=instance)
                 instance.save()
 
-        self.context['form'] = form = \
-                 klass.form(self.request.POST, instance=instance)
-        if form.is_valid():
-            form.save()
-            ## include hash, open tab
-            return self.redirect(reverse('wheel_config'), config=config, success="Changes saved")
-        self.context['tabs'] = self.construct_tabs(config)
-        return self.template("wheelcms_axle/configuration.html")
+        return klass().process(self, instance)
+
 
 configuration_registry.register("", "Default", Configuration, ConfigurationForm)
