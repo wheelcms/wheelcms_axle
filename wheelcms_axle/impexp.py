@@ -242,8 +242,9 @@ class Exporter(object):
         defaultconfig = Configuration.config()
 
         
-        for (related, (label, model, formclass)) in \
-            configuration_registry.iteritems():
+        for klass in configuration_registry.values():
+            related = klass.id
+            model = klass.model
 
             configxml = SubElement(root, "config")
             configxml.attrib["set"] = related
@@ -345,11 +346,10 @@ class Importer(object):
                 c = configuration_registry.get(related)
                 if not c:
                     continue
-                (label, model, formclass) = c
                 try:
                     config = getattr(defaultconfig, related).get()
-                except model.DoesNotExist:
-                    config = model(main=defaultconfig)
+                except c.model.DoesNotExist:
+                    config = c.model(main=defaultconfig)
             else:
                 config = defaultconfig
 
