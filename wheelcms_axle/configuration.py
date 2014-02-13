@@ -30,7 +30,7 @@ class BaseConfigurationHandler(object):
             form.save()
             ## include hash, open tab
             return handler.redirect(reverse('wheel_config'), config=self.id, success="Changes saved")
-        handler.context['tabs'] = self.construct_tabs(self.id)
+        handler.context['tabs'] = handler.construct_tabs(self.id)
         return handler.template("wheelcms_axle/configuration.html")
 
 class ConfigurationForm(forms.ModelForm):
