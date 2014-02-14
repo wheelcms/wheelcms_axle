@@ -18,7 +18,7 @@ class BaseConfigurationHandler(object):
     model = None
     form = None
 
-    def view(self, handler):
+    def view(self, handler, instance):
         handler.context['tabs'] = handler.construct_tabs(self.id)
         ## set redirect_to
         return handler.template("wheelcms_axle/configuration.html")
@@ -76,17 +76,7 @@ class ConfigurationHandler(FormHandler, WheelHandlerMixin):
 
         return tabs
 
-    @applyrequest
-    def index(self, config=""):
-        if not self.hasaccess():
-            return self.forbidden()
-
-        klass = configuration_registry.get(config)
-        return klass().view(self)
-
-
-    @applyrequest
-    def process(self, config=""):
+    def get_instance(self, config):
         instance = Configuration.config()
         klass = configuration_registry.get(config)
 
@@ -96,7 +86,23 @@ class ConfigurationHandler(FormHandler, WheelHandlerMixin):
             except klass.model.DoesNotExist:
                 instance = klass.model(main=instance)
                 instance.save()
+        return instance
 
+    @applyrequest
+    def index(self, config=""):
+        if not self.hasaccess():
+            return self.forbidden()
+
+        instance = self.get_instance(config)
+        klass = configuration_registry.get(config)
+        return klass().view(self, instance)
+
+
+    @applyrequest
+    def process(self, config=""):
+        instance = self.get_instance(config)
+
+        klass = configuration_registry.get(config)
         return klass().process(self, instance)
 
 
