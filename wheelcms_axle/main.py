@@ -141,6 +141,12 @@ class MainHandler(WheelRESTHandler):
         return json.dumps(tags)
 
     @context
+    def tabs(self):
+        """ return the edit tabs """
+        if self.instance and self.instance.content():
+            return self.instance.content().spoke().tabs()
+
+    @context
     def content(self, language=None):
         """ return the actual content for the node / spoke """
         language = language or self.active_language()
@@ -293,6 +299,9 @@ class MainHandler(WheelRESTHandler):
         self.context['redirect_cancel'] = parentpath + "?info=Create+canceled"
         self.context['form_action'] = 'create'  ## make it absolute?
         self.context['parent'] = parent
+
+        ## Hide tabs since we're creating new content
+        self.context['tabs'] = ()
 
         ## if attach: do not accept slug
         if self.post:
