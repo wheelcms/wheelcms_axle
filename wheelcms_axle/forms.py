@@ -10,9 +10,9 @@ from wheelcms_axle.node import Node
 
 from wheelcms_axle.models import type_registry, Configuration
 from wheelcms_axle.templates import template_registry
-from wheelcms_axle.stopwords import stopwords
 
 from wheelcms_axle import translate
+from wheelcms_axle.utils import generate_slug
 
 from tinymce.widgets import TinyMCE as BaseTinyMCE
 
@@ -217,21 +217,16 @@ class BaseForm(forms.ModelForm):
 
         language = self.data.get('language', settings.FALLBACK)
 
-        ## XXX move the whole slug generation / stopwords stuff to separate method
-        title = self.cleaned_data.get('title', '').lower()
-        title_no_sw = " ".join(x for x in title.split() if x not in set(stopwords.get(language, [])))
-
         parent_path = self.parent.get_path(language=language)
 
         if not slug:
-            slug = re.sub("[^%s]+" % Node.ALLOWED_CHARS, "-",
-                          title_no_sw,
-                          )[:Node.MAX_PATHLEN].strip("-")
-            slug = re.sub("-+", "-", slug)
+            title = self.cleaned_data.get('title', '')
+            slug = generate_slug(title, language=language,
+                                 max_length=Node.MAX_PATHLEN,
+                                 allowed=Node.ALLOWED_CHARS,
+                                 default="node")
 
-            ## slug may be empty now by all space/stopwords/dash removal
-            if not slug:    
-                slug = "node"
+
             existing = Node.get(path=parent_path + "/" + slug, language=language)
 
             base_slug = slug[:Node.MAX_PATHLEN-6] ## some space for counter
