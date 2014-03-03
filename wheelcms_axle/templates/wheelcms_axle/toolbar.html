@@ -68,7 +68,7 @@
                 {% endif %}
                 <!-- make the button toggle -->
                 {% if toolbar.show_view %}
-                <a class="btn btn-info" href="{{instance.get_absolute_url}}"><i class="glyphicon glyphicon-eye-open"></i> {% trans "content_view" %} </a>
+                <a class="btn btn-info" href="{{instance.get_absolute_url|default:'.'}}"><i class="glyphicon glyphicon-eye-open"></i> {% trans "content_view" %} </a>
                 {% endif %}
               </div>
               {% if 0 %}
