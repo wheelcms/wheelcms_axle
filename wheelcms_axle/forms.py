@@ -19,6 +19,21 @@ from tinymce.widgets import TinyMCE as BaseTinyMCE
 from taggit.utils import parse_tags
 from django.utils.safestring import mark_safe
 
+class ParentField(forms.Field):
+    def __init__(self, parenttype=None, *args, **kw):
+        super(ParentField, self).__init__(*args, **kw)
+        self.parenttype = parenttype
+        self.required = False
+        self.widget = forms.HiddenInput()
+        self.parent = None
+
+    def clean(self, v):
+        if self.parent:
+            if self.parenttype is None \
+               or isinstance(self.parent.content(), self.parenttype):
+                return self.parent.content()
+        raise forms.ValidationError("No parent set")
+
 class TinyMCE(BaseTinyMCE):
     def render(self, name, value, attrs=None):
         ## this will always overwrite content_css; modifiying it will
@@ -115,6 +130,11 @@ class BaseForm(forms.ModelForm):
         self.attach = attach
         self.reserved = reserved
         self.advanced_fields = self.initial_advanced_fields
+
+        ## Pass parent to ParentFields
+        for field in self.fields.values():
+            if isinstance(field, ParentField):
+                field.parent = parent
 
         if attach:
             self.fields.pop('slug')
