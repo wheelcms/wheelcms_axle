@@ -25,13 +25,13 @@ def get_active_language(request=None):
         lang = settings.FALLBACK
     return lang
 
-from wheelcms_axle.stopwords import stopwords
-import re
-
 def generate_slug(name, language="en", max_length=100,
                   allowed="abcdefghijklmnopqrstuvwxyz0123456789_-",
                   default="slug"):
     """ generate a slug based on a title / sentence """
+    from wheelcms_axle.stopwords import stopwords
+    import re
+
     name = name.lower()
     name_no_stopwords = " ".join(x for x in name.split()
                                  if x not in set(stopwords.get(language, [])))
