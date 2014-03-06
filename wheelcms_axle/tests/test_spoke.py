@@ -46,6 +46,45 @@ class BaseSpokeTest(object):
     def typename(cls):
         return cls.type.model.get_name()
 
+    def test_equal_none(self, client):
+        """
+            A spoke is not equal to None
+        """
+        s = self.create_instance().spoke().save()
+        assert not s == None
+
+    def test_nonequal_none(self, client):
+        """
+            A spoke is not equal to None
+        """
+        s = self.create_instance().spoke().save()
+        assert s != None
+
+    def test_equal_self(self, client):
+        """
+            A spoke is equal to itself
+        """
+        s = self.create_instance().spoke().save()
+        assert s == s
+
+    def test_equal_multi_spokes(self, client):
+        """
+            Same instance, different spokes
+        """
+        i = self.create_instance().save()
+        s1 = i.spoke()
+        s2 = i.spoke()
+
+        assert s1 == s2
+
+    def test_notequal_multi_spokes(self, client):
+        """
+            Different spokes, different models
+        """
+        s1 = self.create_instance().spoke().save()
+        s2 = self.create_instance().spoke().save()
+        assert s1 != s2
+
     def test_name(self, client):
         """
             Name generation
