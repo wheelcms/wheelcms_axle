@@ -93,9 +93,6 @@ class MainHandler(WheelRESTHandler):
     instance = None
     parent = None
 
-    def update_context(self, request):
-        super(MainHandler, self).update_context(request)
-
     def active_language(self):
         return get_active_language(self.request)
 
