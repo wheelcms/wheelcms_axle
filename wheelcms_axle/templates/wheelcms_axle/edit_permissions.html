@@ -1,0 +1,45 @@
+{% extends "wheelcms_axle/base_form.html" %}
+{% load staticfiles %}
+{% load granules %}
+
+{% block granules %}
+  {{block.super}}
+  {% granule "javascript" %}
+    <script src="{% static "js/edit_permissions.js" %}"></script>
+  {% endgranule %}
+{% endblock %}
+
+
+{% block form_form %}
+<form method="post" action="{{spoke.instance.get_absolute_url}}+auth/">
+  {% csrf_token %}
+  <table class="table table-condensed table-responsive table-bordered">
+    <thead>
+      <th>Permission</th>
+      {% for role in roles %}
+        <th>{{role.name}}</th>
+      {% endfor %}
+    </thead>
+    <tbody>
+      {% for permission in permissions %}
+      <tr>
+        <td><b>{{permission.perm.name}}</b></td>
+        {% for roleperm in permission.roles %}
+          <td>
+            <input type="checkbox"
+                   name="assignment"
+                   value="{{permission.perm.id}}/{{roleperm.role.id}}"
+                   {% if roleperm.checked %}checked="checked"{% endif %}>
+          </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="row">
+    <div class="col-md-12">
+        <input type="submit" value="Save" class="btn btn-info">
+    </div>
+  </div>
+</form>
+{% endblock form_form %}

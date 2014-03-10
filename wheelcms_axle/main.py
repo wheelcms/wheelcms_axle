@@ -391,8 +391,8 @@ class MainHandler(WheelRESTHandler):
 
             return action_handler(self, self.request, action)
 
-        if not self.hasaccess():
-            return self.forbidden()
+        #if not self.hasaccess():
+        #    return self.forbidden()
 
 
         content = instance.content(language=language)
@@ -408,6 +408,11 @@ class MainHandler(WheelRESTHandler):
             typename = content.get_name()
             typeinfo = type_registry.get(typename)
             spoke = content.spoke()
+
+        perm = typeinfo.permissions.get('edit')
+        
+        if not auth.has_access(self.request, typeinfo, spoke.instance, perm):
+            return self.forbidden()
 
         self.context['tabs'] = spoke.tabs()
 

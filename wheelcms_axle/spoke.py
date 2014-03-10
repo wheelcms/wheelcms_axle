@@ -98,7 +98,10 @@ class Spoke(object):
 
     workflowclass = DefaultWorkflow
 
-    basetabs = () ## Optional tabs for the update template
+    basetabs = (
+        dict(id="attributes", label="Attributes", action="edit"),
+        dict(id="auth", label="Roles/Perms", action="+auth"),
+    )
     active_tab = "attributes"
 
     ## None means no restrictions, () means no subcontent allowed
@@ -381,6 +384,53 @@ class Spoke(object):
         if explicit is None:
             return self.discussable
         return explicit
+
+    @action
+    def auth(self, handler, request, action):
+        ##
+        ## If post, handle/reset perm changes
+        from auth import Role, Permission
+        from drole.models import RolePermission
+
+        if request.method == "POST":
+            existing = RolePermission.assignments(self.instance)
+            assignments = request.POST.getlist('assignment')
+            for e in existing:
+                if "{0}/{1}".format(e.permission, e.role) not in assignments:
+                    e.delete()
+
+            for assignment in assignments:
+                perm, role = assignment.split('/', 1)
+                RolePermission.assign(self.instance, Role(role),
+                                      Permission(perm)).save()
+            
+
+        ctx = {'spoke':self}
+        self.active_tab = "auth"
+
+        from drole.models import Role, Permission, RolePermission
+
+        roles = Role.all()
+        permissions = []
+
+        ## order roles, permissions (alphabetically?)
+        for perm in Permission.all():
+            d = dict(perm=perm, roles=[])
+            perms_per_role = RolePermission.assignments(
+                                        self.instance).filter(
+                                        permission=perm.id,
+                                        ).values_list('role', flat=True)
+            r = []
+            for role in roles:
+                r.append(dict(role=role, checked=role.id in perms_per_role))
+                
+            d['roles'] = r
+            
+            permissions.append(d)
+
+        ctx['roles'] = roles
+        ctx['permissions'] = permissions
+        return handler.template("wheelcms_axle/edit_permissions.html", **ctx)
 
 class FileSpoke(Spoke):
     @classproperty

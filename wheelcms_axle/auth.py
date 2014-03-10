@@ -1,41 +1,33 @@
-class WheelPermission(object):
-    def __init__(self, id, name="", description=""):
-        self.id = id
-        self.name = name or id
-        self.description = description
+from drole.models import Role as droleRole, Permission as drolePermission
 
-_permission_registry = {}
 def Permission(id, name="", description=""):
-    p = _permission_registry.get(id)
-    if p is None:
-        p = WheelPermission(id, name, description)
-        _permission_registry[id] = p
-    return p
+    return drolePermission.create(id, name, description)
 
-class WheelRole(object):
-    def __init__(self, id, name="", description=""):
-        self.id = id
-        self.name = name or id
-        self.description = description
-
-_role_registry = {}
 def Role(id, name="", description=""):
-    r = _role_registry.get(id)
-    if r is None:
-        r = WheelRole(id, name, description)
-        _role_registry[id] = r
-    return r
+    return droleRole.create(id, name, description)
 
+def get_roles_in_context(request, type, instance=None):
+    ## check roles for request.user and their group(s), local roles, owner role
+    from wheelcms_axle import roles
+    r = [roles.anonymous]
+    if request.user.username == 'ivo':
+        r.extend([roles.admin, roles.member])
+    elif request.user.username == 'admin':
+        r.append(roles.member)
+    return set(r)
 
 def has_access(request, type, instance, permission):
-    return True
+    roles = get_roles_in_context(request, type, instance)
+    if instance:
+        for role in roles:
+            if role.has_access(instance, permission):
+                return True
 
-    for i in ("first try", "second try"):
-        try:
-            do_request_depending_on_perm_exists
-            return success_or_failure
-        except drolePerm.DoesNotExist:
-            dit_gaat_zo_niet_werken_filter().succeed_gewoon
-            create_the_perm
+    ## Should there be a fallback to class permissions?
+    classperm = type.permission_assignment.get(permission, ())
+
+
+    if set(roles) & set(classperm):
+        return True
+
     return False
-
