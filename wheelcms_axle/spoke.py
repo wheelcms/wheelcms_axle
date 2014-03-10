@@ -19,6 +19,9 @@ from two.ol.util import classproperty
 
 from warnings import warn
 
+import auth
+
+from drole.models import RolePermission
 
 class SpokeCharField(indexes.CharField):
     def __init__(self, spoke, *args, **kw):
@@ -150,6 +153,11 @@ class Spoke(object):
         """ Provide a hook to modify the tabs depending on the spoke
             context """
         return self.basetabs
+
+    def assign_perms(self):
+        """ invoked by a signal handler upon creation: Set initial
+            permissions """
+        auth.assign_perms(self.instance, self.permission_assignment)
 
     @property
     def o(self):
@@ -389,8 +397,6 @@ class Spoke(object):
     def auth(self, handler, request, action):
         ##
         ## If post, handle/reset perm changes
-        from auth import Role, Permission
-        from drole.models import RolePermission
 
         if request.method == "POST":
             existing = RolePermission.assignments(self.instance)

@@ -1,10 +1,18 @@
 from drole.models import Role as droleRole, Permission as drolePermission
+from drole.models import RolePermission
 
 def Permission(id, name="", description=""):
     return drolePermission.create(id, name, description)
 
 def Role(id, name="", description=""):
     return droleRole.create(id, name, description)
+
+def assign_perms(instance, permdict):
+    """ invoked by a signal handler upon creation: Set initial
+        permissions """
+    for permission, roles in permdict.iteritems():
+        for role in roles:
+            RolePermission.assign(instance, role, permission).save()
 
 def get_roles_in_context(request, type, instance=None):
     ## check roles for request.user and their group(s), local roles, owner role

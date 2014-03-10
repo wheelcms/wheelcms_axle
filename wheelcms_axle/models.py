@@ -137,3 +137,14 @@ def log_logout(sender, request, user, **kwargs):
     """ Log the user logging out """
     stracks.user(user).log("? has logged out", action=stracks.logout())
 
+@receiver(post_save, dispatch_uid="wheelcms_axle.spoke.assign_perms")
+def assign_perms(sender, instance, created, **kwargs):
+    
+    if issubclass(sender, Content):
+        spoke = instance.spoke()
+        if spoke:
+            spoke.assign_perms()
+
+    if hasattr(sender, 'permission_assignment') and created:
+        assign_perms(instance, instance.permission_assignment)
+
