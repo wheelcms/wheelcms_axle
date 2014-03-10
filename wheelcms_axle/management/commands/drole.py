@@ -22,6 +22,7 @@ class Command(BaseCommand):
     def handle(self, **options):
         ## Check if there are any assignments, optionally skip those?
         ## if the state is published, fix view perm XXX
+        ## (or even better: properly define and consult workflow)
         for m in models.get_models(include_auto_created=True):
             if issubclass(m, Content) and type_registry.get(m.get_name()):
                 for c in m.objects.all():
