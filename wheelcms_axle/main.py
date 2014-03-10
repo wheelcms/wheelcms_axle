@@ -6,7 +6,7 @@ from django.core.urlresolvers import resolve
 
 from two.ol.base import RESTLikeHandler, applyrequest, context, json, handler
 from wheelcms_axle.node import Node, NodeNotFound, CantMoveToOffspring
-from wheelcms_axle.content import type_registry, Content, ImageContent
+from wheelcms_axle.content import type_registry, ImageContent
 
 from wheelcms_axle.spoke import FileSpoke
 
@@ -15,6 +15,8 @@ from wheelcms_axle.toolbar import Toolbar
 from wheelcms_axle.base import WheelHandlerMixin
 from wheelcms_axle.utils import get_active_language
 from wheelcms_axle import translate
+
+from wheelcms_axle import auth
 
 from .templates import template_registry
 from .actions import action_registry
@@ -281,10 +283,17 @@ class MainHandler(WheelRESTHandler):
         if type is None:
             return self.badrequest()
 
-        if not self.hasaccess():
-            return self.forbidden()
+        ##if not self.hasaccess():
+        ##   return self.forbidden()
 
         typeinfo = type_registry.get(type)
+        perm = typeinfo.permissions.get('create')
+        # alternatives:
+        # typeinfo.has_access('edit', request)
+        # ... on instance?
+        if not auth.has_access(self.request, typeinfo, None, perm):
+            return self.forbidden()
+
         formclass = typeinfo.form
 
         parent = self.parent or self.instance

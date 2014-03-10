@@ -78,8 +78,24 @@ def indexfactory(spoke):
             return spoke.model.objects.filter(node__isnull=False)
     return WheelIndex
 
+from wheelcms_axle import permissions as p, roles
+
 class Spoke(object):
     model = Content  ## is it smart to set this to Content? A nonsensible default..
+    permissions = dict(
+        create=p.create_content,
+        edit=p.edit_content,
+        view=p.view_content,
+        delete=p.delete_content
+    )
+
+    permission_assignment = {
+        p.view_content: (roles.owner, roles.editor, roles.admin),
+        p.edit_content: (roles.owner, roles.editor, roles.admin),
+        p.create_content: (roles.owner, roles.editor, roles.admin),
+        p.delete_content: (roles.owner, roles.editor, roles.admin)
+    }
+
     workflowclass = DefaultWorkflow
 
     basetabs = () ## Optional tabs for the update template
