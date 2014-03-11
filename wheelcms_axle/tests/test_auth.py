@@ -1,10 +1,5 @@
 """
-    Stuff to test:
-
-    - newly created type gets roles assigned (signal/no signal?)
-    - update of permissions
-    - role determination for users
-    - local roles
+    Test auth/role/permission related stuff
 
 """
 from mock import patch, PropertyMock, MagicMock

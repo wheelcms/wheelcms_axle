@@ -280,3 +280,36 @@ class TestContent(object):
         assert sub.content(language="nl").title == "NL content on sub"
         assert sub.primary_content()
         assert not sub.content(langauge="fr")
+
+import mock
+import contextlib
+
+@contextlib.contextmanager
+def mock_receiver(signal, **kwargs):
+    ## based on mock_django.signal
+    receiver = mock.Mock(wraps=lambda *a, **b: None)
+    signal.connect(receiver, **kwargs)
+    yield receiver
+    signal.disconnect(receiver)
+
+from .models import Type1Type
+from ..content import state_changed
+
+@pytest.mark.usefixtures("localtyperegistry")
+class TestStateSignal(object):
+    """ if content (workflow) state changes, a signal is emitted """
+    type = Type1Type
+
+    def test_iets(self, client):
+
+        with mock_receiver(state_changed) as receiver:
+            t = Type1Type.create(title="hello", state="initial").save()
+            t.instance.state="changed"
+            t.save()
+            assert receiver.call_count == 1
+            args, kwargs = receiver.call_args
+            assert kwargs.get('oldstate') == 'initial'
+            assert kwargs.get('newstate') == 'changed'
+            assert kwargs.get('sender') == t.instance
+
+

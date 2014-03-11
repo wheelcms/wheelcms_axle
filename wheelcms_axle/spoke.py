@@ -22,6 +22,7 @@ from warnings import warn
 import auth
 
 from drole.models import RolePermission
+from drole.types import Role, Permission
 
 class SpokeCharField(indexes.CharField):
     def __init__(self, spoke, *args, **kw):
@@ -415,7 +416,6 @@ class Spoke(object):
         ctx = {'spoke':self}
         self.active_tab = "auth"
 
-        from drole.models import Role, Permission, RolePermission
 
         roles = Role.all()
         permissions = []

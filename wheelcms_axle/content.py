@@ -4,6 +4,7 @@ import datetime
 
 from two.ol.util import classproperty
 
+import django.dispatch
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.db import models, IntegrityError
@@ -38,6 +39,7 @@ class ContentClass(models.Model):
     def __unicode__(self):
         return "Content class %s" % self.name
 
+state_changed = django.dispatch.Signal(providing_args=["oldstate", "newstate"])
 
 class ContentBase(models.Model):
     CLASSES = ()
@@ -86,6 +88,10 @@ class ContentBase(models.Model):
     class Meta:
         abstract = True
 
+    def __init__(self, *args, **kwargs):
+        super(ContentBase, self).__init__(*args, **kwargs)
+        self._original_state = self.state
+
     @classmethod
     def construct_meta(cls, klass=None, parts=None):
         klass = klass or cls
@@ -130,6 +136,14 @@ class ContentBase(models.Model):
             self.state = self.spoke().workflow().default
 
         super(ContentBase, self).save(*a, **b)
+
+        if self.state != self._original_state:
+            state_changed.send_robust(sender=self,
+                                      oldstate=self._original_state,
+                                      newstate=self.state)
+
+        self._original_state = self.state
+
         for klass in self.CLASSES:
             self.classes.add(ContentClass.objects.get_or_create(name=klass)[0])
         return self  ## foo = x.save() is nice
