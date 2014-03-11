@@ -174,4 +174,18 @@ class TestRolesContext(object):
         assert Role("special.grouprole") in \
                get_roles_in_context(auth_request, Type1Type)
 
+    def test_owner_role(self, client, auth_request):
+        """ the owner of an object gets the owner role """
+        t = Type1Type.create(owner=auth_request.user).save()
+
+        assert roles.owner in get_roles_in_context(auth_request, Type1Type, t)
+
+    def test_owner_role_false(self, client, auth_request):
+        """ only the owner of an object gets the owner role """
+        t = Type1Type.create(owner=User.objects.get_or_create(
+                                     username="other")[0]).save()
+
+        assert not roles.owner in get_roles_in_context(auth_request, Type1Type,
+                                                       t)
+
     ## superuser -- all roles, or always access?

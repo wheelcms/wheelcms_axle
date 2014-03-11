@@ -25,6 +25,9 @@ def get_roles_in_context(request, type, spoke=None):
         for g in request.user.groups.all():
             r.extend(r.role for r in g.roles.all())
 
+        if spoke and spoke.instance and spoke.instance.owner == request.user:
+            r.append(roles.owner)
+
     if request.user.username == 'ivo':
         r.extend([roles.admin, roles.member])
     elif request.user.username == 'admin':
