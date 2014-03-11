@@ -411,7 +411,7 @@ class MainHandler(WheelRESTHandler):
 
         perm = typeinfo.permissions.get('edit')
         
-        if not auth.has_access(self.request, typeinfo, spoke.instance, perm):
+        if not auth.has_access(self.request, typeinfo, spoke, perm):
             return self.forbidden()
 
         self.context['tabs'] = spoke.tabs()

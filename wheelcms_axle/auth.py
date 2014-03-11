@@ -14,7 +14,7 @@ def assign_perms(instance, permdict):
         for role in roles:
             RolePermission.assign(instance, role, permission).save()
 
-def get_roles_in_context(request, type, instance=None):
+def get_roles_in_context(request, type, spoke=None):
     ## check roles for request.user and their group(s), local roles, owner role
     from wheelcms_axle import roles
     r = [roles.anonymous]
@@ -24,11 +24,12 @@ def get_roles_in_context(request, type, instance=None):
         r.append(roles.member)
     return set(r)
 
-def has_access(request, type, instance, permission):
-    roles = get_roles_in_context(request, type, instance)
-    if instance:
+def has_access(request, type, spoke, permission):
+    #import pytest; pytest.set_trace()
+    roles = get_roles_in_context(request, type, spoke)
+    if spoke and spoke.instance:
         for role in roles:
-            if role.has_access(instance, permission):
+            if role.has_access(spoke.instance, permission):
                 return True
 
     ## Should there be a fallback to class permissions?
