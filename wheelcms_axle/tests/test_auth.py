@@ -10,12 +10,16 @@
 from mock import patch, PropertyMock, MagicMock
 import pytest
 
+from django.contrib.auth.models import User, Group
+
 from drole.models import RolePermission
 
 from wheelcms_axle import permissions as p, roles
+from wheelcms_axle import models
 
 from .models import Type1Type
 from ..auth import has_access, Permission, Role, assign_perms
+from ..auth import get_roles_in_context
 
 def permpatch(return_value):
     """ patch the default roles returned by Type1Type.permission_assignment """
@@ -120,3 +124,54 @@ class TestHasAccess(object):
                 request = MagicMock()
                 t = Type1Type.create().save()
                 assert not has_access(request, Type1Type, t, testpermission)
+
+from twotest.util import create_request
+
+@pytest.fixture
+def anon_request():
+    return create_request("GET", "/")
+
+@pytest.fixture
+def user():
+    return User.objects.get_or_create(username="testuser")[0]
+
+@pytest.fixture
+def auth_request():
+    r = create_request("GET", "/")
+    r.user = user()
+    return r
+
+@pytest.mark.usefixtures("localtyperegistry")
+class TestRolesContext(object):
+    """ Verify a user gets the correct roles assigned, locally / globally """
+    type = Type1Type
+
+    def test_anon_has_anonymous(self, anon_request):
+        """ Every user, even anonymous, has the anonymous role """
+        assert roles.anonymous in get_roles_in_context(anon_request, Type1Type)
+
+    def test_auth_has_anonymous(self, auth_request):
+        """ Every user, even anonymous, has the anonymous role """
+        assert roles.anonymous in get_roles_in_context(auth_request, Type1Type)
+
+    def test_auth_has_member(self, auth_request):
+        """ Every authenticated user has the "member" role """
+        assert roles.member in get_roles_in_context(auth_request, Type1Type)
+
+    def test_assigned_role_user(self, client, auth_request):
+        """ Test for an explicitly assigned role """
+        models.Role.objects.get_or_create(user=auth_request.user,
+                                          role=Role("special.role"))
+        assert Role("special.role") in \
+               get_roles_in_context(auth_request, Type1Type)
+
+    def test_assigned_role_group(self, client, auth_request):
+        """ Test for an explicitly assigned role """
+        group = Group.objects.get_or_create(name="testgroup")[0]
+        group.user_set.add(auth_request.user)
+        models.Role.objects.get_or_create(group=group,
+                                          role=Role("special.grouprole"))
+        assert Role("special.grouprole") in \
+               get_roles_in_context(auth_request, Type1Type)
+
+    ## superuser -- all roles, or always access?

@@ -5,9 +5,11 @@ import datetime
 
 from django.db import models, IntegrityError
 from django.utils import timezone
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 
 from userena.models import UserenaLanguageBaseProfile
+
+from drole.fields import RoleField
 
 from .impexp import WheelSerializer
 from .themes import theme_registry
@@ -69,6 +71,14 @@ class Configuration(models.Model):
         """ resolve self.theme into a Theme instance """
         return theme_registry.find(self.theme)
 
+
+class Role(models.Model):
+    """
+        System-wide (non-local) roles for users
+    """
+    role = RoleField(max_length=255, blank=False)
+    user = models.ForeignKey(User, related_name="roles", null=True, blank=True)
+    group = models.ForeignKey(Group, related_name="roles", null=True, blank=True)
 
 #class ConfigItem(models.Model):
 #    name = models.CharField(max_length=256, blank=False, null=False)
