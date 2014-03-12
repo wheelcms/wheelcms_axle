@@ -584,9 +584,13 @@ class TestNodeCopyPaste(Base):
         child = root.add('foo')
         assert child.get_absolute_url() == '/foo/'
 
+from .models import Type1, Type1Type
 
+@pytest.mark.usefixtures("localtyperegistry")
 class TestNodeTranslation(Base):
     """ test translation related stuff """
+    type = Type1Type
+
     urls = 'wheelcms_axle.tests.urls_root'
 
     def test_preferred_language_child(self, client, root):
@@ -605,7 +609,6 @@ class TestNodeTranslation(Base):
 
     def test_preferred_language_content(self, client, root):
         sub = root.add("sub")
-        from .models import Type1
 
         en = Type1(title="EN", node=sub, language="en").save()
         nl = Type1(title="NL", node=sub, language="nl").save()

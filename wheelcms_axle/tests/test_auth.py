@@ -17,6 +17,8 @@ from .models import Type1Type
 from ..auth import has_access, Permission, Role, assign_perms, update_perms
 from ..auth import get_roles_in_context
 
+from .fixtures import superuser
+
 def permpatch(return_value):
     """ patch the default roles returned by Type1Type.permission_assignment """
     return patch("wheelcms_axle.tests.models.Type1Type.permission_assignment",
@@ -48,7 +50,7 @@ def auth_request():
 @pytest.fixture
 def super_request():
     r = create_request("GET", "/")
-    r.user = user(username="superuser", is_superuser=True)
+    r.user = superuser()
     return r
 
 @pytest.mark.usefixtures("localtyperegistry")

@@ -2,6 +2,8 @@
     Test the various aspects/components of content serialization/deserialization
 """
 
+import pytest
+
 from django.contrib.auth.models import User
 from xml.etree.ElementTree import Element, SubElement
 from xml.etree import ElementTree
@@ -28,6 +30,7 @@ def find_attribute(tree, tag, attribute, value):
             return node
     return None
 
+@pytest.mark.usefixtures("localtyperegistry")
 class TestExporter(object):
     """
         Verify it returns parsable xml,
@@ -37,6 +40,8 @@ class TestExporter(object):
 
         test order?
     """
+    types = (Type1Type, Type2Type)
+
     def test_xml(self, client):
         root = Node.root()
         content = Type1(node=root, state="published", title="Export Test", language="en").save()
@@ -154,6 +159,7 @@ class TestExporter(object):
         assert find_attribute(content_en.find("fields"),
                  "field", "name", "title").text == "EN Export Test"
 
+@pytest.mark.usefixtures("localtyperegistry")
 class TestImporter(object):
     """
         Verify it can parse xml and take action,
@@ -241,6 +247,9 @@ class TestImporter(object):
    </children>
  </node>
 </site>"""
+
+    types = (Type1Type, Type2Type)
+
     def test_recursive(self, client):
         """ import a recursive structure with different types """
         importer = Importer()
@@ -303,7 +312,11 @@ class TestImporter(object):
         assert subsub.content().title == "Export Test"
 
 
+@pytest.mark.usefixtures("localtyperegistry")
 class TestDelay(object):
+
+    types = (Type1Type, Type2Type)
+
     class DelaySerializer(WheelSerializer):
         extra = ('test', )
 
@@ -320,10 +333,14 @@ class TestDelay(object):
         assert delay[0]() == 42
 
 
+@pytest.mark.usefixtures("localtyperegistry")
 class TestSerializer(object):
     """
         Serialization of default fields, custom field methods
     """
+
+    types = (Type1Type, Type2Type)
+
     def test_base(self, client):
         """ test the base content fields """
         t = Type1(state="published", title="Test", navigation=True).save()
@@ -353,8 +370,11 @@ class TestSerializer(object):
 from wheelcms_axle.models import Configuration
 from wheelcms_axle.tests.models import Configuration as ConfigurationTest
 
+@pytest.mark.usefixtures("localtyperegistry")
 class TestConfigImportExport(object):
     """ configuration import/export tests """
+
+    types = (Type1Type, Type2Type)
 
     def test_export(self, client):
         """ Test export of main and sub config """
@@ -396,18 +416,16 @@ class TestConfigImportExport(object):
         assert c.testconf.all()[0].value == "conftest"
 
 
+@pytest.mark.usefixtures("localtyperegistry")
 class BaseSpokeImportExportTest(object):
     """
         Base test for any spoke that uses the default
         serialization or implements (extends) its own.
     """
     type = None
-    spoke = None
 
     def create(self, **kw):
-        t = self.type(**kw).save()
-        tt = self.spoke(t)
-        return tt
+        return self.type.create(**kw).save()
 
     def test_capable_serialize(self, client):
         """ verify the spoke is able to serialize itself """
@@ -426,7 +444,7 @@ class BaseSpokeImportExportTest(object):
         res, files = s.serialize(tt)
 
         ## step 2: deserialize it
-        tt, delay = self.spoke.serializer().deserialize(self.spoke, res)
+        tt, delay = self.type.serializer().deserialize(self.type, res)
         assert tt.instance.title == "Hello World"
         assert tt.instance.state == "published"
         assert tt.instance.navigation
@@ -435,12 +453,10 @@ class BaseSpokeImportExportTest(object):
     ## how about Image/File base types?
 
 class TestType1ImportExport(BaseSpokeImportExportTest):
-    type = Type1
-    spoke = Type1Type
+    type = Type1Type
 
 class TestFileImportExport(BaseSpokeImportExportTest):
-    type = TestFile
-    spoke = TestFileType
+    type = TestFileType
 
     def test_file_serialize(self, client):
         tt = self.create(state="published", title="Hello", storage=filedata)
@@ -450,8 +466,7 @@ class TestFileImportExport(BaseSpokeImportExportTest):
         assert "files/foo.png" in files
 
 class TestImageImportExport(BaseSpokeImportExportTest):
-    type = TestImage
-    spoke = TestImageType
+    type = TestImageType
 
     def test_image_serialize(self, client):
         tt = self.create(state="published", title="Hello", storage=filedata)

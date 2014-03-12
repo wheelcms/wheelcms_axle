@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from wheelcms_axle.node import Node
 from wheelcms_axle.content import type_registry, TypeRegistry
 from wheelcms_axle.templates import TemplateRegistry, template_registry
@@ -7,6 +8,11 @@ import pytest
 @pytest.fixture()
 def root():
     return Node.root()
+
+@pytest.fixture()
+def superuser(username="superuser", **kw):
+    return User.objects.get_or_create(username=username,
+                                      is_superuser=True, **kw)[0]
 
 @pytest.fixture()
 def localtyperegistry(request):

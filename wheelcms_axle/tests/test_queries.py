@@ -1,11 +1,18 @@
+import pytest
+
 from wheelcms_axle.models import Node
 from wheelcms_axle.queries import get_visible_children
 from wheelcms_axle.tests.models import Type1, Type2
 
+from .models import Type1Type, Type2Type
+
+@pytest.mark.usefixtures("localtyperegistry")
 class TestVisibleChildrenQueries(object):
     """
         Test queries related to visible children
     """
+    types = (Type1Type, Type2Type)
+
     def test_empty(self, client):
         """ a node without any children """
         root = Node.root()

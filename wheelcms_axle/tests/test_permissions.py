@@ -107,17 +107,6 @@ class TestPermissionsNormal(BasePermissionTest):
         return normal
 
 
-class TestPermissionsManager(BasePermissionTest):
-    """ a manager has access """
-    has_access = True
-
-    def provide_user(self):
-        """ create a manager """
-        manager, _ = User.objects.get_or_create(username="manager")
-        manager.groups.add(self.managers)
-        return manager
-
-
 class TestPermissionsSuperuser(BasePermissionTest):
     """ A superuser has access, even if he's not a manager """
     has_access = True
@@ -139,15 +128,3 @@ class TestPermissionsInactiveSuperuser(BasePermissionTest):
                                                   is_superuser=True,
                                                   is_active=False)
         return superuser
-
-
-class TestPermissionsInactiveManager(BasePermissionTest):
-    """ an inactive manager has no access """
-    has_access = False
-
-    def provide_user(self):
-        """ create an inactive manager """
-        manager, _ = User.objects.get_or_create(username="manager",
-                                                is_active=False)
-        manager.groups.add(self.managers)
-        return manager
