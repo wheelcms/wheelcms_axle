@@ -300,8 +300,20 @@ class TestStateSignal(object):
     """ if content (workflow) state changes, a signal is emitted """
     type = Type1Type
 
-    def test_iets(self, client):
+    def test_init_not_change(self, client):
+        """ Initialization/creation is not a state change """
+        with mock_receiver(state_changed) as receiver:
+            Type1Type.create(title="hello", state="initial").save()
+            assert receiver.call_count == 0
 
+    def test_init_not_change_emptystate(self, client):
+        """ Initialization/creation is not a state change """
+        with mock_receiver(state_changed) as receiver:
+            Type1Type.create(title="hello").save()
+            assert receiver.call_count == 0
+
+    def test_handler_after_change(self, client):
+        """ if state changes, the handler should be invoked """
         with mock_receiver(state_changed) as receiver:
             t = Type1Type.create(title="hello", state="initial").save()
             t.instance.state="changed"
@@ -311,5 +323,14 @@ class TestStateSignal(object):
             assert kwargs.get('oldstate') == 'initial'
             assert kwargs.get('newstate') == 'changed'
             assert kwargs.get('sender') == t.instance
+
+    def test_no_handler_no_change(self, client):
+        """ if the state remains unchanged,
+            the handler should not be invoked """
+        with mock_receiver(state_changed) as receiver:
+            t = Type1Type.create(title="hello", state="initial").save()
+            t.instance.state="initial"
+            t.save()
+            assert receiver.call_count == 0
 
 

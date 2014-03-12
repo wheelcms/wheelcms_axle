@@ -1,3 +1,7 @@
+from django.dispatch import receiver
+from ..signals import state_changed
+from wheelcms_axle.content import Content
+
 class Workflow(object):
     def __init__(self, spoke):
         self.spoke = spoke
@@ -8,6 +12,9 @@ class Workflow(object):
     private = State("Private", dest=(Visible, Published))
 
 """
+
+from wheelcms_axle import permissions as p, roles as r
+
 class DefaultWorkflow(Workflow):
     PRIVATE = "private"
     VISIBLE = "visible"
@@ -23,14 +30,48 @@ class DefaultWorkflow(Workflow):
 
     default = PRIVATE
 
+    ## how to handle new/extra roles/permissions?
+    ## Use below as initialization default, persist actual allocation
+    ## in database?
+    permission_assignment = {
+            PRIVATE: {
+                p.view_content:(r.owner, r.admin)
+            },
+            VISIBLE: {
+                p.view_content:(r.owner, r.admin, r.member)
+            },
+            PUBLISHED: {
+                p.view_content:r.all_roles + (),
+            },
+            PENDING: {
+                p.view_content:(r.owner, r.admin, r.member)
+            },
+            REJECTED: {
+                p.view_content:(r.owner, r.admin, r.member)
+            }
+    }
+
     def is_published(self):
         return self.spoke.instance.state == self.PUBLISHED
 
     def is_visible(self):
+        ## XXX deprecate this, should become a permission check
         return self.is_published() or self.spoke.instance.state == self.VISIBLE
 
     def state(self):
         return dict(self.states)[self.spoke.instance.state]
+
+    def state_changed(self, oldstate, newstate):
+        newperms = self.permission_assignment.get(newstate, ())
+        if newperms:
+            self.spoke.update_perms(newperms)
+
+
+@receiver(state_changed, dispatch_uid="wheelcms_axle.workflow.state_changed")
+def handle_state_changed(sender, oldstate, newstate, **kwargs):
+    if isinstance(sender, Content):
+        sender.spoke().workflow().state_changed(oldstate, newstate)
+
 
 def worklist():
     """

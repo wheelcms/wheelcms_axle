@@ -158,8 +158,11 @@ class Spoke(object):
     def assign_perms(self):
         """ invoked by a signal handler upon creation: Set initial
             permissions """
-        # import pytest; pytest.set_trace()
         auth.assign_perms(self.instance, self.permission_assignment)
+
+    def update_perms(self, perms):
+        """ Update specific permissions, e.g. after a workflow change """
+        auth.update_perms(self.instance, perms)
 
     @property
     def o(self):

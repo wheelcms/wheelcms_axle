@@ -14,6 +14,12 @@ def assign_perms(instance, permdict):
         for role in roles:
             RolePermission.assign(instance, role, permission).save()
 
+def update_perms(instance, permdict):
+    for permission, roles in permdict.iteritems():
+        RolePermission.clear(instance, permission)
+        for role in roles:
+            RolePermission.assign(instance, role, permission).save()
+
 def get_roles_in_context(request, type, spoke=None):
     ## check roles for request.user and their group(s), local roles, owner role
     from wheelcms_axle import roles

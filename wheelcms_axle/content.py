@@ -4,7 +4,6 @@ import datetime
 
 from two.ol.util import classproperty
 
-import django.dispatch
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.db import models, IntegrityError
@@ -15,6 +14,7 @@ from taggit.managers import TaggableManager
 from .registry import Registry
 
 from .node import Node
+from .signals import state_changed
 
 class ContentException(Exception):
     pass
@@ -39,7 +39,6 @@ class ContentClass(models.Model):
     def __unicode__(self):
         return "Content class %s" % self.name
 
-state_changed = django.dispatch.Signal(providing_args=["oldstate", "newstate"])
 
 class ContentBase(models.Model):
     CLASSES = ()
@@ -137,7 +136,9 @@ class ContentBase(models.Model):
 
         super(ContentBase, self).save(*a, **b)
 
-        if self.state != self._original_state:
+        ## Only trigger if the original state was non empty, else it
+        ## counts as initialization
+        if self._original_state and self.state != self._original_state:
             state_changed.send_robust(sender=self,
                                       oldstate=self._original_state,
                                       newstate=self.state)

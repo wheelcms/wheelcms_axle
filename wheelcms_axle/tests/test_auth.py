@@ -38,6 +38,7 @@ class TestAssignments(object):
         t = Type1Type.create()
         t.save()
 
+        # import pytest; pytest.set_trace()
         assert not RolePermission.assignments(t.instance).exists()
 
     @permpatch({p.view_content:(roles.owner,)})
@@ -87,6 +88,34 @@ class TestAssignments(object):
         a = RolePermission.assignments(t.instance).all()[0]
         assert a.role == Role("r")
         assert a.permission == Permission("p")
+
+    @permpatch({})
+    def test_update_perms(self, pp, client):
+        t = Type1Type.create()
+        t.save()
+
+        assign_perms(t.instance, {Permission("p"): (Role("r"),)})
+        update_perms(t.instance, {Permission("p"): (Role("r1"),)})
+
+        assert RolePermission.assignments(t.instance).count() == 1
+        a = RolePermission.assignments(t.instance).all()[0]
+        assert a.role == Role("r1")
+        assert a.permission == Permission("p")
+
+    @permpatch({})
+    def test_update_perms_add(self, pp, client):
+        t = Type1Type.create()
+        t.save()
+
+        assign_perms(t.instance, {Permission("p"): (Role("r"),)})
+        update_perms(t.instance, {Permission("p1"): (Role("r1"),)})
+
+        rp = RolePermission.assignments(t.instance)
+        assert rp.count() == 2
+
+        assert set((i.permission, i.role) for i in rp) == \
+               set(((Permission("p"), Role("r")),
+                    (Permission("p1"), Role("r1"))))
 
 
 
