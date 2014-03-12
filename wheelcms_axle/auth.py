@@ -41,6 +41,9 @@ def get_roles_in_context(request, type, spoke=None):
     return set(r)
 
 def has_access(request, type, spoke, permission):
+    if request.user.is_active and request.user.is_superuser:
+        return True
+
     roles = get_roles_in_context(request, type, spoke)
     if spoke and spoke.instance:
         for role in roles:

@@ -4,6 +4,7 @@
 """
 from mock import patch, PropertyMock, MagicMock
 import pytest
+from twotest.util import create_request
 
 from django.contrib.auth.models import User, Group
 
@@ -28,6 +29,27 @@ def testpermission():
 @pytest.fixture
 def testrole():
     return Role('testrole')
+
+
+@pytest.fixture
+def anon_request():
+    return create_request("GET", "/")
+
+@pytest.fixture
+def user(username="testuser", **kw):
+    return User.objects.get_or_create(username=username, **kw)[0]
+
+@pytest.fixture
+def auth_request():
+    r = create_request("GET", "/")
+    r.user = user()
+    return r
+
+@pytest.fixture
+def super_request():
+    r = create_request("GET", "/")
+    r.user = user(username="superuser", is_superuser=True)
+    return r
 
 @pytest.mark.usefixtures("localtyperegistry")
 class TestAssignments(object):
@@ -123,48 +145,34 @@ class TestHasAccess(object):
     @permpatch({testpermission():(testrole(),)})
     @patch('wheelcms_axle.auth.get_roles_in_context',
                        return_value=set((testrole(),)))
-    def test_has_access_class(self, gric, pp, testpermission):
-        request = MagicMock()
-        assert has_access(request, Type1Type, None, testpermission)
+    def test_has_access_class(self, gric, pp, auth_request, testpermission):
+        assert has_access(auth_request, Type1Type, None, testpermission)
 
     @permpatch({testpermission():(testrole(),)})
     @patch('wheelcms_axle.auth.get_roles_in_context',
                        return_value=set())
-    def test_no_access_class(self, gric, pp, testpermission):
-        request = MagicMock()
-        assert not has_access(request, Type1Type, None, testpermission)
+    def test_no_access_class(self, gric, pp, auth_request, testpermission):
+        assert not has_access(auth_request, Type1Type, None, testpermission)
 
     @permpatch({testpermission():(testrole(),)})
     @patch('wheelcms_axle.auth.get_roles_in_context',
                        return_value=set((testrole(),)))
-    def test_has_access_instance(self, gric, pp, testpermission):
-        request = MagicMock()
+    def test_has_access_instance(self, gric, pp, auth_request, testpermission):
         t = Type1Type.create().save()
-        assert has_access(request, Type1Type, t, testpermission)
+        assert has_access(auth_request, Type1Type, t, testpermission)
 
     @permpatch({testpermission():(testrole(),)})
     @patch('wheelcms_axle.auth.get_roles_in_context',
                        return_value=set())
-    def test_no_access_instance(self, gric, pp, testpermission):
-        request = MagicMock()
+    def test_no_access_instance(self, gric, pp, auth_request, testpermission):
         t = Type1Type.create().save()
-        assert not has_access(request, Type1Type, t, testpermission)
+        assert not has_access(auth_request, Type1Type, t, testpermission)
 
-from twotest.util import create_request
-
-@pytest.fixture
-def anon_request():
-    return create_request("GET", "/")
-
-@pytest.fixture
-def user():
-    return User.objects.get_or_create(username="testuser")[0]
-
-@pytest.fixture
-def auth_request():
-    r = create_request("GET", "/")
-    r.user = user()
-    return r
+    @permpatch({testpermission():(testrole(),)})
+    def test_superuser_always(self, client, super_request):
+        """ The superuser always has access """
+        t = Type1Type.create().save()
+        assert has_access(super_request, Type1Type, t, testpermission)
 
 @pytest.mark.usefixtures("localtyperegistry")
 class TestRolesContext(object):

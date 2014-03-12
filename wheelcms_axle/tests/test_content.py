@@ -8,11 +8,15 @@ from wheelcms_axle.node import Node, NodeInUse
 from wheelcms_axle.content import Content, ContentCopyFailed
 from wheelcms_axle.content import ContentCopyNotSupported
 from wheelcms_axle.tests.models import Type1, Type2, TypeM2M, TypeUnique
+from wheelcms_axle.tests.models import Type1Type, Type2Type, TypeM2MType, TypeUniqueType
 
 from .fixtures import multilang_ENNL
 
 @pytest.mark.usefixtures("multilang_ENNL")
+@pytest.mark.usefixtures("localtyperegistry")
 class TestContent(object):
+    types = (Type1Type, Type2Type, TypeM2MType, TypeUniqueType)
+
     """ Test content / content-node related stuff """
     def test_duplicate_content(self, client):
         """ two content objects for the same language 

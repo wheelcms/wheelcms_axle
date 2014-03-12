@@ -1,5 +1,5 @@
 from wheelcms_axle.models import Node
-from wheelcms_axle.tests.models import Type1
+from wheelcms_axle.tests.models import Type1, Type1Type, Type2Type
 from wheelcms_axle.forms import formfactory
 
 from .fixtures import multilang_ENNL, root
@@ -9,8 +9,9 @@ from .utils import MockedQueryDict
 import pytest
 
 @pytest.mark.usefixtures("multilang_ENNL")
+@pytest.mark.usefixtures("localtyperegistry")
 class TestContentCreate(object):
-    type = Type1
+    types = (Type1Type, Type2Type)
 
     def test_success(self, client, root):
         """ simple case where create succeeds """
@@ -95,6 +96,7 @@ class TestContentCreate(object):
                                      tags="hello, world",
                                      language="en",
                                      allowed=["tests.type1", "tests.type2"]))
+        # import pytest;pytest.set_trace()
         assert form.is_valid()
         tp1 = form.save()
         assert tp1.allowed == "tests.type1,tests.type2"
@@ -129,12 +131,13 @@ class TestContentCreate(object):
         assert set(form['allowed'].value()) == \
                set(('tests.type1', 'tests.type2'))
 
+@pytest.mark.usefixtures("localtyperegistry")
 @pytest.mark.usefixtures("multilang_ENNL")
 class TestContentUpdate(object):
-    type = Type1
+    type = Type1Type
 
     def test_available_languages(self, client, root):
-        t = self.type(node=root, title="EN trans", language="en").save()
+        t = self.type.create(node=root, title="EN trans", language="en").save()
 
         form = formfactory(Type1)(parent=root,node=root)
 
@@ -142,8 +145,8 @@ class TestContentUpdate(object):
         assert 'nl' in set((x[0] for x in form.fields['language'].choices))
 
     def test_available_languages_any(self, client, root):
-        self.type(node=root, title="EN trans", language="en").save()
-        self.type(node=root, title="ANY trans", language="any").save()
+        self.type.create(node=root, title="EN trans", language="en").save()
+        self.type.create(node=root, title="ANY trans", language="any").save()
 
         form = formfactory(Type1)(parent=root,node=root)
 
@@ -154,10 +157,10 @@ class TestContentUpdate(object):
     def test_available_languages_current(self, client, root):
         """ language can, of course, be selected if it's the content being
             editted """
-        en = self.type(node=root, title="EN trans", language="en").save()
-        any = self.type(node=root, title="ANY trans", language="any").save()
+        en = self.type.create(node=root, title="EN trans", language="en").save()
+        any = self.type.create(node=root, title="ANY trans", language="any").save()
 
-        form = formfactory(Type1)(parent=root,node=root, instance=en)
+        form = formfactory(Type1)(parent=root,node=root, instance=en.instance)
 
         assert 'en' in set((x[0] for x in form.fields['language'].choices))
         assert 'any' not in set((x[0] for x in form.fields['language'].choices))
