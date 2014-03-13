@@ -292,7 +292,7 @@ class Importer(object):
             language = None
             for field in fields.findall("field"):
                 if field.attrib.get('name') == 'language':
-                    language = field.text
+                    language = field.text.strip()
 
             s, cdelays = spoke.serializer(self.basenode, update_lm=self.update_lm
                                         ).deserialize(spoke, fields)
