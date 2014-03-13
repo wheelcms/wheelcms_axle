@@ -60,6 +60,7 @@ class Toolbar(object):
             ch = type(self.instance.content()).allowed_spokes()
             primary = type.primary
 
+        
         return [dict(name=c.name(),
                      title=c.title,
                      icon_path=c.full_type_icon_path())

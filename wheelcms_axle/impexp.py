@@ -80,7 +80,7 @@ class WheelSerializer(object):
         username = tree.text
         if not username:
             return None
-        return User.objects.get(username=username)
+        return User.objects.get(username=username.strip())
 
     def serialize_extra_tags(self, field, o):
         tags = list(o.tags.values_list("name", flat=True))
@@ -165,7 +165,12 @@ class WheelSerializer(object):
             ##elif field.rel and isinstance(field.rel, models.ManyToOneRel):
             ##    data[field.attname] = self._handle_fk_field_node(field_node, field)
             else:
-                value = field.to_python(field_node.text)
+                ## whitespace for xml formatting may have been added, which
+                ## breaks validation for certain types (e.g. DateTime).
+                text = field_node.text
+                if text:
+                    text = text.strip()
+                value = field.to_python(text)
                 ##
                 ## In stead of setting a null value on a field that doesn't
                 ## accept it, simply skip the field and let the default handle
