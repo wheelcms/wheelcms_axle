@@ -71,11 +71,24 @@
                 <a class="btn btn-info" href="{{instance.get_absolute_url|default:'.'}}"><i class="glyphicon glyphicon-eye-open"></i> {% trans "content_view" %} </a>
                 {% endif %}
               </div>
-              {% if 0 %}
               <div class="btn-group dropup navbar-btn">
-                <a class="btn btn-warning" href="{{instance.get_absolute_url}}"><i class="glyphicon glyphicon-eye-open"></i> {% trans "Publish" %} </a>
-              </div>
+                {% for action in toolbar.button_actions %}
+                  {% if action.show %}
+                    <a class="btn btn-warning" href="{{action.url}}"
+                       {% for k,v in action.attrs.items %}
+                           {{k}}="{{v}}"
+                       {% endfor %}
+                       >
+                       <i class="glyphicon glyphicon-eye-open"></i> {% trans action.name %}
+                    </a>
+                  {% endif %}
+                {% endfor %}
+                {% if 0 %}
+                <a class="btn btn-warning" href="{{instance.get_absolute_url}}">
+                  <i {% if action.icon %}class="glyphicon glyphicon-{{action.icon}}"{% endif %}></i> {% trans "Publish" %}
+                </a>
               {% endif %}
+              </div>
           </li>
         </ul> <!-- navbar (left) -->
         <ul class="nav navbar-nav navbar-right">

@@ -353,3 +353,78 @@ class TestTranslations(object):
             l = ut['id']
             assert l in ('nl', 'fr', 'en', 'any')
             assert ut['action_url'].endswith('switch_admin_language?path='+n.tree_path + '&switchto=' + l + '&rest=' + urllib2.quote('create?type=sometype'))
+
+from wheelcms_axle.toolbar import ButtonAction, PreviewAction, ToolbarAction
+from .fixtures import toolbar_registry
+import mock
+
+@pytest.mark.usefixtures("localtyperegistry")
+class TestToolbarActions(object):
+    """
+        Test custom / dynamic action button support
+    """
+    type = Type1Type
+
+    def test_no_button_actions(self, client, root, toolbar_registry):
+        """
+            A node with content without restrictions
+        """
+        Type1Type.create(node=root).save()
+        toolbar = Toolbar(root, superuser_request("/"), "view")
+
+        assert len(toolbar.button_actions()) == 0
+
+    def test_button_actions(self, client, root, toolbar_registry):
+        """
+            A node with content without restrictions
+        """
+        Type1Type.create(node=root).save()
+        toolbar = Toolbar(root, superuser_request("/"), "view")
+
+        toolbar_registry.register(ButtonAction("test"))
+        assert len(toolbar.button_actions()) == 1
+
+class BaseTestToolbarAction(object):
+    """
+        Test individual Toolbar Button actions
+    """
+    action = None
+
+    def test_url(self):
+        """ should not raise if no instance provided """
+        assert self.action("test").url() or True
+
+    def test_icon(self):
+        assert self.action("test").name()
+
+    def test_dont_show(self):
+        action = self.action("test")
+
+        action_with_toolbar = action.with_toolbar(mock.Mock(instance=None))
+        assert not action_with_toolbar.show()
+
+    def test_do_show(self):
+        action = self.action("test")
+
+        action_with_toolbar = action.with_toolbar(mock.Mock())
+        assert action_with_toolbar.show()
+
+class TestToolbarActionButtonAction(BaseTestToolbarAction):
+    action = ToolbarAction
+
+class TestToolbarActionButtonAction(BaseTestToolbarAction):
+    action = ButtonAction
+
+class TestToolbarActionPreviewction(BaseTestToolbarAction):
+    action = PreviewAction
+
+    def test_icon(self):
+        assert self.action("test").icon()
+
+    def test_attrs(self):
+        assert 'target' in self.action("test").attrs()
+
+    def test_url(self):
+        """ verify get_absolute_url is invoked """
+        m = mock.Mock(**{"instance.get_absolute_url.return_value": "/foo"})
+        assert self.action("test").with_toolbar(m).url().startswith("/foo")
