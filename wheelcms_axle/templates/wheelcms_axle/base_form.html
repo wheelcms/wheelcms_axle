@@ -28,7 +28,7 @@
     {% endif %}
 
     <accordion close-others="true">
-      <accordion-group heading="Content Properties">
+      <accordion-group heading="Content Properties" is-open="!advanced_open">
             {% include "two.bootstrap/bootstrap-form.html" with fields=form.content_fields %}
       </accordion-group>
       <accordion-group heading="Advanced Properties" is-open="advanced_open">

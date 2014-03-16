@@ -104,7 +104,8 @@ class MainHandler(WheelRESTHandler):
             if model:
                 typename = model.get_name()
                 parts = typename.split(".")
-                return " ".join("_".join(parts[:i+1]) for i in range(len(parts)))
+                return " ".join("_".join(parts[:i+1])
+                                for i in range(len(parts)))
 
         return ""
 
