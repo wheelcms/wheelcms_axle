@@ -37,7 +37,10 @@ def superuser_request(path, method="GET", **data):
     request.user = superuser
     return request
 
+@pytest.mark.usefixtures("localtyperegistry")
 class TestMainHandler(object):
+    type = Type1Type
+
     def test_coerce_instance(self, client):
         """ coerce a dict holding an instance path """
         root = Node.root()
@@ -315,8 +318,10 @@ class TestMainHandler(object):
         assert children[1]['node'] == u
 
 
+@pytest.mark.usefixtures("localtyperegistry")
 class TestBreadcrumb(object):
     """ test breadcrumb generation by handler """
+    type = Type1Type
 
     def test_unattached_root(self, client):
         root = Node.root()
@@ -442,8 +447,11 @@ class TestBreadcrumb(object):
                                         Type1Type.title), '')]
 
 
+@pytest.mark.usefixtures("localtyperegistry")
 class TestActions(object):
     """ test cut/copy/paste/delete, reorder and other actions """
+    type = Type1Type
+
     def test_cut_action(self, client):
         """ cut should clear the copy clipboard and add to the cut clipboard """
         root = Node.root()
@@ -608,8 +616,11 @@ class TestActions(object):
 
 from .fixtures import multilang_ENNL, active_language
 
+@pytest.mark.usefixtures("localtyperegistry")
 @pytest.mark.usefixtures("multilang_ENNL", "active_language")
 class TestTranslations(object):
+    type = Type1Type
+
     def test_translated(self, client):
         """ /a can point to either dutch or english content on different
             nodes """
@@ -678,7 +689,10 @@ from .models import TestImage, TestImageType
 
 from wheelcms_axle.content import TypeRegistry, type_registry
 
+@pytest.mark.usefixtures("localtyperegistry")
 class TestImageCreateUpdate(object):
+    types = (Type1Type, TestImageType)
+
     def setup(self):
         self.registry = TypeRegistry()
         self.old_registry = type_registry.wrapped

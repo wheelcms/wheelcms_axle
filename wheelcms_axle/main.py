@@ -609,9 +609,12 @@ class MainHandler(WheelRESTHandler):
 
     def handle_list(self):
         spoke = self.spoke()
-        perm = spoke.permissions.get('list')
-        if not auth.has_access(self.request, spoke, spoke, perm):
-            return self.forbidden()
+
+        if spoke:
+            perm = spoke.permissions.get('list')
+            if not auth.has_access(self.request, spoke, spoke, perm):
+                return self.forbidden()
+            ## or what else? XXX
 
         self.context['toolbar'] = Toolbar(self.instance, self.request,
                                           status="list")
