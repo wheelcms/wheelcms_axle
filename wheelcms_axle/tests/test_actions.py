@@ -1,10 +1,19 @@
+import pytest
+import mock
+
+from drole.types import Permission
+
 from ..node import Node
 from .models import Type1, Type1Type
 from .test_handler import MainHandlerTestable, superuser_request
 
-from ..actions import ActionRegistry, action_registry
+from ..actions import ActionRegistry, action_registry, action
 
+
+@pytest.mark.usefixtures("localtyperegistry")
 class TestAction(object):
+    type = Type1Type
+
     def setup(self):
         self.action_registry = ActionRegistry()
         action_registry.set(self.action_registry)
@@ -118,3 +127,20 @@ class TestAction(object):
         assert action_registry.get('world',  path="/foo") is None
         assert action_registry.get('world') is None
 
+
+class TestActionDecorator(object):
+    """ Test the @action decorater, user to mark a function/method as a valid
+        action and (optionally) set a required permission """
+    def test_no_perm(self):
+        """ traditional "@action def foo()" with no permission specified """
+        m = mock.MagicMock()
+        action(m)
+        assert m.action
+        assert m.permission is None
+
+    def test_permission(self):
+        """ @action(perm) def foo() variant, should set permission """
+        m = mock.MagicMock()
+        action(Permission("foo"))(m)
+        assert m.action
+        assert m.permission == Permission("foo")

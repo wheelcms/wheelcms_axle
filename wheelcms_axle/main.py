@@ -548,9 +548,8 @@ class MainHandler(WheelRESTHandler):
         language = self.active_language()
         spoke = self.spoke(language=language)
 
-        if spoke and not spoke.workflow().is_visible():
-            if not self.hasaccess():
-                return self.forbidden()
+        perm = spoke.permissions.get('view')
+        
 
         if spoke:
             ## update the context with addtional data from the spoke
@@ -566,7 +565,15 @@ class MainHandler(WheelRESTHandler):
             if action_handler is None:
                 return self.notfound()
 
+            ## get permission from handler. If not present, use contents view permission
+            required_permission = action_handler.permission or perm
+            if not auth.has_access(self.request, spoke, spoke, required_permission):
+                return self.forbidden()
+
             return action_handler(self, self.request, action)
+
+        if not auth.has_access(self.request, spoke, spoke, perm):
+            return self.forbidden()
 
 
         if self.hasaccess():
@@ -601,12 +608,14 @@ class MainHandler(WheelRESTHandler):
         return self.view()
 
     def handle_list(self):
-        if not self.hasaccess():
+        spoke = self.spoke()
+        perm = spoke.permissions.get('list')
+        if not auth.has_access(self.request, spoke, spoke, perm):
             return self.forbidden()
+
         self.context['toolbar'] = Toolbar(self.instance, self.request,
                                           status="list")
         self.context['breadcrumb'] = self.breadcrumb(operation="Contents")
-        spoke = self.spoke()
 
         self.context['can_paste'] = \
             len(self.request.session.get('clipboard_copy', [])) + \

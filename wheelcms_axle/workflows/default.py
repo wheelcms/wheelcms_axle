@@ -4,6 +4,7 @@ from wheelcms_axle.content import Content
 
 class Workflow(object):
     permission_assignment = {}
+    default = "published"
 
     def __init__(self, spoke):
         self.spoke = spoke

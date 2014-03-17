@@ -53,9 +53,20 @@ def super_request():
     r.user = superuser()
     return r
 
+from wheelcms_axle.workflows.default import Workflow
+
 @pytest.mark.usefixtures("localtyperegistry")
 class TestAssignments(object):
     type = Type1Type
+
+    def setup(self):
+        ## Make sure there are no workflow permission updates
+        self.wfpatch = patch("wheelcms_axle.tests.models.Type1Type.workflow",
+                             return_value=Workflow)
+        self.wfpatch.start()
+
+    def teardown(self):
+        self.wfpatch.stop()
 
     @permpatch({})
     def test_assignment_blank(self, pp, client):

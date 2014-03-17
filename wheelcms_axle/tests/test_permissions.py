@@ -5,17 +5,18 @@
 from django.contrib.auth.models import Group, User
 from twotest.util import create_request
 from two.ol.base import Forbidden
-from wheelcms_axle.tests.models import Type1
+from wheelcms_axle.tests.models import Type1, Type1Type
 from wheelcms_axle.models import Node
 from wheelcms_axle.main import MainHandler
 
 import pytest
 
-
+@pytest.mark.usefixtures("localtyperegistry")
 class BasePermissionTest(object):
     """
         Base test to be used against different types of users that may
         or may not have access """
+    type = Type1Type
 
     has_access = False
 

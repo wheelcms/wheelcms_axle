@@ -154,6 +154,12 @@ def assign_perms(sender, instance, created, **kwargs):
         spoke = instance.spoke()
         if spoke:
             spoke.assign_perms()
+            if created:
+                wf = spoke.workflow()
+                state = instance.state
+                assignment = wf.permission_assignment.get(state)
+                if assignment:
+                    spoke.update_perms(assignment)
 
     if hasattr(sender, 'permission_assignment') and created:
         assign_perms(instance, instance.permission_assignment)

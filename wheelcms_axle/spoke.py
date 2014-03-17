@@ -90,14 +90,17 @@ class Spoke(object):
         create=p.create_content,
         edit=p.edit_content,
         view=p.view_content,
-        delete=p.delete_content
+        delete=p.delete_content,
+        list=p.list_content,
     )
 
     permission_assignment = {
         p.view_content: (roles.owner, roles.editor, roles.admin),
         p.edit_content: (roles.owner, roles.editor, roles.admin),
         p.create_content: (roles.owner, roles.editor, roles.admin),
-        p.delete_content: (roles.owner, roles.editor, roles.admin)
+        p.delete_content: (roles.owner, roles.editor, roles.admin),
+        p.list_content: (roles.owner, roles.editor, roles.admin),
+        p.change_auth_content: (roles.owner, roles.admin),
     }
 
     workflowclass = DefaultWorkflow
@@ -398,7 +401,7 @@ class Spoke(object):
             return self.discussable
         return explicit
 
-    @action
+    @action(p.change_auth_content)
     def auth(self, handler, request, action):
         ##
         ## If post, handle/reset perm changes

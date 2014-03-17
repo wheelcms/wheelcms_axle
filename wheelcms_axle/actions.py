@@ -1,10 +1,19 @@
 from .registry import Registry
+from drole.types import Permission
 
 def action(f):
     """
         mark a method as being an action.
     """
-    f.action = True
+    if isinstance(f, Permission):
+        def decorator(decorated):
+            decorated.action = True
+            decorated.permission = f
+            return decorated
+        return decorator
+    else:
+        f.action = True
+        f.permission = None
     return f
 
 class ActionRegistry(dict):
