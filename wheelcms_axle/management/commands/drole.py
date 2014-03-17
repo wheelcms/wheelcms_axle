@@ -27,9 +27,15 @@ class Command(BaseCommand):
             if issubclass(m, Content) and type_registry.get(m.get_name()):
                 for c in m.objects.all():
                     s = c.spoke()
-                    if s:
-                        print "(spoke) Assigning", s
-                        s.assign_perms()
+                    print "(spoke) Assigning", s
+                    s.assign_perms()
+
+                    wf = s.workflow()
+                    state = c.state
+                    assignment = wf.permission_assignment.get(state)
+                    if assignment:
+                        print "(spoke) Updating to state", state
+                        s.update_perms(assignment)
             elif hasattr(m, 'permissions_assignment'):
                 for i in m.objects.all():
                     print "(instance) Assigning", i

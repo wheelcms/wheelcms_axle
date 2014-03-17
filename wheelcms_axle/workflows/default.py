@@ -3,6 +3,8 @@ from ..signals import state_changed
 from wheelcms_axle.content import Content
 
 class Workflow(object):
+    permission_assignment = {}
+
     def __init__(self, spoke):
         self.spoke = spoke
 
@@ -38,7 +40,7 @@ class DefaultWorkflow(Workflow):
                 p.view_content:(r.owner, r.admin)
             },
             VISIBLE: {
-                p.view_content:(r.owner, r.admin, r.member)
+                p.view_content:(r.anonymous, r.owner, r.admin, r.member)
             },
             PUBLISHED: {
                 p.view_content:r.all_roles + (),
