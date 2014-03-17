@@ -357,7 +357,8 @@ class Spoke(object):
         else:
             ch = [type_registry.get(p)
                   for p in self.instance.allowed.split(",")]
-
+            ## filter out stale entries. Log?
+            ch = filter(None, ch)
         return ch
 
     def addable_children(self):
