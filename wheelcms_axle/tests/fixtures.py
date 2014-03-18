@@ -62,11 +62,13 @@ def multilang_ENNLFR(request):
     request.addfinalizer(fin)
 
 from django.utils import translation
+from wheelcms_axle import locale
 
 @pytest.fixture()
 def active_language(request):
     old_lang = translation.get_language()
     def fin():
         translation.activate(old_lang)
+        locale.activate_content_language(None)
     request.addfinalizer(fin)
 

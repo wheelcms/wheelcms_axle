@@ -212,6 +212,8 @@ class MainHandler(WheelRESTHandler):
 
     def pre_handler(self):
         """ invoked before a method """
+        # import pdb; pdb.set_trace()
+        
         super(MainHandler, self).pre_handler()
         ## if user authenticated, find language setting, activate it.
         ## Will only work for requests that go through this handler
@@ -226,11 +228,16 @@ class MainHandler(WheelRESTHandler):
                     self._stored_language = current_language
                     locale.activate_content_language(current_language)
                     translation.activate(language)
+                    ## coercion has taken place before the switch,
+                    ## so self.instance will be initialized to the old
+                    ## language. Update it!
+                    #if self.instance:
+                    #    self.instance.preferred_language = language
             except WheelProfile.DoesNotExist:
                 pass
         else:
             locale.activate_content_language(current_language)
-            
+
     def post_handler(self):
         super(MainHandler, self).post_handler()
         if self._stored_language:
@@ -247,6 +254,8 @@ class MainHandler(WheelRESTHandler):
             really need it - <instance>/update works fine, and no instance is
             required for /create
         """
+        ## reset content language
+        locale.activate_content_language(None)
         language = get_active_language()
 
         d = dict()
@@ -388,7 +397,6 @@ class MainHandler(WheelRESTHandler):
         return self.template(template)
 
     def update(self):
-        # import pytest; pytest.set_trace()
         action = self.kw.get('action', '')
         language = self.active_language()
 
@@ -481,7 +489,8 @@ class MainHandler(WheelRESTHandler):
                 e = stracks.content(content.id, name=content.title)
                 e.log("? (%s) updated by ?" % content.spoke().title,
                       stracks.user(self.user()), action=stracks.edit())
-                return self.redirect(instance.get_absolute_url(), success="Updated")
+                return self.redirect(instance.get_absolute_url(),
+                                     success="Updated")
         else:
             args = dict(parent=parent,
                         initial=dict(slug=slug),
@@ -490,8 +499,8 @@ class MainHandler(WheelRESTHandler):
                 # updating existing content
                 args['instance'] = content
             else:
-                # translating new content. Make sure its language is set to the active
-                # language
+                # translating new content. Make sure its language is set to
+                # the active language
                 args['initial']['language'] = language
             self.context['form'] = formclass(**args)
 
@@ -500,9 +509,11 @@ class MainHandler(WheelRESTHandler):
             primary_content = self.instance.primary_content()
             ## there must be primary content, else the node would be unattached
             title = primary_content.title
-            self.context['breadcrumb'] = self.breadcrumb(operation="Translate", details=' "%s" (%s)' % (title, typeinfo.title))
+            self.context['breadcrumb'] = self.breadcrumb(operation="Translate",
+                                details=' "%s" (%s)' % (title, typeinfo.title))
         else:
-            self.context['breadcrumb'] = self.breadcrumb(operation="Edit", details=' "%s" (%s)' % (content.title, typeinfo.title))
+            self.context['breadcrumb'] = self.breadcrumb(operation="Edit",
+                        details=' "%s" (%s)' % (content.title, typeinfo.title))
         template = spoke.update_template()
         return self.template(template)
 
@@ -1093,7 +1104,7 @@ class MainHandler(WheelRESTHandler):
         if not self.hasaccess():
             return self.forbidden()
 
-        locale.set_content_language(switchto)
+        locale.activate_content_language(switchto)
 
         if path:
             node = Node.objects.get(tree_path=path)

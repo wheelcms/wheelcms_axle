@@ -1,7 +1,11 @@
 # *-* encoding: utf-8
+from django.utils import translation
+
 from wheelcms_axle.main import MainHandler
 from wheelcms_axle.models import Node
 from wheelcms_axle.tests.models import Type1, Type1Type
+from wheelcms_axle import locale
+
 
 from two.ol.base import NotFound, Redirect, handler
 import pytest
@@ -37,6 +41,7 @@ def superuser_request(path, method="GET", **data):
     request.user = superuser
     return request
 
+@pytest.mark.usefixtures("active_language")
 class TestMainHandler(object):
     def test_coerce_instance(self, client):
         """ coerce a dict holding an instance path """
@@ -178,7 +183,7 @@ class TestMainHandler(object):
         request = superuser_request("/edit", method="POST",
                                     title="hello",
                                     language="nl")
-        request.session['admin_language'] = 'nl'
+        locale.activate_content_language('nl')
 
         handler = MainHandler(request=request, post=True, instance=root)
         pytest.raises(Redirect, handler.update)
@@ -209,7 +214,7 @@ class TestMainHandler(object):
         request = superuser_request("/edit", method="POST",
                                     title="hello",
                                     language="nl")
-        request.session['admin_language'] = 'nl'
+        locale.activate_content_language('nl')
 
         root = Node.root()
         handler = MainHandler(request=request, post=True, instance=node)
@@ -617,7 +622,6 @@ class TestTranslations(object):
         n1 = root.add(langslugs=dict(nl="a", en="b"))
         n2 = root.add(langslugs=dict(en="a", nl="b"))
 
-        from django.utils import translation
 
         translation.activate('nl')
         res = MainHandler.coerce(dict(instance="a"))
@@ -637,7 +641,7 @@ class TestTranslations(object):
         Type1(node=root, language="en").save()
         request = superuser_request("/edit", method="GET",
                                     type=Type1.get_name())
-        request.session = {'admin_language':'nl'}
+        translation.activate('nl')
 
         instance = MainHandlerTestable.coerce(dict(instance=""))
         handler = MainHandlerTestable(request=request, instance=instance)
@@ -661,7 +665,7 @@ class TestTranslations(object):
                                     type=Type1.get_name(),
                                     title="Translation NL",
                                     language="nl")
-        request.session = {'admin_language':'nl'}
+        translation.activate('nl')
 
         instance = MainHandlerTestable.coerce(dict(instance=""))
         handler = MainHandlerTestable(request=request, instance=instance,
