@@ -1,10 +1,10 @@
-from django.utils import translation
 from django.conf import settings
 
 from wheelcms_axle import translate
+from wheelcms_axle import locale
 
 
-def get_active_language(request=None):
+def get_active_language():
     """
         The active language is either forced in settings,
         set in the session (for admin), a GET argument or
@@ -12,12 +12,8 @@ def get_active_language(request=None):
     """
     lang = getattr(settings, 'FORCE_LANGUAGE', None)
 
-    if not lang and request:
-        admin_language = request.session.get('admin_language')
-        lang = admin_language or request.GET.get('language')
-
     if not lang:
-        lang = translation.get_language()
+        lang = locale.get_content_language()
 
     langids = (l[0] for l in translate.languages())
 

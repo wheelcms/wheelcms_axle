@@ -15,9 +15,13 @@ from wheelcms_axle.toolbar import Toolbar
 from wheelcms_axle.base import WheelHandlerMixin
 from wheelcms_axle.utils import get_active_language
 from wheelcms_axle import translate
+from wheelcms_axle import locale
 
 from .templates import template_registry
 from .actions import action_registry
+
+from django.utils import translation
+from .models import WheelProfile
 
 import stracks
 
@@ -94,7 +98,7 @@ class MainHandler(WheelRESTHandler):
     parent = None
 
     def active_language(self):
-        return get_active_language(self.request)
+        return get_active_language()
 
     @context
     def body_class(self):
@@ -206,6 +210,32 @@ class MainHandler(WheelRESTHandler):
 
         return None
 
+    def pre_handler(self):
+        """ invoked before a method """
+        super(MainHandler, self).pre_handler()
+        ## if user authenticated, find language setting, activate it.
+        ## Will only work for requests that go through this handler
+        self._stored_language = None
+        current_language = translation.get_language()
+
+        if self.request.user.is_authenticated():
+            try:
+                language = self.request.user.my_profile.language
+                if language and language != current_language:
+                    ## store the content language
+                    self._stored_language = current_language
+                    locale.activate_content_language(current_language)
+                    translation.activate(language)
+            except WheelProfile.DoesNotExist:
+                pass
+        else:
+            locale.activate_content_language(current_language)
+            
+    def post_handler(self):
+        super(MainHandler, self).post_handler()
+        if self._stored_language:
+            translation.activate(self._stored_language)
+
     @classmethod
     def coerce_with_request(cls, i, request=None):
         """
@@ -217,7 +247,7 @@ class MainHandler(WheelRESTHandler):
             really need it - <instance>/update works fine, and no instance is
             required for /create
         """
-        language = get_active_language(request)
+        language = get_active_language()
 
         d = dict()
 
@@ -1063,7 +1093,8 @@ class MainHandler(WheelRESTHandler):
         if not self.hasaccess():
             return self.forbidden()
 
-        self.request.session['admin_language'] = switchto
+        locale.set_content_language(switchto)
+
         if path:
             node = Node.objects.get(tree_path=path)
         else:

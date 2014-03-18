@@ -104,7 +104,7 @@ class Toolbar(object):
         ## do not show when creating or updating
         if self.status in ("update", "create"):
             return False
-        active_language = get_active_language(self.request)
+        active_language = get_active_language()
 
         ## there's an instance, it has (primary) content but not in the
         ## active language
@@ -184,7 +184,7 @@ class Toolbar(object):
         translated = []
         untranslated = []
 
-        active_language = get_active_language(self.request)
+        active_language = get_active_language()
 
         for (lang, langtitle) in translate.languages():
             option = dict(id=lang, language=langtitle)
