@@ -255,7 +255,7 @@ class Exporter(object):
             configxml.attrib["set"] = related
 
 
-            if related:
+            if model and related:
                 try:
                     config = getattr(defaultconfig, related).get()
                 except model.DoesNotExist:
