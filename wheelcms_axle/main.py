@@ -549,7 +549,6 @@ class MainHandler(WheelRESTHandler):
         spoke = self.spoke(language=language)
 
         perm = spoke.permissions.get('view')
-        
 
         if spoke:
             ## update the context with addtional data from the spoke

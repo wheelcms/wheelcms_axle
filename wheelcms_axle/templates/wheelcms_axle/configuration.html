@@ -1,8 +1,20 @@
 {% extends "wheelcms_axle/base.html" %}
 {% load i18n %}
+{% load granules %}
+{% load staticfiles %}
 
 {% block htmltitle %}
 <title>{% trans "site_settings" %}</title>
+{% endblock %}
+
+
+{% block granules %}
+  {{block.super}}
+  {% granule "javascript" %}
+    <script src="{% static "js/ui-bootstrap-0.10.0.min.js" %}"></script>
+    <script src="{% static "js/ui-bootstrap-tpls-0.10.0.min.js" %}"></script>
+    <script src="{% static "js/admin.js" %}"></script>
+  {% endgranule %}
 {% endblock %}
 
 {% block breadcrumb %}

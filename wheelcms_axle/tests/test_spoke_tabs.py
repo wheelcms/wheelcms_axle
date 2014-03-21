@@ -50,6 +50,8 @@ class TestSpokeTabs(object):
         class TestSpoke(Spoke):
             basetabs = ()
 
+            auth = None  ## clear auth tab
+
         s = TestSpoke(mock.MagicMock(tab=False, action=False))
 
         assert s.tabs() == ()
@@ -58,6 +60,8 @@ class TestSpokeTabs(object):
         """ No basetabs and no decorated tabs """
         class TestSpoke(Spoke):
             basetabs = ()
+
+            auth = None  ## clear auth tab
 
             def test_tab(self):
                 pass
@@ -76,3 +80,15 @@ class TestSpokeTabs(object):
         s = TestSpoke(mock.MagicMock(tab=False, action=False))
 
         assert 'test_tab' in [x['id'] for x in s.tabs()]
+
+    def test_active_tab(self):
+        """ A decorated method should be returned as tab """
+        class TestSpoke(Spoke):
+            @tab()
+            def test_tab(self):
+                pass
+
+        s = TestSpoke(mock.MagicMock(tab=False, action=False))
+        s.test_tab()
+
+        assert s.active_tab == "test_tab"

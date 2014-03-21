@@ -12,6 +12,12 @@ from wheelcms_axle.base import WheelHandlerMixin
 from .themes import theme_registry
 from .registries.configuration import configuration_registry
 
+from wheelcms_axle import auth
+
+from wheelcms_axle.spoke import Spoke
+
+import wheelcms_axle.permissions as p
+
 class BaseConfigurationHandler(object):
     id = ""
     label = ""
@@ -53,21 +59,22 @@ class ConfigurationHandler(FormHandler, WheelHandlerMixin):
         configs = configuration_registry.copy()
         default = configs.pop("")
 
-        
-        for section in [default] + sorted(configs.values(), key=operator.attrgetter("label")):
+        for section in [default] + sorted(configs.values(),
+                                          key=operator.attrgetter("label")):
             instance = None
             form = None
             selected = False
 
             if section.id == config:
-                if section.id:
+                if section.id and section.model:
                     try:
                         instance = getattr(baseconf, section.id).get()
                     except section.model.DoesNotExist:
                         pass
                 else:
                     instance = baseconf
-                form=section.form(instance=instance)
+                if section.form:
+                    form=section.form(instance=instance)
                 selected = True
             tabs.append(dict(label=section.label,
                              related=section.id,
@@ -80,7 +87,7 @@ class ConfigurationHandler(FormHandler, WheelHandlerMixin):
         instance = Configuration.config()
         klass = configuration_registry.get(config)
 
-        if config:
+        if klass.model and config:
             try:
                 instance = getattr(instance, config).get()
             except klass.model.DoesNotExist:
@@ -88,21 +95,30 @@ class ConfigurationHandler(FormHandler, WheelHandlerMixin):
                 instance.save()
         return instance
 
+    # @require(p.modify_settings)
     @applyrequest
     def index(self, config=""):
-        if not self.hasaccess():
+        ## XXX Decorate this!
+        if not auth.has_access(self.request, Spoke, None, p.modify_settings):
             return self.forbidden()
 
         instance = self.get_instance(config)
         klass = configuration_registry.get(config)
+        self.context['tabs'] = self.construct_tabs(klass.id)
+
         return klass().view(self, instance)
 
 
+    #@require(p.modify_settings)
     @applyrequest
     def process(self, config=""):
+        ## XXX Decorate this!
+        if not auth.has_access(self.request, Spoke, None, p.modify_settings):
+            return self.forbidden()
         instance = self.get_instance(config)
 
         klass = configuration_registry.get(config)
+        self.context['tabs'] = self.construct_tabs(klass.id)
         return klass().process(self, instance)
 
 

@@ -1,3 +1,5 @@
+import inspect
+
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.conf import settings
@@ -11,6 +13,7 @@ from wheelcms_axle.workflows.default import DefaultWorkflow
 
 from wheelcms_axle.models import type_registry
 from wheelcms_axle.templates import template_registry
+from wheelcms_axle import permissions as p, roles
 
 from .impexp import WheelSerializer
 from .actions import action
@@ -82,7 +85,29 @@ def indexfactory(spoke):
             return spoke.model.objects.filter(node__isnull=False)
     return WheelIndex
 
-from wheelcms_axle import permissions as p, roles
+class tab(object):
+    def __init__(self, permission=None, id=None, label=None):
+        self.permission = permission
+        self.id = id
+        self.label = label
+
+    def __call__(self, f):
+        def wrapped(self, *a, **b):
+            self.active_tab = wrapped.tab_id
+            res = f(self, *a, **b)
+            return res
+
+        name = f.func_name
+
+        if self.permission:
+            wrapped = action(self.permission)(wrapped)
+        else:
+            wrapped = action(wrapped)
+        wrapped.tab = True
+        wrapped.tab_id = self.id or name
+        wrapped.tab_label = self.label or wrapped.tab_id
+
+        return wrapped
 
 class Spoke(object):
     model = Content  ## is it smart to set this to Content? A nonsensible default..
@@ -107,7 +132,6 @@ class Spoke(object):
 
     basetabs = (
         dict(id="attributes", label="Attributes", action="edit"),
-        dict(id="auth", label="Roles/Perms", action="+auth"),
     )
     active_tab = "attributes"
 
@@ -156,7 +180,17 @@ class Spoke(object):
     def tabs(self):
         """ Provide a hook to modify the tabs depending on the spoke
             context """
-        return self.basetabs
+        decorated_tabs = []
+
+        for (name, m) in inspect.getmembers(self, inspect.ismethod):
+            #if name == "test_tab":
+            #    import pytest; pytest.set_trace()
+            if getattr(m, 'action', False) and getattr(m, 'tab', False):
+                id = getattr(m, 'tab_id', name)
+                label = getattr(m, 'tab_label', id)
+                decorated_tabs.append(dict(id=id, label=label, action="+"+name))
+
+        return self.basetabs + tuple(decorated_tabs)
 
     def assign_perms(self):
         """ invoked by a signal handler upon creation: Set initial
@@ -392,7 +426,7 @@ class Spoke(object):
 
     def context(self, handler, request, node):
         """ hook to add additional data to the context """
-        return {}
+        return {'spoke':self}
 
     def can_discuss(self):
         """ determine if content can be discussed. Either by explicit
@@ -402,7 +436,7 @@ class Spoke(object):
             return self.discussable
         return explicit
 
-    @action(p.change_auth_content)
+    @tab(p.change_auth_content, id="auth", label="Roles/Perms")
     def auth(self, handler, request, action):
         ##
         ## If post, handle/reset perm changes
@@ -418,7 +452,6 @@ class Spoke(object):
                 perm, role = assignment.split('/', 1)
                 RolePermission.assign(self.instance, Role(role),
                                       Permission(perm)).save()
-            
 
         ctx = {'spoke':self}
         self.active_tab = "auth"

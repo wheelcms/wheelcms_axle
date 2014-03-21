@@ -1,6 +1,21 @@
 from drole.types import Role as droleRole, Permission as drolePermission
 from drole.models import RolePermission
 
+class require(object):
+    def __init__(self, permission):
+        self.permission = permission
+
+    def __call__(self, f):
+        def wrapped(handler, *args, **kwargs):
+            request = getattr(handler, 'request')
+            if request:
+                user = request.user
+
+                return f(*args, **kwargs)
+            return handler.forbidden()
+        return wrapped
+
+
 def Permission(id, name="", description=""):
     return drolePermission.create(id, name, description)
 
@@ -52,7 +67,6 @@ def has_access(request, type, spoke, permission):
 
     ## Should there be a fallback to class permissions?
     classperm = type.permission_assignment.get(permission, ())
-
 
     if set(roles) & set(classperm):
         return True
