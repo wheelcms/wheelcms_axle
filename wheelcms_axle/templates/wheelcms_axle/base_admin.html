@@ -634,17 +634,17 @@
 </script>
 
 <script type="text/ng-template" id="PropsModal.html">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3>Selection properties</h3>
-      </div>
-      <div class="modal-body" id="detailsModalBody">
-      </div>
-      <div class="modal-footer">
-        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-        <button class="btn btn-info modal_change">Change selection</button>
-        <button class="btn btn-primary modal_select">Select</button>
-      </div>
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3>Selection properties</h3>
+  </div>
+  <div class="modal-body" id="detailsModalBody">
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">Close</button>
+    <button class="btn btn-info modal_change" ng-click="change()">Change selection</button>
+    <button class="btn btn-primary modal_select" ng-click="ok()">Select</button>
+  </div>
 </script> <!-- detailsModal -->
 
 

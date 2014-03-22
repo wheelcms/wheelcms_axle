@@ -807,6 +807,7 @@ class MainHandler(WheelRESTHandler):
         return self.redirect(self.instance.get_absolute_url() + 'list',
                              info="%d item(s) deleted" % count)
 
+    @json
     @applyrequest
     def handle_panel_selection_details(self, path, type, klass="", title="",
                                        target="", download=False,
@@ -867,6 +868,10 @@ class MainHandler(WheelRESTHandler):
                 forminitial['align'] = part
 
         class PropForm(forms.Form):
+            def __init__(self, *a, **b):
+                super(PropForm, self).__init__(*a, **b)
+                for (k, v) in self.fields.iteritems():
+                    v.widget.attrs.update({'ng-model': 'propsform.' + k})
             title = forms.CharField()
             if type == "link":
                 target = forms.ChoiceField(choices=TARGET_CHOICES,
@@ -883,8 +888,9 @@ class MainHandler(WheelRESTHandler):
 
         propform = PropForm(initial=forminitial)
 
-        return self.template("wheelcms_axle/popup_properties.html", spoke=spoke,
-                             instance=instance, mode=type, form=propform)
+        return dict(initialdata=forminitial,
+                    template=self.render_template("wheelcms_axle/popup_properties.html", spoke=spoke,
+                             instance=instance, mode=type, form=propform))
 
     @json
     @applyrequest

@@ -161,7 +161,17 @@ app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
             else {
                 console.log("X");
                 console.log(selected);
-                callback(selected); // more or less
+                options = {};
+                var args = options || {};
+                args.download = false;
+
+                // open link or image properties
+                //
+                //callback(selected, options); // more or less
+                // newselection is true if a selection has been made in the
+                // browser, false for existing selections that need update
+                var newselection = true;
+                $scope.open_props(selected, type, options, callback, newselection);
             }
         }, function () {
             // dismissed
@@ -187,19 +197,25 @@ app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
                 path: function() { return path; },
                 type: function() { return type; },
                 options: function() { return options; },
-                callback: function() { return callback; }
+                newselection: function() { return newselection; }
             }
         });
         modalInstance.result.then(function (selected) {
-
-        }, function () {
+            console.log("props selected");
+            console.log(selected);
+            if(callback) {
+                callback(selected.path, selected.props);
+            }
+        }, function (reason) {
+            // reason = change or cancel
             console.log("dismiss");
+            console.log(reason);
             // dismissed
         });
 
     };
 
-    $scope.open_browser("", "link", {}, function(res) { console.log(res); });
+    //$scope.open_browser("", "link", {}, function(res) { console.log("RESULT " + res); });
 });
 
 app.factory("PropsModal", function() {
@@ -208,12 +224,60 @@ app.factory("PropsModal", function() {
 app.factory("BrowseModal", function() {
 });
 
+/*
+ * Is newselection nodig? handler gebruiket het om default title in te stellen,
+ * wordt deze bij non-newselection niet overschreven?
+ *
+ * Is callback nodig? return details ipv. vanuit props callback aanroepen?
+*/
+
+
 app.controller('PropsCtrl',
-               ["$scope", "$modalInstance", "PropsModal", "path", "type", "options",
-               function($scope, $modalInstance, PropsModal, path, type, options) {
-    $scope.show = function(type, options, callback) {
-        console.log("Props Show");
+               ["$scope", "$modalInstance", "$compile", "$http", "PropsModal", "path", "type", "options", "newselection",
+               function($scope, $modalInstance, $compile, $http, PropsModal, path, type, options, newselection) {
+
+    console.log("Props", options);
+
+    $scope.propsform = options;
+
+    function init(type, options, callback) {
+        var params = angular.copy(options);
+        params.path = path;
+        params.type = type;
+        params.newselection = newselection;
+
+        $http.get($scope.urlbase + "panel_selection_details",
+                  {params: params}
+                  ).success(
+          function(data, status, headers, config) {
+              console.log(data);
+              var template = data.template;
+              var initial = data.initialdata;
+              $scope.propsform = initial;
+              // passed properties are always leading
+              angular.extend($scope.propsform, options);
+              var propsform = $("#detailsModalBody");
+              propsform.html($compile(template)($scope));
+          });
+    }
+
+    init(type, options);
+
+    $scope.cancel = function() {
+      $modalInstance.dismiss('cancel');
     };
+
+    $scope.change = function() {
+      $modalInstance.dismiss('change');
+    };
+
+
+    $scope.ok = function() {
+        console.log("OK props");
+        console.log($scope.propsform);
+        $modalInstance.close({path:path, props:$scope.propsform});
+    };
+
 }]);
 app.controller('UploadCtrl',
                ["$scope", "$modalInstance", "PropsModal", "path",
