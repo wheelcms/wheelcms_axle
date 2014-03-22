@@ -8,9 +8,9 @@
 
 {% block form_header %}{% endblock %}
 
-{% if spoke.tabs %}
+{% if tabs %}
 <ul class="nav nav-tabs">
-  {% for tab in spoke.tabs %}
+  {% for tab in tabs %}
   <li {% if tab.id == spoke.active_tab %}class="active"{% endif %}><a href="{{spoke.instance.get_absolute_url}}{{tab.action}}">{{tab.label}}</a></li>
   {% endfor %}
 </ul>
@@ -18,7 +18,7 @@
 
 
 {% block form_form %}
-<div id="content" class="tab-pane active">
+<div id="content" class="tab-pane active" ng-controller="EditCtrl">
   <form role="form" method="post" action="{{form_action|default:'.'}}" class="form-horizontal checksave"
     {% if form.is_multipart %}enctype="multipart/form-data"{%endif%}>
     {% csrf_token %}
@@ -27,42 +27,14 @@
     <input type="hidden" name="attach" value="1">
     {% endif %}
 
-    <div class="panel-group" id="edit-accordion">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h4 class="panel-title">
-            <a class="accordion-toggle"
-               data-toggle="collapse"
-               data-parent="#edit-accordion"
-               href="#collapsebase">
-               Content Properties
-            </a>
-          </h4>
-        </div>
-        <div id="collapsebase" class="panel-collapse collapse in">
-          <div class="accordion-inner">
+    <accordion close-others="true">
+      <accordion-group heading="Content Properties" is-open="!advanced_open">
             {% include "two.bootstrap/bootstrap-form.html" with fields=form.content_fields %}
-          </div>
-        </div>
-      </div>
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h4 class="panel-title">
-            <a class="accordion-toggle"
-               data-toggle="collapse"
-               data-parent="#edit-accordion"
-               href="#collapseadvanced">
-               Advanced Properties
-            </a>
-          </h4>
-        </div>
-        <div id="collapseadvanced" class="panel-collapse collapse">
-          <div class="accordion-inner">
+      </accordion-group>
+      <accordion-group heading="Advanced Properties" is-open="advanced_open">
              {% include "two.bootstrap/bootstrap-form.html" with fields=form.advanced_fields %}
-          </div>
-        </div>
-      </div>
-    </div>
+      </accordion-group>
+    </accordion>
     <div class="panel panel-default">
       <div class="panel-body">
         {% block form_actions %}

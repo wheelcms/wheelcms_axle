@@ -1,12 +1,20 @@
 from wheelcms_axle.node import Node
 from wheelcms_axle.content import type_registry, TypeRegistry
 from wheelcms_axle.templates import TemplateRegistry, template_registry
+from wheelcms_axle.registries.toolbar import (ToolbarActionRegistry,
+                             toolbar_registry as original_toolbar_registry)
 
 import pytest
 
 @pytest.fixture()
 def root():
     return Node.root()
+
+@pytest.fixture()
+def toolbar_registry():
+    registry = ToolbarActionRegistry()
+    original_toolbar_registry.set(registry)
+    return original_toolbar_registry
 
 @pytest.fixture()
 def localtyperegistry(request):
@@ -54,11 +62,13 @@ def multilang_ENNLFR(request):
     request.addfinalizer(fin)
 
 from django.utils import translation
+from wheelcms_axle import locale
 
 @pytest.fixture()
 def active_language(request):
     old_lang = translation.get_language()
     def fin():
         translation.activate(old_lang)
+        locale.activate_content_language(None)
     request.addfinalizer(fin)
 

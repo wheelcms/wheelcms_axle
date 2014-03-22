@@ -60,6 +60,7 @@ class Toolbar(object):
             ch = type(self.instance.content()).allowed_spokes()
             primary = type.primary
 
+        
         return [dict(name=c.name(),
                      title=c.title,
                      icon_path=c.full_type_icon_path())
@@ -103,7 +104,7 @@ class Toolbar(object):
         ## do not show when creating or updating
         if self.status in ("update", "create"):
             return False
-        active_language = get_active_language(self.request)
+        active_language = get_active_language()
 
         ## there's an instance, it has (primary) content but not in the
         ## active language
@@ -183,7 +184,7 @@ class Toolbar(object):
         translated = []
         untranslated = []
 
-        active_language = get_active_language(self.request)
+        active_language = get_active_language()
 
         for (lang, langtitle) in translate.languages():
             option = dict(id=lang, language=langtitle)
@@ -212,3 +213,52 @@ class Toolbar(object):
                     translated=translated,
                     untranslated=untranslated)
 
+    def button_actions(self):
+        ## order?
+        return [a.with_toolbar(self) for a in toolbar_registry.values()
+                if a.type == "button"]
+
+from registries.toolbar import toolbar_registry
+import copy
+
+class ToolbarAction(object):
+    type = "generic"
+
+    def __init__(self, id, toolbar=None):
+        self.id = id
+        self.toolbar = toolbar
+
+    def name(self):
+        return 'unknown'
+
+    def show(self):
+        return self.toolbar and self.toolbar.instance
+
+    def url(self):
+        pass
+
+    def with_toolbar(self, toolbar):
+        a = copy.copy(self)
+        a.toolbar = toolbar
+        return a
+
+class ButtonAction(ToolbarAction):
+    type = "button"
+
+    def icon(self):
+        return None
+
+class PreviewAction(ButtonAction):
+    def icon(self):
+        return "eye-open"
+
+    def attrs(self):
+        return dict(target="_blank")
+
+    def name(self):
+        return 'Preview'
+
+    def url(self):
+        if self.show():
+            return self.toolbar.instance.get_absolute_url() + \
+                   "?select_layer=visitor"

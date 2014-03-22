@@ -1,7 +1,11 @@
 # *-* encoding: utf-8
+from django.utils import translation
+
 from wheelcms_axle.main import MainHandler
 from wheelcms_axle.models import Node
 from wheelcms_axle.tests.models import Type1, Type1Type
+from wheelcms_axle import locale
+
 
 from two.ol.base import NotFound, Redirect, handler
 import pytest
@@ -37,28 +41,26 @@ def superuser_request(path, method="GET", **data):
     request.user = superuser
     return request
 
+@pytest.mark.usefixtures("active_language")
 class TestMainHandler(object):
-    def test_coerce_instance(self, client):
+    def test_coerce_instance(self, client, root):
         """ coerce a dict holding an instance path """
-        root = Node.root()
         a = root.add("a")
         res = MainHandler.coerce(dict(instance="a"))
         assert 'instance' in res
         assert res['instance'] == a
         assert 'parent' not in res
 
-    def test_coerce_parent(self, client):
+    def test_coerce_parent(self, client, root):
         """ coerce a dict holding an parent path """
-        root = Node.root()
         a = root.add("a")
         res = MainHandler.coerce(dict(parent="a"))
         assert 'parent' in res
         assert res['parent'] == a
         assert 'instance' not in res
 
-    def test_coerce_instance_parent(self, client):
+    def test_coerce_instance_parent(self, client, root):
         """ coerce a dict holding both instance and parent """
-        root = Node.root()
         a = root.add("a")
         b = a.add("b")
         res = MainHandler.coerce(dict(instance="b", parent="a"))
@@ -76,9 +78,8 @@ class TestMainHandler(object):
         pytest.raises(NotFound, MainHandler.coerce, dict(parent="a"))
 
 
-    def test_create_get_root(self, client):
+    def test_create_get_root(self, client, root):
         """ test create on root - get """
-        root = Node.root()
         Type1(node=root).save()
         request = superuser_request("/", type=Type1.get_name())
         handler = MainHandlerTestable(request=request, instance=root)
@@ -86,9 +87,8 @@ class TestMainHandler(object):
         assert create['path'] == "wheelcms_axle/create.html"
         assert 'form' in create['context']
 
-    def test_update_root(self, client):
+    def test_update_root(self, client, root):
         """ test /edit """
-        root = Node.root()
         Type1(node=root).save()
         request = superuser_request("/edit", method="POST", type=Type1.get_name())
         instance = MainHandlerTestable.coerce(dict(instance=""))
@@ -97,9 +97,8 @@ class TestMainHandler(object):
         assert update['path'] == "wheelcms_axle/update.html"
         assert 'form' in update['context']
 
-    def test_create_attach_get(self, client):
+    def test_create_attach_get(self, client, root):
         """ get the form for attaching content """
-        root = Node.root()
         Type1(node=root).save()
         request = superuser_request("/", type=Type1.get_name())
         handler = MainHandlerTestable(request=request, instance=root)
@@ -107,23 +106,20 @@ class TestMainHandler(object):
         assert create['path'] == "wheelcms_axle/create.html"
         assert 'form' in create['context']
 
-    def test_create_attach_post(self, client):
+    def test_create_attach_post(self, client, root):
         """ post the form for attaching content """
         request = superuser_request("/create", method="POST",
                                       title="Test", language="en")
-        root = Node.root()
         handler = MainHandler(request=request, post=True,
                               instance=dict(instance=root))
         pytest.raises(Redirect, handler.create, type=Type1.get_name(), attach=True)
 
-        root = Node.root()
         # pytest.set_trace()
         assert root.content().title == "Test"
 
-    def test_attached_form(self, client):
+    def test_attached_form(self, client, root):
         """ The form when attaching should not contain a slug field since it
             will be attached to an existing node """
-        root = Node.root()
         Type1(node=root).save()
         request = superuser_request("/")
         handler = MainHandlerTestable(request=request, instance=root)
@@ -132,12 +128,11 @@ class TestMainHandler(object):
         form = create['context']['form']
         assert 'slug' not in form.fields
 
-    def test_create_post(self, client):
+    def test_create_post(self, client, root):
         request = superuser_request("/create", method="POST",
                                       title="Test",
                                       slug="test",
                                       language="en")
-        root = Node.root()
         handler = MainHandler(request=request, post=True,
                               instance=dict(instance=root))
         pytest.raises(Redirect, handler.create, type=Type1.get_name())
@@ -145,8 +140,7 @@ class TestMainHandler(object):
         node = Node.get("/test")
         assert node.content().title == "Test"
 
-    def test_update_post(self, client):
-        root = Node.root()
+    def test_update_post(self, client, root):
         Type1(node=root, title="Hello").save()
         request = superuser_request("/edit", method="POST",
                                       title="Test",
@@ -155,13 +149,11 @@ class TestMainHandler(object):
         handler = MainHandler(request=request, post=True, instance=root)
         pytest.raises(Redirect, handler.update)
 
-        root = Node.root()
         assert root.content().title == "Test"
 
-    def test_create_translation_root_get(self, client):
+    def test_create_translation_root_get(self, client, root):
         """ test case where root has content but current language
             is not translated """
-        root = Node.root()
         Type1(node=root, title="Hello", language="en").save()
         request = superuser_request("/edit", method="GET",
                                     language="nl")
@@ -170,15 +162,14 @@ class TestMainHandler(object):
 
         assert 'slug' not in handler.context['form'].fields
 
-    def test_create_translation_root_post(self, client):
+    def test_create_translation_root_post(self, client, root):
         """ test case where root has content but current language
             is not translated """
-        root = Node.root()
         Type1(node=root, title="Hello", language="en").save()
         request = superuser_request("/edit", method="POST",
                                     title="hello",
                                     language="nl")
-        request.session['admin_language'] = 'nl'
+        locale.activate_content_language('nl')
 
         handler = MainHandler(request=request, post=True, instance=root)
         pytest.raises(Redirect, handler.update)
@@ -187,10 +178,9 @@ class TestMainHandler(object):
         assert root.content(language='en')
         assert root.content(language='nl') != root.content(language='en')
 
-    def test_create_translation_content_get(self, client):
+    def test_create_translation_content_get(self, client, root):
         """ test case where root has content but current language
             is not translated """
-        root = Node.root()
         node = root.add("content")
         Type1(node=node, title="Hello", language="en").save()
         request = superuser_request("/edit", method="GET",
@@ -200,18 +190,16 @@ class TestMainHandler(object):
 
         assert 'slug' in handler.context['form'].fields
 
-    def test_create_translation_content_post(self, client):
+    def test_create_translation_content_post(self, client, root):
         """ test case where root has content but current language
             is not translated """
-        root = Node.root()
         node = root.add("content")
         Type1(node=node, title="Hello", language="en").save()
         request = superuser_request("/edit", method="POST",
                                     title="hello",
                                     language="nl")
-        request.session['admin_language'] = 'nl'
+        locale.activate_content_language('nl')
 
-        root = Node.root()
         handler = MainHandler(request=request, post=True, instance=node)
         pytest.raises(Redirect, handler.update)
 
@@ -234,13 +222,12 @@ class TestMainHandler(object):
         reserved = MainHandlerTestable.reserved()
         assert 'decorated' in reserved
 
-    def test_create_post_unicode(self, client):
+    def test_create_post_unicode(self, client, root):
         """ issue #693 - unicode enoding issue """
         request = superuser_request("/create", method="POST",
                            title=u"Testing «ταБЬℓσ»: 1<2 & 4+1>3, now 20% off!",
                            slug="test",
                            language="en")
-        root = Node.root()
         handler = MainHandler(request=request, post=True,
                               instance=dict(instance=root))
         pytest.raises(Redirect, handler.create, type=Type1.get_name())
@@ -248,23 +235,19 @@ class TestMainHandler(object):
         node = Node.get("/test")
         assert node.content().title == u"Testing «ταБЬℓσ»: 1<2 & 4+1>3, now 20% off!"
 
-    def test_update_post_unicode(self, client):
+    def test_update_post_unicode(self, client, root):
         """ update content with unicode with new unicode title """
-        root = Node.root()
         Type1(node=root, title=u"Testing «ταБЬℓσ»: 1<2 & 4+1>3, now 20% off!").save()
         request = superuser_request("/edit", method="POST",
                                       title="TTesting «ταБЬℓσ»: 1<2 & 4+1>3, now 20% off!",
                                       slug="",
                                       language="en")
-        root = Node.root()
         handler = MainHandler(request=request, post=True, instance=root)
         pytest.raises(Redirect, handler.update)
 
-        root = Node.root()
         assert root.content().title == u"TTesting «ταБЬℓσ»: 1<2 & 4+1>3, now 20% off!"
 
-    def test_change_slug_inuse(self, client):
-        root = Node.root()
+    def test_change_slug_inuse(self, client, root):
         Type1(node=root.add("inuse"), title="InUse").save()
         other = Type1(node=root.add("other"), title="Other").save()
         request = superuser_request("/other/update", method="POST",
@@ -278,8 +261,7 @@ class TestMainHandler(object):
         assert not form.is_valid()
         assert 'slug' in form.errors
 
-    def test_change_slug_available(self, client):
-        root = Node.root()
+    def test_change_slug_available(self, client, root):
         Type1(node=root.add("inuse"), title="InUse").save()
         other = Type1(node=root.add("other"), title="Other").save()
         request = superuser_request("/other/update", method="POST",
@@ -318,24 +300,21 @@ class TestMainHandler(object):
 class TestBreadcrumb(object):
     """ test breadcrumb generation by handler """
 
-    def test_unattached_root(self, client):
-        root = Node.root()
+    def test_unattached_root(self, client, root):
         request = create_request("GET", "/edit")
         handler = MainHandlerTestable(request=request, instance=root)
         assert handler.breadcrumb() == [("Unattached rootnode", '')]
 
-    def test_attached_root(self, client):
+    def test_attached_root(self, client, root):
         """ A root node with content attached. Its name should not be
             its title but 'Home' """
-        root = Node.root()
         Type1(node=root, title="The rootnode of this site").save()
         request = create_request("GET", "/")
         handler = MainHandlerTestable(request=request, instance=root)
         assert handler.breadcrumb() == [("Home", '')]
 
-    def test_sub(self, client):
+    def test_sub(self, client, root):
         """ a child with content under the root """
-        root = Node.root()
         Type1(node=root, title="Root").save()
         child = root.add("child")
         Type1(node=child, title="Child").save()
@@ -349,9 +328,8 @@ class TestBreadcrumb(object):
         handler = MainHandlerTestable(request=request, instance=root)
         assert handler.breadcrumb() == [("Home", '')]
 
-    def test_subsub(self, client):
+    def test_subsub(self, client, root):
         """ a child with content under the root """
-        root = Node.root()
         Type1(node=root, title="Root").save()
         child = root.add("child")
         Type1(node=child, title="Child").save()
@@ -368,9 +346,8 @@ class TestBreadcrumb(object):
         handler = MainHandlerTestable(request=request, instance=root)
         assert handler.breadcrumb() == [("Home", '')]
 
-    def test_subsub_unattached(self, client):
+    def test_subsub_unattached(self, client, root):
         """ a child with content under the root, lowest child unattached """
-        root = Node.root()
         Type1(node=root, title="Root").save()
         child = root.add("child")
         Type1(node=child, title="Child").save()
@@ -382,10 +359,9 @@ class TestBreadcrumb(object):
                                         ("Child", child.get_absolute_url()),
                                         ("Unattached node /child/child2", "")]
 
-    def test_parent_instance(self, client):
+    def test_parent_instance(self, client, root):
         """ handler initialized with a parent but no instance. Should
             mean edit mode, but for now assume custom breadcrumb context """
-        root = Node.root()
         Type1(node=root, title="Root").save()
         request = create_request("GET", "/")
         handler = MainHandlerTestable(request=request, kw=dict(parent=root))
@@ -393,9 +369,8 @@ class TestBreadcrumb(object):
         assert handler.breadcrumb() == []
 
 
-    def test_subsub_operation(self, client):
+    def test_subsub_operation(self, client, root):
         """ a child with content under the root """
-        root = Node.root()
         Type1(node=root, title="Root").save()
         child = root.add("child")
         Type1(node=child, title="Child").save()
@@ -409,9 +384,8 @@ class TestBreadcrumb(object):
             ("Child", child.get_absolute_url()),
             ("Child2", child2.get_absolute_url()), ("Edit", "")]
 
-    def test_create_get(self, client):
+    def test_create_get(self, client, root):
         """ create should override and add Create operation crumb """
-        root = Node.root()
         Type1(node=root, title="Root").save()
         child = root.add("child")
         Type1(node=child, title="Child").save()
@@ -424,9 +398,8 @@ class TestBreadcrumb(object):
                                          ('Child', child.get_absolute_url()),
                                          ('Create "%s"' % Type1Type.title, '')]
 
-    def test_update(self, client):
+    def test_update(self, client, root):
         """ update should override and add Update operation crumb """
-        root = Node.root()
         Type1(node=root, title="Root").save()
         child = root.add("child")
         Type1(node=child, title="Child").save()
@@ -444,9 +417,8 @@ class TestBreadcrumb(object):
 
 class TestActions(object):
     """ test cut/copy/paste/delete, reorder and other actions """
-    def test_cut_action(self, client):
+    def test_cut_action(self, client, root):
         """ cut should clear the copy clipboard and add to the cut clipboard """
-        root = Node.root()
         t1 = Type1(node=root.add("t1"), title="t1").save()
         t2 = Type1(node=root.add("t2"), title="t2").save()
 
@@ -467,9 +439,8 @@ class TestActions(object):
         assert set(request.session['clipboard_cut']) == \
                set((t1.node.tree_path, t2.node.tree_path))
 
-    def test_copy_action(self, client):
+    def test_copy_action(self, client, root):
         """ copy should clear the cut clipboard and add to the copy clipboard """
-        root = Node.root()
         t1 = Type1(node=root.add("t1"), title="t1").save()
         t2 = Type1(node=root.add("t2"), title="t2").save()
 
@@ -490,10 +461,9 @@ class TestActions(object):
         assert set(request.session['clipboard_copy']) == \
                set((t1.node.tree_path, t2.node.tree_path))
 
-    def test_paste_copy_action(self, client):
+    def test_paste_copy_action(self, client, root):
         """ paste after copy means duplicating content, can be in same
             node """
-        root = Node.root()
         t1 = Type1(node=root.add("t1"), title="t1").save()
         t2 = Type1(node=root.add("t2"), title="t2").save()
 
@@ -510,10 +480,9 @@ class TestActions(object):
         assert len(root.children()) == 3
         assert list(root.children())[-1].content().title == "t1"
 
-    def test_paste_cut_action(self, client):
+    def test_paste_cut_action(self, client, root):
         """ paste after cut moves content, must be in different node to have
             any effect """
-        root = Node.root()
         target = root.add("target")
 
         t1 = Type1(node=root.add("t1"), title="t1").save()
@@ -536,8 +505,7 @@ class TestActions(object):
         assert len(root.children()) == 1
         assert root.child('target')
 
-    def test_delete_action(self, client):
-        root = Node.root()
+    def test_delete_action(self, client, root):
 
         t1 = Type1(node=root.add("t1"), title="t1").save()
         t2 = Type1(node=root.add("t2"), title="t2").save()
@@ -558,9 +526,8 @@ class TestActions(object):
         assert Type1.objects.all().count() == 0
 
 
-    def test_reorder_before(self, client):
+    def test_reorder_before(self, client, root):
         """ move a node to the top """
-        root = Node.root()
         n1 = root.add("n1")
         n2 = root.add("n2")
         n3 = root.add("n3")
@@ -582,9 +549,8 @@ class TestActions(object):
         assert n3.position < n1.position
         assert n1.position < n2.position
 
-    def test_reorder_after(self, client):
+    def test_reorder_after(self, client, root):
         """ move a node to the bottom """
-        root = Node.root()
         n1 = root.add("n1")
         n2 = root.add("n2")
         n3 = root.add("n3")
@@ -610,14 +576,12 @@ from .fixtures import multilang_ENNL, active_language
 
 @pytest.mark.usefixtures("multilang_ENNL", "active_language")
 class TestTranslations(object):
-    def test_translated(self, client):
+    def test_translated(self, client, root):
         """ /a can point to either dutch or english content on different
             nodes """
-        root = Node.root()
         n1 = root.add(langslugs=dict(nl="a", en="b"))
         n2 = root.add(langslugs=dict(en="a", nl="b"))
 
-        from django.utils import translation
 
         translation.activate('nl')
         res = MainHandler.coerce(dict(instance="a"))
@@ -627,17 +591,16 @@ class TestTranslations(object):
         res = MainHandler.coerce(dict(instance="a"))
         assert res['instance'] == n2
 
-    def test_create_translation_get(self, client):
+    def test_create_translation_get(self, client, root):
         """
             Creating a translation on existing content is actually
             an update operation (it's handled by the update() method.
             Test the GET of the translation form
         """
-        root = Node.root()
         Type1(node=root, language="en").save()
         request = superuser_request("/edit", method="GET",
                                     type=Type1.get_name())
-        request.session = {'admin_language':'nl'}
+        translation.activate('nl')
 
         instance = MainHandlerTestable.coerce(dict(instance=""))
         handler = MainHandlerTestable(request=request, instance=instance)
@@ -648,20 +611,19 @@ class TestTranslations(object):
 
         assert f.initial['language'] == 'nl'
 
-    def test_create_translation_post(self, client):
+    def test_create_translation_post(self, client, root):
         """
             Creating a translation on existing content is actually
             an update operation (it's handled by the update() method.
             Test the POST of the form, the actual creation of the
             translation
         """
-        root = Node.root()
         Type1(node=root, language="en").save()
         request = superuser_request("/edit", method="POST",
                                     type=Type1.get_name(),
                                     title="Translation NL",
                                     language="nl")
-        request.session = {'admin_language':'nl'}
+        translation.activate('nl')
 
         instance = MainHandlerTestable.coerce(dict(instance=""))
         handler = MainHandlerTestable(request=request, instance=instance,
@@ -688,13 +650,12 @@ class TestImageCreateUpdate(object):
     def teardown(self):
         type_registry.set(self.old_registry)
         
-    def test_create_image(self, client):
+    def test_create_image(self, client, root):
         request = superuser_request("/create", method="POST",
                                       title="Test",
                                       slug="test",
                                       language="en",
                                       storage=filedata)
-        root = Node.root()
         handler = MainHandler(request=request, post=True,
                               instance=dict(instance=root))
         pytest.raises(Redirect, handler.create, type=TestImage.get_name())
@@ -703,8 +664,7 @@ class TestImageCreateUpdate(object):
         filedata.seek(0)
         assert node.content().storage.read() == filedata.read()
 
-    def test_update_image(self, client):
-        root = Node.root()
+    def test_update_image(self, client, root):
         node = root.add("test")
         TestImage(node=node, title="image", storage=filedata).save()
         request = superuser_request("/test/edit", method="POST",

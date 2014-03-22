@@ -37,14 +37,20 @@
 
 {% block extra_head %}
 
-  {{config.head|safe}}
 
+  <script src="{% static "js/jquery-ui-1.9.2.custom.min.js" %}"></script>
+  <script src="{% static "js/jquery.cookie.1.3.1.js" %}"></script>
+  <script src="{% static "js/angular-1.2.14.js" %}"></script>
+  {{config.head|safe}}
   <script type="text/javascript" encoding="utf-8">
+    /*
+     * XXX deprecate?
+     * Doesn't work with angularjs due to double registration. Do we still need this?
     delayed_confs = [];
 
     function tinyMCE_init_delayed(conf) {
         delayed_confs.push(conf);
-    }
+    }*/
   {% granules "head_javascript" %}
   </script>
 {% endblock %} {# extra_head #}
@@ -121,9 +127,6 @@
 {% endblock %} {# rightnav #}
 
 {% block base_javascript %}
-  <script src="{% static "js/jquery-ui-1.9.2.custom.min.js" %}"></script>
-  <script src="{% static "js/jquery.cookie.1.3.1.js" %}"></script>
-  <script src="{% static "js/angular-1.2.0-rc2.js" %}"></script>
   <script src="{% static "js/wheel.js" %}"></script>
   <script type="text/javascript" src="{% static "tiny_mce/tiny_mce.js" %}"></script>
   {% if config.analytics.strip %}
@@ -168,9 +171,13 @@
   </script>
   <script type="text/javascript">
     $(document).ready(function () {
+        /*
+         * XXX Deprecate. See above
         for(i=0; i < delayed_confs.length; i++) {
+            console.log("init delayed");
             tinyMCE.init(delayed_confs[i]);
         }
+        */
     });
   </script>
   {% granules "javascript" %}

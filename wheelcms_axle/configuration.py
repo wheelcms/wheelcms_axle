@@ -12,6 +12,27 @@ from wheelcms_axle.base import WheelHandlerMixin
 from .themes import theme_registry
 from .registries.configuration import configuration_registry
 
+class BaseConfigurationHandler(object):
+    id = ""
+    label = ""
+    model = None
+    form = None
+
+    def view(self, handler, instance):
+        handler.context['tabs'] = handler.construct_tabs(self.id)
+        ## set redirect_to
+        return handler.template("wheelcms_axle/configuration.html")
+
+    def process(self, handler, instance):
+        handler.context['form'] = form = \
+                 self.form(handler.request.POST, instance=instance)
+        if form.is_valid():
+            form.save()
+            ## include hash, open tab
+            return handler.redirect(reverse('wheel_config'), config=self.id, success="Changes saved")
+        handler.context['tabs'] = handler.construct_tabs(self.id)
+        return handler.template("wheelcms_axle/configuration.html")
+
 class ConfigurationForm(forms.ModelForm):
     class Meta:
         model = Configuration
@@ -30,58 +51,59 @@ class ConfigurationHandler(FormHandler, WheelHandlerMixin):
 
         ## Sort by label, but default (key="") always goes first
         configs = configuration_registry.copy()
-        default = [("", configs.pop(""))]
+        default = configs.pop("")
 
-        configs = default + sorted(configs.iteritems(), key=operator.itemgetter(1))
-        for (related, (label, model, formclass)) in configs:
+        
+        for section in [default] + sorted(configs.values(), key=operator.attrgetter("label")):
             instance = None
             form = None
             selected = False
 
-            if related == config:
-                if related:
+            if section.id == config:
+                if section.id:
                     try:
-                        instance = getattr(baseconf, related).get()
-                    except model.DoesNotExist:
+                        instance = getattr(baseconf, section.id).get()
+                    except section.model.DoesNotExist:
                         pass
                 else:
                     instance = baseconf
-                form=formclass(instance=instance)
+                form=section.form(instance=instance)
                 selected = True
-            tabs.append(dict(label=label,
-                             related=related,
+            tabs.append(dict(label=section.label,
+                             related=section.id,
                              form=form,
                              selected=selected))
+
         return tabs
+
+    def get_instance(self, config):
+        instance = Configuration.config()
+        klass = configuration_registry.get(config)
+
+        if config:
+            try:
+                instance = getattr(instance, config).get()
+            except klass.model.DoesNotExist:
+                instance = klass.model(main=instance)
+                instance.save()
+        return instance
 
     @applyrequest
     def index(self, config=""):
         if not self.hasaccess():
             return self.forbidden()
 
-        self.context['tabs'] = self.construct_tabs(config)
-        ## set redirect_to
-        return self.template("wheelcms_axle/configuration.html")
+        instance = self.get_instance(config)
+        klass = configuration_registry.get(config)
+        return klass().view(self, instance)
+
 
     @applyrequest
     def process(self, config=""):
-        instance = Configuration.config()
-        (label, model, formclass) = configuration_registry.get(config)
+        instance = self.get_instance(config)
 
-        if config:
-            try:
-                instance = getattr(instance, config).get()
-            except model.DoesNotExist:
-                instance = model(main=instance)
-                instance.save()
+        klass = configuration_registry.get(config)
+        return klass().process(self, instance)
 
-        self.context['form'] = form = \
-                 formclass(self.request.POST, instance=instance)
-        if form.is_valid():
-            form.save()
-            ## include hash, open tab
-            return self.redirect(reverse('wheel_config'), config=config, success="Changes saved")
-        self.context['tabs'] = self.construct_tabs(config)
-        return self.template("wheelcms_axle/configuration.html")
 
 configuration_registry.register("", "Default", Configuration, ConfigurationForm)

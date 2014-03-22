@@ -8,8 +8,7 @@ register = template.Library()
 @register.inclusion_tag('wheelcms_axle/topnav.html', takes_context=True)
 def topnav(context):
     node = context.get('instance')
-    request = context.get('request')
-    language = get_active_language(request)
+    language = get_active_language()
 
     nav = []
 

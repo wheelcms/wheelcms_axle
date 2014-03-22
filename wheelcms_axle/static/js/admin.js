@@ -27,11 +27,11 @@ app.config(['$httpProvider', function($httpProvider) {
       {
         var query = '';
         var name, value, fullSubName, subName, subValue, innerObj, i;
-        
+
         for(name in obj)
         {
           value = obj[name];
-          
+
           if(value instanceof Array)
           {
             for(i=0; i<value.length; ++i)
@@ -67,6 +67,13 @@ app.config(['$httpProvider', function($httpProvider) {
     }];
   }
 ]);
+
+app.config(function($locationProvider) {
+    // required so we can intercept the #hash
+    // http://stackoverflow.com/a/20788246/320057
+    $locationProvider.html5Mode(true).hashPrefix('!');
+});
+
 /* csrf support */
 /*app.run(function ($http, $cookies) {
     $http.defaults.headers.post['X-CSRFToken'] = $cookies['csrftoken'];
@@ -350,4 +357,8 @@ app.controller('BrowseCtrl',
       $modalInstance.dismiss('cancel');
     };
 }]);
+
+app.controller('EditCtrl', function($rootScope, $scope, $location) {
+    $scope.advanced_open = $location.hash() == "collapseadvanced";
+});
 

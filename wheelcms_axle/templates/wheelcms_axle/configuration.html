@@ -35,21 +35,25 @@
   </ul>
   <div class="tab-content">
     {% for t in tabs %}
-    <div class="tab-pane {% if t.selected %}active{% endif %}">
-      {% if t.form %}
-      <form method="post" action="." class="form-horizontal checksave"
-        {% if form.is_multipart %}enctype="multipart/form-data"{%endif%}>
-        <input type="hidden" name="config" value="{{t.related}}">
-        {% csrf_token %}
-        {% include "two.bootstrap/bootstrap-form.html" with form=t.form %}
-        <div class="form-group">
-          <div class="col-lg-12">
-            <input class="btn btn-primary canleave" type="submit" value="{% trans "form_save" %}">
-          </div>
+      {% if t.selected %}
+        <div class="tab-pane {% if t.selected %}active{% endif %}">
+          {% block config_form %}
+            {% if t.form %}
+            <form method="post" action="." class="form-horizontal checksave"
+              {% if form.is_multipart %}enctype="multipart/form-data"{%endif%}>
+              <input type="hidden" name="config" value="{{t.related}}">
+              {% csrf_token %}
+              {% include "two.bootstrap/bootstrap-form.html" with form=t.form %}
+              <div class="form-group">
+                <div class="col-lg-12">
+                  <input class="btn btn-primary canleave" type="submit" value="{% trans "form_save" %}">
+                </div>
+              </div>
+            </form>
+            {% endif %}
+          {% endblock %}
         </div>
-      </form>
       {% endif %}
-    </div>
     {% endfor %}
   </div>
 </ul>

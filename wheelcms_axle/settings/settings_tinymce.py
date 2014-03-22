@@ -24,7 +24,7 @@ TINYMCE_DEFAULT_CONFIG = {
     'width':'100%',
     'height':400,
     'theme_advanced_buttons1' : "undo,redo,|,styleselect,formatselect,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,bullist,numlist,|,outdent,indent,|,sub,sup,|,charmap",
-    'theme_advanced_buttons2' : "link,unlink,anchor,image,cleanup,code,hr,removeformat,visualaid,|,tablecontrols,|,pastetext,pasteword,selectall",
+    'theme_advanced_buttons2' : "blockquote,link,unlink,anchor,image,cleanup,code,hr,removeformat,visualaid,|,tablecontrols,|,pastetext,pasteword,selectall",
     'paste_auto_cleanup_on_paste' : True
 
 }

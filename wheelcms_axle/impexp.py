@@ -80,7 +80,7 @@ class WheelSerializer(object):
         username = tree.text
         if not username:
             return None
-        return User.objects.get(username=username)
+        return User.objects.get(username=username.strip())
 
     def serialize_extra_tags(self, field, o):
         tags = list(o.tags.values_list("name", flat=True))
@@ -165,7 +165,12 @@ class WheelSerializer(object):
             ##elif field.rel and isinstance(field.rel, models.ManyToOneRel):
             ##    data[field.attname] = self._handle_fk_field_node(field_node, field)
             else:
-                value = field.to_python(field_node.text)
+                ## whitespace for xml formatting may have been added, which
+                ## breaks validation for certain types (e.g. DateTime).
+                text = field_node.text
+                if text:
+                    text = text.strip()
+                value = field.to_python(text)
                 ##
                 ## In stead of setting a null value on a field that doesn't
                 ## accept it, simply skip the field and let the default handle
@@ -242,8 +247,9 @@ class Exporter(object):
         defaultconfig = Configuration.config()
 
         
-        for (related, (label, model, formclass)) in \
-            configuration_registry.iteritems():
+        for klass in configuration_registry.values():
+            related = klass.id
+            model = klass.model
 
             configxml = SubElement(root, "config")
             configxml.attrib["set"] = related
@@ -286,7 +292,7 @@ class Importer(object):
             language = None
             for field in fields.findall("field"):
                 if field.attrib.get('name') == 'language':
-                    language = field.text
+                    language = field.text.strip()
 
             s, cdelays = spoke.serializer(self.basenode, update_lm=self.update_lm
                                         ).deserialize(spoke, fields)
@@ -345,11 +351,10 @@ class Importer(object):
                 c = configuration_registry.get(related)
                 if not c:
                     continue
-                (label, model, formclass) = c
                 try:
                     config = getattr(defaultconfig, related).get()
-                except model.DoesNotExist:
-                    config = model(main=defaultconfig)
+                except c.model.DoesNotExist:
+                    config = c.model(main=defaultconfig)
             else:
                 config = defaultconfig
 

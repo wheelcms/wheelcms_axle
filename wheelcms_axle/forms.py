@@ -10,14 +10,29 @@ from wheelcms_axle.node import Node
 
 from wheelcms_axle.models import type_registry, Configuration
 from wheelcms_axle.templates import template_registry
-from wheelcms_axle.stopwords import stopwords
 
 from wheelcms_axle import translate
+from wheelcms_axle.utils import generate_slug
 
 from tinymce.widgets import TinyMCE as BaseTinyMCE
 
 from taggit.utils import parse_tags
 from django.utils.safestring import mark_safe
+
+class ParentField(forms.Field):
+    def __init__(self, parenttype=None, *args, **kw):
+        super(ParentField, self).__init__(*args, **kw)
+        self.parenttype = parenttype
+        self.required = False
+        self.widget = forms.HiddenInput()
+        self.parent = None
+
+    def clean(self, v):
+        if self.parent:
+            if self.parenttype is None \
+               or isinstance(self.parent.content(), self.parenttype):
+                return self.parent.content()
+        raise forms.ValidationError("No parent set")
 
 class TinyMCE(BaseTinyMCE):
     def render(self, name, value, attrs=None):
@@ -25,7 +40,8 @@ class TinyMCE(BaseTinyMCE):
         ## be a problem when the theme changes.
         self.mce_attrs['content_css'] = self.theme_css()
         widget = super(TinyMCE, self).render(name, value, attrs)
-        widget = widget.replace("tinyMCE.init(", "tinyMCE_init_delayed(")
+        # XXX Disabled. Breaks with angularjs inside <accordion>
+        # widget = widget.replace("tinyMCE.init(", "tinyMCE_init_delayed(")
         return mark_safe(widget)
 
     def theme_css(self):
@@ -115,6 +131,11 @@ class BaseForm(forms.ModelForm):
         self.attach = attach
         self.reserved = reserved
         self.advanced_fields = self.initial_advanced_fields
+
+        ## Pass parent to ParentFields
+        for field in self.fields.values():
+            if isinstance(field, ParentField):
+                field.parent = parent
 
         if attach:
             self.fields.pop('slug')
@@ -217,21 +238,16 @@ class BaseForm(forms.ModelForm):
 
         language = self.data.get('language', settings.FALLBACK)
 
-        ## XXX move the whole slug generation / stopwords stuff to separate method
-        title = self.cleaned_data.get('title', '').lower()
-        title_no_sw = " ".join(x for x in title.split() if x not in set(stopwords.get(language, [])))
-
         parent_path = self.parent.get_path(language=language)
 
         if not slug:
-            slug = re.sub("[^%s]+" % Node.ALLOWED_CHARS, "-",
-                          title_no_sw,
-                          )[:Node.MAX_PATHLEN].strip("-")
-            slug = re.sub("-+", "-", slug)
+            title = self.cleaned_data.get('title', '')
+            slug = generate_slug(title, language=language,
+                                 max_length=Node.MAX_PATHLEN,
+                                 allowed=Node.ALLOWED_CHARS,
+                                 default="node")
 
-            ## slug may be empty now by all space/stopwords/dash removal
-            if not slug:    
-                slug = "node"
+
             existing = Node.get(path=parent_path + "/" + slug, language=language)
 
             base_slug = slug[:Node.MAX_PATHLEN-6] ## some space for counter
