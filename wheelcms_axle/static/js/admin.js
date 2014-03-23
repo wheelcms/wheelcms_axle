@@ -124,13 +124,11 @@ app.directive('optionsDisabled', function($parse) {
 function props_or_browser(path, type, options, callback) {
     var scope =  angular.element($("#wheelcms-admin").get()).scope();
 
-    console.log(path);
-    if(path) {
-        scope.$apply(function() { scope.open_props(path, type, options, callback, false); });
-    }
-    else {
-        scope.$apply(function() { scope.open_browser(path, type, options, callback); });
-    }
+    scope.$apply(
+        function() {
+            scope.select_content(path, type, options, callback);
+        }
+    );
 }
 
 /*
@@ -142,7 +140,30 @@ app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
         $rootScope.urlbase = urlbase;
     };
 
-    $scope.open_browser = function(path, type, options, callback) {
+    var type = "link";
+
+    $scope.select_content = function(path, _type, options, callback) {
+      /*
+       * This could be implemented as a sort of mainloop that switches between
+       * the modals
+       * - browse
+       * - props
+       * - upload
+       *
+       * E.g. browse may return props, upload should result in browse,
+       * and so on.
+       */
+      type = _type;
+      if(path) {
+          open_props(path, type, options, callback);
+      }
+      else {
+          open_browser(path, type, options, callback);
+      }
+    };
+
+    function open_browser(path, type, options, callback) {
+        console.log("open_browser(" + path + ")");
         var modalInstance = $modal.open({
             templateUrl: 'BrowseModal.html',
             windowClass: "browsemodal",
@@ -150,67 +171,75 @@ app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
             resolve: {
                 path: function() { return path; },
                 type: function() { return type; },
-                options: function() { return options; },
-                callback: function() { return callback; }
+                options: function() { return options; }
             }
         });
         modalInstance.result.then(function (selected) {
-            if(selected == "upload") {
-                openUploadModal("");
-            }
-            else {
-                console.log("X");
-                console.log(selected);
-                options = {};
-                var args = options || {};
-                args.download = false;
+            options = {};
+            var args = options || {};
+            args.download = false;
 
-                // open link or image properties
-                //
-                //callback(selected, options); // more or less
-                // newselection is true if a selection has been made in the
-                // browser, false for existing selections that need update
-                var newselection = true;
-                $scope.open_props(selected, type, options, callback, newselection);
+            open_props(selected, type, options, callback);
+        }, function (result) {
+            // reason = upload or dismissed
+            if(result.reason == "upload") {
+                open_upload(result.path, type, options, callback);
             }
-        }, function () {
-            // dismissed
         });
-    };
+    }
 
-    function openUploadModal(path) {
+    function open_upload(path, type, options, callback) {
         var modalInstance = $modal.open({
             templateUrl: 'UploadModal.html',
             controller: "UploadCtrl",
             resolve: {
-                path: function() { return path; }
+                path: function() { return path; },
+                type: function() { return type; }
             }
         });
-
+        modalInstance.result.then(function(newpath) {
+            open_browser(newpath, type, options, callback);
+        }, function(reason) {
+            // always close/dismiss
+            open_browser(path, type, options, callback);
+        });
     }
 
-    $scope.open_props = function(path, type, options, callback, newselection) {
+    function open_props(path, type, options, callback) {
         var modalInstance = $modal.open({
             templateUrl: 'PropsModal.html',
             controller: "PropsCtrl",
             resolve: {
                 path: function() { return path; },
                 type: function() { return type; },
-                options: function() { return options; },
-                newselection: function() { return newselection; }
+                options: function() { return options; }
             }
         });
         modalInstance.result.then(function (selected) {
-            console.log("props selected");
+            console.log("props then");
             console.log(selected);
+            console.log(callback);
             if(callback) {
+                /*
+                 * Append a +download on local images and on files where that's
+                 * been explicitly requested
+                 */
+                if(selected.path.indexOf("http") !== 0) {
+                    if(type == "image" || selected.download) {
+                        if(!/\/$/.test(selected.path)) {
+                            selected.path += '/';
+                        }
+                        selected.path += '+download';
+                    }
+                }
+                console.log("callback", selected);
                 callback(selected.path, selected.props);
             }
         }, function (reason) {
             // reason = change or cancel
-            console.log("dismiss");
-            console.log(reason);
-            // dismissed
+            if(reason == "change") {
+                open_browser(path, type, options);
+            }
         });
 
     };
@@ -224,33 +253,25 @@ app.factory("PropsModal", function() {
 app.factory("BrowseModal", function() {
 });
 
-/*
- * Is newselection nodig? handler gebruiket het om default title in te stellen,
- * wordt deze bij non-newselection niet overschreven?
- *
- * Is callback nodig? return details ipv. vanuit props callback aanroepen?
-*/
+app.factory("UploadModal", function() {
+});
 
 
 app.controller('PropsCtrl',
-               ["$scope", "$modalInstance", "$compile", "$http", "PropsModal", "path", "type", "options", "newselection",
-               function($scope, $modalInstance, $compile, $http, PropsModal, path, type, options, newselection) {
-
-    console.log("Props", options);
+           ["$scope", "$modalInstance", "$compile", "$http", "PropsModal", "path", "type", "options",
+    function($scope, $modalInstance, $compile, $http, PropsModal, path, type, options) {
 
     $scope.propsform = options;
 
-    function init(type, options, callback) {
+    function init(type, options) {
         var params = angular.copy(options);
         params.path = path;
         params.type = type;
-        params.newselection = newselection;
 
         $http.get($scope.urlbase + "panel_selection_details",
                   {params: params}
                   ).success(
           function(data, status, headers, config) {
-              console.log(data);
               var template = data.template;
               var initial = data.initialdata;
               $scope.propsform = initial;
@@ -271,20 +292,115 @@ app.controller('PropsCtrl',
       $modalInstance.dismiss('change');
     };
 
-
     $scope.ok = function() {
-        console.log("OK props");
-        console.log($scope.propsform);
         $modalInstance.close({path:path, props:$scope.propsform});
     };
 
 }]);
 app.controller('UploadCtrl',
-               ["$scope", "$modalInstance", "PropsModal", "path",
-               function($scope, $modalInstance, PropsModal, path) {
-    $scope.show = function(type, options, callback) {
-        console.log("Upload Show");
+               ["$scope", "$modalInstance", "$compile", "$http", "UploadModal", "path", "type",
+               function($scope, $modalInstance, $compile, $http, UploadModal, path, type) {
+
+    $scope.state = {};
+
+    console.log("UploadCtr(" + path + ")");
+    if(path === "") {
+        path = "/";
+    }
+
+    var upload = null;
+
+    function patch_form() {
+        /* inject jquery.upload magic + handlers. */
+        var fileinput = $("#fileupload input[type=file]");
+        fileinput.replaceWith('<div id="filepreview" ></div><span class="btn btn-success fileinput-button"><i class="glyphicon glyphicon-plus icon-white"></i><span id="filelabel">Add file</span><input id="' + fileinput.attr('id') + '" type="file" name="' + fileinput.attr('name') + '"></span>');
+        //var preview = $("#fileupload input[type=file]").parent(".controls")
+        $('#fileupload').fileupload({
+            url: path + 'fileup',
+            dataType: 'json',
+            autoUpload: false,
+            previewMaxwidth: 100,
+            previewMaxHeight: 100,
+            previewCrop: true
+        }).on('fileuploadadd', function(e, data) {
+            $("#uploadModal .modal_select").prop('disabled', false);
+            upload = data;
+        }).bind('fileuploadprocessalways', function(e, data) {
+            var file = data.files[data.index];
+
+            // ordinary files don't have a preview
+            if(file.preview) {
+                $("#filepreview").html(file.preview).append($('<h4/>').text(file.name));
+            }
+            else {
+                $("#filepreview").append($('<h4/>').text(file.name));
+            }
+            $("#filelabel").text("Replace file");
+        }).on('fileuploaddone', function (e, data) {
+            if(data.result.status == "ok") {
+              $("#uploadModal").modal("hide");
+
+              var path = data.result.path;
+              $modalInstance.close(path);
+            }
+            else {
+                // if anything went wrong, it must have been with the uploaded file
+                $(".upload-alert").text(data.result.errors);
+                $(".upload-alert").addClass("alert alert-danger");
+            }
+        });
+    }
+
+    function load_contentform() {
+        // relative pad used here
+        $http.get("fileup",
+                  {params: {
+                      type: $scope.state.content_type.id
+                  }}
+                  ).success(
+          function(data, status, headers, config) {
+              var uploadform = $(".uploadform");
+              uploadform.html($compile(data.form)($scope));
+              patch_form();
+          });
+    }
+    function init(type) {
+        load_contentform();
+    }
+
+    $scope.type_change = function() {
+        console.log($scope.state.content_type);
+        load_contentform();
     };
+
+
+    $scope.upload_title = function() {
+        if(type == "image") {
+            return "Upload an image";
+        }
+        return "Upload content";
+    };
+
+    if(type == "image") {
+        $scope.upload_types = [{id:"wheelcms_spokes.image", title:"an Image"}];
+        $scope.state.content_type = $scope.upload_types[0];
+    }
+    else {
+        $scope.upload_types = [{id:"wheelcms_spokes.image", title:"an Image"},
+                {id:"wheelcms_spokes.file", title:"a File"}];
+        $scope.state.content_type = $scope.upload_types[1];
+    }
+
+    init(type);
+
+    $scope.cancel = function() {
+      $modalInstance.dismiss('cancel');
+    };
+
+    $scope.ok = function() {
+        upload.submit();
+    };
+
 }]);
 
 /*
@@ -298,6 +414,7 @@ app.controller('BrowseCtrl',
                         path, type, options) {
 
     var startpath = ""; // the initial path
+    var tab = "browse"; // browse, url, image
 
     $scope.selected = {};
     $scope.path = '';
@@ -325,7 +442,7 @@ app.controller('BrowseCtrl',
         }
 
         $scope.link_type = (mode=="link");
-        $scope.external_url = "";
+        $scope.selected.external_url = "";
 
 
         $scope.browse = (path.indexOf('http') !== 0);
@@ -388,6 +505,15 @@ app.controller('BrowseCtrl',
         $scope.path = newpath;
     };
 
+    $scope.browse_tab = function() {
+        tab = "browse";
+    }
+    $scope.external_url_tab = function() {
+        tab = "url";
+    }
+    $scope.external_image_tab = function() {
+        tab = "image";
+    }
     /*
      * Enablers/disablers
      */
@@ -410,15 +536,20 @@ app.controller('BrowseCtrl',
      */
     $scope.ok = function () {
       console.log("OK " + $scope.path);
-      $modalInstance.close($scope.path);
+      if(tab == "browse") {
+        path = $scope.path;
+      } else { // (external) url or image
+        path = $scope.selected.external_url;
+      }
+      $modalInstance.close(path);
     };
 
     $scope.upload = function () {
-      $modalInstance.close("upload");
+      $modalInstance.dismiss({reason:"upload", path:$scope.path});
     };
 
     $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
+      $modalInstance.dismiss({reason:'cancel'});
     };
 }]);
 
