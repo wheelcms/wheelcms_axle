@@ -216,9 +216,6 @@ app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
             }
         });
         modalInstance.result.then(function (selected) {
-            console.log("props then");
-            console.log(selected);
-            console.log(callback);
             if(callback) {
                 /*
                  * Append a +download on local images and on files where that's
@@ -323,28 +320,28 @@ app.controller('UploadCtrl',
             previewMaxHeight: 100,
             previewCrop: true
         }).on('fileuploadadd', function(e, data) {
-            $("#uploadModal .modal_select").prop('disabled', false);
             upload = data;
         }).bind('fileuploadprocessalways', function(e, data) {
             var file = data.files[data.index];
 
             // ordinary files don't have a preview
+            // XXX angularify this
             if(file.preview) {
                 $("#filepreview").html(file.preview).append($('<h4/>').text(file.name));
             }
             else {
                 $("#filepreview").append($('<h4/>').text(file.name));
             }
+            // XXX angularify this
             $("#filelabel").text("Replace file");
         }).on('fileuploaddone', function (e, data) {
             if(data.result.status == "ok") {
-              $("#uploadModal").modal("hide");
-
               var path = data.result.path;
               $modalInstance.close(path);
             }
             else {
                 // if anything went wrong, it must have been with the uploaded file
+                // XXX angularify this
                 $(".upload-alert").text(data.result.errors);
                 $(".upload-alert").addClass("alert alert-danger");
             }
@@ -367,6 +364,10 @@ app.controller('UploadCtrl',
     function init(type) {
         load_contentform();
     }
+
+    $scope.canSave = function() {
+        return upload !== null;
+    };
 
     $scope.type_change = function() {
         console.log($scope.state.content_type);
