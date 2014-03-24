@@ -56,6 +56,9 @@ def get_roles_in_context(request, type, spoke=None):
     return set(r)
 
 def has_access(request, type, spoke, permission):
+    if request.user.is_authenticated() and not request.user.is_active:
+        return False
+
     if request.user.is_active and request.user.is_superuser:
         return True
 
@@ -65,6 +68,10 @@ def has_access(request, type, spoke, permission):
             if role.has_access(spoke.instance, permission):
                 return True
 
+    ## (ab)use Spoke as holder for global permissions
+    from wheelcms_axle.spoke import Spoke
+
+    type = type or Spoke
     ## Should there be a fallback to class permissions?
     classperm = type.permission_assignment.get(permission, ())
 

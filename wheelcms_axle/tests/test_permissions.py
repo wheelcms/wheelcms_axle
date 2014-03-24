@@ -29,8 +29,9 @@ class BasePermissionTest(object):
         """ setup the mainhandler """
         ins = None
         if with_instance:
-            cont = Type1(node=Node.root(), state=state).save()
-            ins =  cont.node
+            cont = Type1Type.create(node=Node.root(), state=state).save()
+            cont.assign_perms()
+            ins =  cont.instance.node
         request = create_request(method, "/")
         if self.provide_user():
             request.user = self.provide_user()
@@ -129,3 +130,7 @@ class TestPermissionsInactiveSuperuser(BasePermissionTest):
                                                   is_superuser=True,
                                                   is_active=False)
         return superuser
+
+    def test_published_view(self, client):
+        handler = self.setup_handler(with_instance=True, state="published")
+        self.check(handler.view)

@@ -161,6 +161,22 @@ class TestHasAccess(object):
     def test_has_access_class(self, gric, pp, auth_request, testpermission):
         assert has_access(auth_request, Type1Type, None, testpermission)
 
+    @patch('wheelcms_axle.auth.get_roles_in_context',
+                       return_value=set((testrole(),)))
+    def test_has_access_defaultclass(self, gric, auth_request, testpermission):
+        with patch("wheelcms_axle.spoke.Spoke.permission_assignment",
+                   new_callable=PropertyMock(
+                   return_value={testpermission:(testrole(),)})):
+            assert has_access(auth_request, None, None, testpermission)
+
+    @permpatch({testpermission():(testrole(),)})
+    @patch('wheelcms_axle.auth.get_roles_in_context',
+                       return_value=set((testrole(),)))
+    def test_not_active_no_access(self, gric, pp, auth_request, testpermission):
+        auth_request.user.is_active = False
+        auth_request.user
+        assert not has_access(auth_request, Type1Type, None, testpermission)
+
     @permpatch({testpermission():(testrole(),)})
     @patch('wheelcms_axle.auth.get_roles_in_context',
                        return_value=set())
