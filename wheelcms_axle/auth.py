@@ -88,6 +88,8 @@ def has_access(request, type, spoke, permission):
         for role in roles:
             if role.has_access(spoke.instance, permission):
                 return True
+        ## Don't fallback to global / "Spoke level" assignments
+        return False
 
     ## (ab)use Spoke as holder for global permissions
     from wheelcms_axle.spoke import Spoke

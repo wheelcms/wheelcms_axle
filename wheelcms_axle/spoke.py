@@ -131,7 +131,8 @@ class Spoke(object):
     workflowclass = DefaultWorkflow
 
     basetabs = (
-        dict(id="attributes", label="Attributes", action="edit"),
+        dict(id="attributes", label="Attributes", action="edit",
+             permission=p.edit_content),
     )
     active_tab = "attributes"
 
@@ -188,7 +189,8 @@ class Spoke(object):
             if getattr(m, 'action', False) and getattr(m, 'tab', False):
                 id = getattr(m, 'tab_id', name)
                 label = getattr(m, 'tab_label', id)
-                decorated_tabs.append(dict(id=id, label=label, action="+"+name))
+                decorated_tabs.append(dict(id=id, label=label, action="+"+name,
+                                           permission=m.permission))
 
         return self.basetabs + tuple(decorated_tabs)
 

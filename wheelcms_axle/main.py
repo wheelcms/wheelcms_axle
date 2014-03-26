@@ -140,10 +140,15 @@ class MainHandler(WheelRESTHandler):
         return json.dumps(tags)
 
     @context
-    def tabs(self):
-        """ return the edit tabs """
-        if self.instance and self.instance.content():
-            return self.instance.content().spoke().tabs()
+    def tabs(self, spoke=None):
+        """ return the tabs / actions the user has access to """
+        if not spoke and self.instance and self.instance.content():
+            spoke = self.spoke()
+
+        if spoke:
+            return [tab for tab in spoke.tabs()
+                    if auth.has_access(self.request, spoke, spoke,
+                                       tab['permission'])]
 
     @context
     def content(self, language=None):
@@ -414,7 +419,8 @@ class MainHandler(WheelRESTHandler):
         if not auth.has_access(self.request, typeinfo, spoke, perm):
             return self.forbidden()
 
-        self.context['tabs'] = spoke.tabs()
+        # reset tabs with current language tabs
+        self.context['tabs'] = self.tabs(spoke)
 
         parent = instance.parent()
 
