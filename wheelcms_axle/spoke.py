@@ -470,9 +470,9 @@ class Spoke(object):
             r = []
             for role in roles:
                 r.append(dict(role=role, checked=role.id in perms_per_role))
-                
+
             d['roles'] = r
-            
+
             permissions.append(d)
 
         ctx['roles'] = roles

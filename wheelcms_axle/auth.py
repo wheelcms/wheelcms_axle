@@ -15,6 +15,27 @@ class require(object):
             return handler.forbidden()
         return wrapped
 
+def assign(assignment):
+    """
+        A decorator to assign or extend a role/permission mapping to a
+        class. It wil take any existing (inherited) assignment, copy it
+        and update it. E.g.
+
+        @assign({'a':1, 'b':2})
+        class T(object):
+            pass
+
+        @assign({'a':2, 'c':3})
+        class Tchild(T):
+            pass
+    """
+    def klasswrapper(k):
+        _assignment = getattr(k, 'permission_assignment', {}).copy()
+        _assignment.update(assignment)
+        k.permission_assignment = _assignment
+        return k
+    return klasswrapper
+
 
 def Permission(id, name="", description=""):
     return drolePermission.create(id, name, description)

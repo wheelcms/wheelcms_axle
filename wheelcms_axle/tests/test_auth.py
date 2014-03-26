@@ -15,7 +15,7 @@ from wheelcms_axle import models
 
 from .models import Type1Type
 from ..auth import has_access, Permission, Role, assign_perms, update_perms
-from ..auth import get_roles_in_context
+from ..auth import get_roles_in_context, assign
 
 from .fixtures import superuser
 
@@ -251,3 +251,43 @@ class TestRolesContext(object):
                                                        t)
 
     ## superuser -- all roles, or always access?
+
+class TestAssignDecorator(object):
+    """ Test the auth.assign class decorator """
+    def test_base(self):
+        """ assign roles/perms on a class directly """
+        @assign({'a':1})
+        class T(object):
+            pass
+
+        assert hasattr(T, 'permission_assignment')
+        assert T.permission_assignment['a'] == 1
+
+
+    def test_traditional_decorated_child(self):
+        """ Directly assign permission_assignment on parent, extend
+            through decorator on child """
+        class T(object):
+            permission_assignment = {'a':1, 'b':2}
+        @assign({'a':2, 'c':3})
+        class Tchild(T):
+            pass
+
+        assert hasattr(Tchild, 'permission_assignment')
+        assert T.permission_assignment == {'a':1, 'b':2}
+        assert Tchild.permission_assignment == {'a':2, 'b':2, 'c': 3}
+
+    def test_child_decorated(self):
+        """ Both base and child class use decorator """
+        @assign({'a':1, 'b':2})
+        class T(object):
+            pass
+        @assign({'a':2, 'c':3})
+        class Tchild(T):
+            pass
+
+        assert hasattr(Tchild, 'permission_assignment')
+        assert T.permission_assignment == {'a':1, 'b':2}
+        assert Tchild.permission_assignment == {'a':2, 'b':2, 'c': 3}
+
+
