@@ -3,6 +3,11 @@
 {% load staticfiles %}
 {% load granules %}
 
+{% block angular_init %}
+<script type="text/javascript">
+  var extradeps = ["contentbrowser"];
+</script>
+{% endblock %}
 
 {% block granules %}
 {{block.super}}
@@ -525,9 +530,6 @@
 
 </script>
 
-<script type="text/javascript">
-  var extradeps = ["contentbrowser"];
-</script>
 <script src="{% static "js/ui-bootstrap-0.10.0.min.js" %}"></script>
 <script src="{% static "js/ui-bootstrap-tpls-0.10.0.min.js" %}"></script>
 <script src="{% static "js/admin.js" %}"></script>
