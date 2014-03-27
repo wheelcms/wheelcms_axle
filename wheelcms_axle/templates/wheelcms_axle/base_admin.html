@@ -462,7 +462,7 @@
         }
     })();
 
-    function show_props(path, type, options, callback, newselection) {
+    function DELETED_show_props(path, type, options, callback, newselection) {
         /*
          * Show and re-initialize the properties modal.
          */
@@ -495,7 +495,7 @@
         });
 
     }
-    function props_or_browser(path, type, options, callback) {
+    function DELETE_props_or_browser(path, type, options, callback) {
         if(path) {
             show_props(path, type, options, callback, false);
         }
@@ -525,33 +525,26 @@
 
 </script>
 
+<script type="text/javascript">
+  var extradeps = ["contentbrowser"];
+</script>
 <script src="{% static "js/ui-bootstrap-0.10.0.min.js" %}"></script>
 <script src="{% static "js/ui-bootstrap-tpls-0.10.0.min.js" %}"></script>
 <script src="{% static "js/admin.js" %}"></script>
+<script src="{% static "js/contentbrowser.js" %}"></script>
+
 
 {% endgranule %}
 {% endblock %}
 {% block base_main %}
 
-<!-- Button to trigger modal -->
-
-<div id="browseModal" class="modal fade" role="dialog" aria-hidden="true">
-  <div class="modal-dialog">
+<script type="text/ng-template" id="BrowseModal.html">
     <div class="modal-content">
-      <div class="modal-body tabbable">
-        <ul class="nav nav-tabs">
-          <li id="local_tab" class="active">
-            <a href="#browse_local" data-toggle="tab">Local / Browse</a></li>
-          <li id="link_tab" class="">
-            <a href="#browse_external_link" data-toggle="tab">External Link</a></li>
-          <li id="image_tab" class="">
-            <a href="#browse_external_image" data-toggle="tab">External Image</a></li>
-          <li class="pull-right">
-            <button type="button" class="close" data-dismiss="modal">×</button></a>
-        </ul>
-
-        <div class="tab-content">
-          <div id="browse_local" class="tab-pane active">
+      <div class="modal-body">
+        <tabset>
+          <tab heading="Local / Browse" active="tabs[0].active"
+            select="browse_tab()"
+            ng-hide="$parent.tabs[0].disabled">
             <div class="row" id="browsecrumbs">
               <div class="col-sm-12 crumbcontainer">
               </div>
@@ -564,15 +557,17 @@
               <div class="col-sm-3 panel panel2" data-panel="2" id="panel2">
               </div>
             </div>
-          </div>
-          <div id="browse_external_link" class="tab-pane">
+          </tab>
+          <tab heading="External Link" active="tabs[1].active"
+               select="external_url_tab()"
+               ng-hide="$parent.tabs[1].disabled">
             <div class="row">
               <div class="col-sm-6">
                 <form>
                   <legend>External URL</legend>
                   <label class="control-label" for="external_url">URL</label>
                   <div class="input-append">
-                    <input id="external_url" type="text" name="url" maxlength="256" />
+                    <input id="external_url" type="text" ng-model="selected.external_url" name="url" maxlength="256" />
                     <button id="external_url_preview" class="btn">Preview <i class="glyphicon glyphicon-chevron-right"></i></button>
                   </div>
                   <div class="help-block">
@@ -584,15 +579,17 @@
                 <iframe width="100%" id="external_iframe" src=""></iframe>
               </div>
             </div>
-          </div>
-          <div id="browse_external_image" class="tab-pane">
+          </tab>
+          <tab heading="External Image" active="tabs[2].active"
+               select="external_image_tab"
+               ng-hide="$parent.tabs[2].disabled">
             <div class="row">
               <div class="col-sm-6">
                 <form>
                   <legend>External Image</legend>
                   <label class="control-label" for="external_image_url">URL</label>
                   <div class="input-append">
-                    <input id="external_image_url" type="text" name="url" maxlength="256" />
+                    <input id="external_image_url" ng-model="selected.external_url" type="text" name="url" maxlength="256" />
                     <button id="external_image_url_preview" class="btn">Preview <i class="glyphicon glyphicon-chevron-right"></i></button>
                   </div>
                   <div class="help-block">
@@ -604,25 +601,21 @@
                 <img id="external_image" width="100%" src="{% static 'img/preview.png' %}" class="img-polaroid">
               </div>
             </div>
-          </div>
-        </div>
+          </tab>
+        </tabset>
       </div> <!-- modal-body -->
       <div class="modal-footer">
-        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-        <button class="btn btn-info modal_upload">Upload</button>
-        <button class="btn btn-primary modal_select">Select</button>
+        <button class="btn" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">Close</button>
+        <button class="btn btn-info modal_upload" ng-disabled="!upload_enabled()" ng-click="upload()">Upload</button>
+        <button class="btn btn-primary modal_select" ng-disabled="!select_enabled()" ng-click="ok()">Select</button>
       </div>
    </div> <!-- modal-content -->
- </div> <!-- modal-dialog -->
-</div>
+</script>
 
-<div id="uploadModal" class="modal fade" tabindex="-1" role="dialog"
-     aria-labelledby="uploadModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
+<script type="text/ng-template" id="UploadModal.html">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="uploadModalLabel">Upload a file</h3>
+        <h3 id="uploadModalLabel"><[upload_title()]></h3>
       </div>
       <div class="modal-body">
         <div class="row">
@@ -634,6 +627,11 @@
             <label class="control-label col-lg-2" for="select_type">Upload</label>
             <div class="col-lg-10">
               <div class="controls upload_types">
+                <select ng-change="type_change()"
+                        ng-model="state.content_type"
+                        class="select_type form-control"
+                        ng-options="t.title for t in upload_types">
+                </select>
               </div>
             </div>
           </div>
@@ -644,31 +642,24 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn modal_close" data-dismiss="modal" aria-hidden="true">Close</button>
-        <button class="btn btn-primary modal_select">Save</button>
+        <button class="btn modal_close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">Close</button>
+        <button class="btn btn-primary modal_select" ng-disabled="!canSave()" ng-click="ok()">Save</button>
       </div>
-    </div> <!-- modal-dialog -->
-  </div> <!-- modal-content -->
-</div>
+</script>
 
-<div id="detailsModal" class="modal fade" role="dialog" aria-labelledby="modal-header#h3"
-     aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3>Selection properties</h3>
-      </div>
-      <div class="modal-body" id="detailsModalBody">
-      </div>
-      <div class="modal-footer">
-        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-        <button class="btn btn-info modal_change">Change selection</button>
-        <button class="btn btn-primary modal_select">Select</button>
-      </div>
-    </div> <!-- modal-dialog -->
-  </div> <!-- modal-content -->
-</div> <!-- detailsModal -->
+<script type="text/ng-template" id="PropsModal.html">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3>Selection properties</h3>
+  </div>
+  <div class="modal-body" id="detailsModalBody">
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">Close</button>
+    <button class="btn btn-info modal_change" ng-click="change()">Change selection</button>
+    <button class="btn btn-primary modal_select" ng-click="ok()">Select</button>
+  </div>
+</script> <!-- detailsModal -->
 
 
 {{ block.super }}

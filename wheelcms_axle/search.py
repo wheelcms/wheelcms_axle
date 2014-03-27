@@ -20,7 +20,7 @@ class SearchHandler(FormHandler, WheelHandlerMixin):
     @applyrequest(page=int)
     def index(self, page=1):
         sqs = SearchQuerySet()
-        language = utils.get_active_language(self.request)
+        language = utils.get_active_language()
 
         sqs = sqs.filter(language__in=(language, "any"))
 

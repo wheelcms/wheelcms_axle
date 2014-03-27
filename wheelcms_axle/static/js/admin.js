@@ -1,4 +1,18 @@
-app = angular.module('wheelcms-admin', ['ui.bootstrap'],
+/*
+ * AngularJS browser modal rewrite
+ */
+
+
+function appdeps() {
+    var basedeps = ["ui.bootstrap"];
+    if(typeof extradeps !== 'undefined') {
+        basedeps = basedeps.concat(extradeps);
+    }
+    console.log(basedeps);
+    return basedeps;
+}
+
+app = angular.module('wheelcms-admin', appdeps(),
  function ($interpolateProvider) {
     $interpolateProvider.startSymbol('<[');
     $interpolateProvider.endSymbol(']>');
@@ -23,11 +37,11 @@ app.config(['$httpProvider', function($httpProvider) {
       {
         var query = '';
         var name, value, fullSubName, subName, subValue, innerObj, i;
-        
+
         for(name in obj)
         {
           value = obj[name];
-          
+
           if(value instanceof Array)
           {
             for(i=0; i<value.length; ++i)
@@ -63,6 +77,13 @@ app.config(['$httpProvider', function($httpProvider) {
     }];
   }
 ]);
+
+app.config(function($locationProvider) {
+    // required so we can intercept the #hash
+    // http://stackoverflow.com/a/20788246/320057
+    $locationProvider.html5Mode(true).hashPrefix('!');
+});
+
 /* csrf support */
 /*app.run(function ($http, $cookies) {
     $http.defaults.headers.post['X-CSRFToken'] = $cookies['csrftoken'];
@@ -90,23 +111,25 @@ app.directive('optionsDisabled', function($parse) {
             var attrToWatch = expElements[3];
             var fnDisableIfTrue = $parse(expElements[1]);
             scope.$watch(attrToWatch, function(newValue, oldValue) {
-                if(newValue)
+                if(newValue) {
                     disableOptions(scope, expElements[2], iElement, newValue, fnDisableIfTrue);
+                }
             }, true);
+
             // handle model updates properly
             scope.$watch(iAttrs.ngModel, function(newValue, oldValue) {
                 var disOptions = $parse(attrToWatch)(scope);
-                if(newValue)
+                if(newValue) {
                     disableOptions(scope, expElements[2], iElement, disOptions, fnDisableIfTrue);
+                }
             });
         }
     };
 });
 
-app.controller('AdminCtrl', function($rootScope, $scope) {
-    $scope.init = function(urlbase) {
-        $rootScope.urlbase = urlbase;
-    }
+
+app.controller('EditCtrl', function($rootScope, $scope, $location) {
+    $scope.advanced_open = $location.hash() == "collapseadvanced";
 });
 
 

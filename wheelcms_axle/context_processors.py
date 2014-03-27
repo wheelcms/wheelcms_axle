@@ -11,7 +11,7 @@ def languages(request):
     if len(settings.LANGUAGES) <= 1:
         return None
 
-    current_language = get_active_language(request)
+    current_language = get_active_language()
     current_label = dict(settings.LANGUAGES).get(current_language,
                                                  current_language)
 

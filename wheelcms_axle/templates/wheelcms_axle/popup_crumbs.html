@@ -1,7 +1,8 @@
 {# currently does not restrict in size or ellipsize... #}
 <ul class="breadcrumb">
   {% for crumb in crumbs %}
-  <li><a class="crumb" data-url="{{crumb.path}}" href="#">{{crumb.title}}</a>
+  <li><a class="crumb" href="#"
+         ng-click="openURL('{{crumb.path}}', {{crumb.selectable|yesno:'true,false'}})">{{crumb.title}}</a>
   </li>
   {% endfor %}
 </ul>

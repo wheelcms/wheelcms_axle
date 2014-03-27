@@ -15,11 +15,15 @@ from wheelcms_axle.toolbar import Toolbar
 from wheelcms_axle.base import WheelHandlerMixin
 from wheelcms_axle.utils import get_active_language
 from wheelcms_axle import translate
+from wheelcms_axle import locale
 
 from wheelcms_axle import auth
 
 from .templates import template_registry
 from .actions import action_registry
+
+from django.utils import translation
+from .models import WheelProfile
 
 import stracks
 
@@ -96,7 +100,7 @@ class MainHandler(WheelRESTHandler):
     parent = None
 
     def active_language(self):
-        return get_active_language(self.request)
+        return get_active_language()
 
     @context
     def body_class(self):
@@ -106,7 +110,8 @@ class MainHandler(WheelRESTHandler):
             if model:
                 typename = model.get_name()
                 parts = typename.split(".")
-                return " ".join("_".join(parts[:i+1]) for i in range(len(parts)))
+                return " ".join("_".join(parts[:i+1])
+                                for i in range(len(parts)))
 
         return ""
 
@@ -212,6 +217,39 @@ class MainHandler(WheelRESTHandler):
 
         return None
 
+    def pre_handler(self):
+        """ invoked before a method """
+        # import pdb; pdb.set_trace()
+        
+        super(MainHandler, self).pre_handler()
+        ## if user authenticated, find language setting, activate it.
+        ## Will only work for requests that go through this handler
+        self._stored_language = None
+        current_language = translation.get_language()
+
+        if self.request.user.is_authenticated():
+            try:
+                language = self.request.user.my_profile.language
+                if language and language != current_language:
+                    ## store the content language
+                    self._stored_language = current_language
+                    locale.activate_content_language(current_language)
+                    translation.activate(language)
+                    ## coercion has taken place before the switch,
+                    ## so self.instance will be initialized to the old
+                    ## language. Update it!
+                    #if self.instance:
+                    #    self.instance.preferred_language = language
+            except WheelProfile.DoesNotExist:
+                pass
+        else:
+            locale.activate_content_language(current_language)
+
+    def post_handler(self):
+        super(MainHandler, self).post_handler()
+        if self._stored_language:
+            translation.activate(self._stored_language)
+
     @classmethod
     def coerce_with_request(cls, i, request=None):
         """
@@ -223,7 +261,9 @@ class MainHandler(WheelRESTHandler):
             really need it - <instance>/update works fine, and no instance is
             required for /create
         """
-        language = get_active_language(request)
+        ## reset content language
+        locale.activate_content_language(None)
+        language = get_active_language()
 
         d = dict()
 
@@ -371,7 +411,6 @@ class MainHandler(WheelRESTHandler):
         return self.template(template)
 
     def update(self):
-        # import pytest; pytest.set_trace()
         action = self.kw.get('action', '')
         language = self.active_language()
 
@@ -470,7 +509,8 @@ class MainHandler(WheelRESTHandler):
                 e = stracks.content(content.id, name=content.title)
                 e.log("? (%s) updated by ?" % content.spoke().title,
                       stracks.user(self.user()), action=stracks.edit())
-                return self.redirect(instance.get_absolute_url(), success="Updated")
+                return self.redirect(instance.get_absolute_url(),
+                                     success="Updated")
         else:
             args = dict(parent=parent,
                         initial=dict(slug=slug),
@@ -479,8 +519,8 @@ class MainHandler(WheelRESTHandler):
                 # updating existing content
                 args['instance'] = content
             else:
-                # translating new content. Make sure its language is set to the active
-                # language
+                # translating new content. Make sure its language is set to
+                # the active language
                 args['initial']['language'] = language
             self.context['form'] = formclass(**args)
 
@@ -489,9 +529,11 @@ class MainHandler(WheelRESTHandler):
             primary_content = self.instance.primary_content()
             ## there must be primary content, else the node would be unattached
             title = primary_content.title
-            self.context['breadcrumb'] = self.breadcrumb(operation="Translate", details=' "%s" (%s)' % (title, typeinfo.title))
+            self.context['breadcrumb'] = self.breadcrumb(operation="Translate",
+                                details=' "%s" (%s)' % (title, typeinfo.title))
         else:
-            self.context['breadcrumb'] = self.breadcrumb(operation="Edit", details=' "%s" (%s)' % (content.title, typeinfo.title))
+            self.context['breadcrumb'] = self.breadcrumb(operation="Edit",
+                        details=' "%s" (%s)' % (content.title, typeinfo.title))
         template = spoke.update_template()
         return self.template(template)
 
@@ -796,6 +838,7 @@ class MainHandler(WheelRESTHandler):
         return self.redirect(self.instance.get_absolute_url() + 'list',
                              info="%d item(s) deleted" % count)
 
+    @json
     @applyrequest
     def handle_panel_selection_details(self, path, type, klass="", title="",
                                        target="", download=False,
@@ -856,6 +899,10 @@ class MainHandler(WheelRESTHandler):
                 forminitial['align'] = part
 
         class PropForm(forms.Form):
+            def __init__(self, *a, **b):
+                super(PropForm, self).__init__(*a, **b)
+                for (k, v) in self.fields.iteritems():
+                    v.widget.attrs.update({'ng-model': 'propsform.' + k})
             title = forms.CharField()
             if type == "link":
                 target = forms.ChoiceField(choices=TARGET_CHOICES,
@@ -872,8 +919,9 @@ class MainHandler(WheelRESTHandler):
 
         propform = PropForm(initial=forminitial)
 
-        return self.template("wheelcms_axle/popup_properties.html", spoke=spoke,
-                             instance=instance, mode=type, form=propform)
+        return dict(initialdata=forminitial,
+                    template=self.render_template("wheelcms_axle/popup_properties.html", spoke=spoke,
+                             instance=instance, mode=type, form=propform))
 
     @json
     @applyrequest
@@ -889,6 +937,7 @@ class MainHandler(WheelRESTHandler):
         language = self.active_language()
         if not self.hasaccess():
             return self.forbidden()
+
 
         ##
         ## No path means a new item is to be selected. Use the current
@@ -913,6 +962,23 @@ class MainHandler(WheelRESTHandler):
         original = strip_action(original)
 
         node = start = Node.get(path)# , language=language)
+
+        ##
+        ## Selectable means the node is a valid selection. Unattached
+        ## nodes are never selectable and in image mode only image based
+        ## content is a valid selection
+        def is_selectable(node):
+            content = node.content()
+            if content:
+                if mode == "link":
+                    return True
+                elif isinstance(content, ImageContent):
+                    return True
+            return False
+
+        ## Is the starting point a valid selection?
+        start_selectable = is_selectable(node)
+
         panels = []
 
         ## first panel: bookmarks/shortcuts
@@ -937,15 +1003,16 @@ class MainHandler(WheelRESTHandler):
             if not content: ## unattached
                 continue
             spoke = content.spoke()
+            selectable = is_selectable(n)
             bookmarks.append(dict(children=[], path=n.get_absolute_url(),
                             title=content.title,
                             meta_type=content.meta_type,
                             content=content,
+                            selectable=selectable,
                             icon=spoke.icon_base() + '/' + spoke.icon,
                             spoke=spoke))
 
-        panels.append(
-                      self.render_template("wheelcms_axle/popup_links.html",
+        panels.append(self.render_template("wheelcms_axle/popup_links.html",
                                            instance=self.instance,
                                            bookmarks=bookmarks
                                            ))
@@ -982,18 +1049,13 @@ class MainHandler(WheelRESTHandler):
                 upload = bool(addables)
 
             for child in node.children():
-                selectable = False
-
                 content = child.content()
 
                 if not content:
                     continue  ## ignore unattached nodes
                 spoke = content.spoke()
 
-                if mode == "link":
-                    selectable = True
-                elif isinstance(content, ImageContent):
-                    selectable = True
+                selectable = is_selectable(child)
 
                 selected = path == child.path or \
                            path.startswith(child.path + '/')
@@ -1020,17 +1082,22 @@ class MainHandler(WheelRESTHandler):
         crumbs = []
         node = start
         while True:
+            content = node.content()
+            selectable = is_selectable(node)
             if node.isroot():
-                crumbs.insert(0, dict(path=node.get_absolute_url(), title="Home"))
+                crumbs.insert(0, dict(path=node.get_absolute_url(),
+                                      selectable=selectable, title="Home"))
                 break
             crumbs.insert(0, dict(path=node.get_absolute_url(),
+                                  selectable=selectable,
                                   title=node.content().title))
             node = node.parent()
 
         crumbtpl = self.render_template("wheelcms_axle/popup_crumbs.html",
                                         crumbs=crumbs)
+        print "SEL ", path,  start_selectable
         return dict(panels=panels, path=start.get_absolute_url(),
-                    crumbs=crumbtpl, upload=upload)
+                    crumbs=crumbtpl, upload=upload, selectable=start_selectable)
 
     @json
     @applyrequest
@@ -1093,7 +1160,8 @@ class MainHandler(WheelRESTHandler):
         if not self.hasaccess():
             return self.forbidden()
 
-        self.request.session['admin_language'] = switchto
+        locale.activate_content_language(switchto)
+
         if path:
             node = Node.objects.get(tree_path=path)
         else:

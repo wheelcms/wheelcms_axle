@@ -1,7 +1,7 @@
 /*
  * Make sure the browse Modal is sufficiently wide
  */
-#browseModal .modal-dialog {
+.browsemodal .modal-dialog {
     width: 900px;
     height: 400px;
 }
