@@ -384,6 +384,33 @@ class TestToolbarActions(object):
         toolbar_registry.register(ButtonAction("test"))
         assert len(toolbar.button_actions()) == 1
 
+    def test_button_state_all(self, client, root, toolbar_registry):
+        """ A toolbar action with states=() always shows """
+        Type1Type.create(node=root).save()
+        toolbar = Toolbar(root, superuser_request("/"), "edit")
+
+        toolbar_registry.register(mock.Mock(type="button", states=()))
+        assert len(toolbar.button_actions()) == 1
+
+    def test_button_state_mismatch(self, client, root, toolbar_registry):
+        """ If an explicit state is given, it must match with toolbar status
+        """
+        Type1Type.create(node=root).save()
+        toolbar = Toolbar(root, superuser_request("/"), "edit")
+
+        toolbar_registry.register(mock.Mock(type="button", states=("view",)))
+        assert len(toolbar.button_actions()) == 0
+
+    def test_button_state_any(self, client, root, toolbar_registry):
+        """ If an explicit state is given, it must match with toolbar status
+        """
+        Type1Type.create(node=root).save()
+        toolbar = Toolbar(root, superuser_request("/"), "edit")
+
+        toolbar_registry.register(mock.Mock(type="button",
+                                            states=("view", "edit")))
+        assert len(toolbar.button_actions()) == 1
+
 class BaseTestToolbarAction(object):
     """
         Test individual Toolbar Button actions

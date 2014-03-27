@@ -215,14 +215,21 @@ class Toolbar(object):
 
     def button_actions(self):
         ## order?
-        return [a.with_toolbar(self) for a in toolbar_registry.values()
-                if a.type == "button"]
+        actions = []
+
+        for a in toolbar_registry.values():
+            if a.type == "button":
+                if not a.states or self.status in a.states:
+                    actions.append(a.with_toolbar(self))
+        return actions
+
 
 from registries.toolbar import toolbar_registry
 import copy
 
 class ToolbarAction(object):
     type = "generic"
+    states = ()
 
     def __init__(self, id, toolbar=None):
         self.id = id
@@ -249,6 +256,8 @@ class ButtonAction(ToolbarAction):
         return None
 
 class PreviewAction(ButtonAction):
+    states = ('view',)
+
     def icon(self):
         return "eye-open"
 

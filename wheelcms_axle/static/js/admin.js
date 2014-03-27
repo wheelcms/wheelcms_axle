@@ -83,6 +83,7 @@ app.config(function($locationProvider) {
     // http://stackoverflow.com/a/20788246/320057
     // XXX disabled, has very strange side effects.
     //$locationProvider.html5Mode(true).hashPrefix('!');
+    // $locationProvider.html5Mode(true).hashPrefix('!');
 });
 
 /* csrf support */
