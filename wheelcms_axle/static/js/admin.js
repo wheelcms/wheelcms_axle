@@ -67,7 +67,7 @@ app.config(['$httpProvider', function($httpProvider) {
 app.config(function($locationProvider) {
     // required so we can intercept the #hash
     // http://stackoverflow.com/a/20788246/320057
-    $locationProvider.html5Mode(true).hashPrefix('!');
+    // $locationProvider.html5Mode(true).hashPrefix('!');
 });
 
 /* csrf support */
@@ -118,6 +118,6 @@ app.controller('AdminCtrl', function($rootScope, $scope) {
 
 
 app.controller('EditCtrl', function($rootScope, $scope, $location) {
-    $scope.advanced_open = $location.hash() == "collapseadvanced";
+    $scope.advanced_open = /collapseadvanced$/.test(document.location.hash);
 });
 

@@ -86,6 +86,7 @@ class ContentBase(models.Model):
     class Meta:
         abstract = True
 
+
     @classmethod
     def construct_meta(cls, klass=None, parts=None):
         klass = klass or cls
