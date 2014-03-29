@@ -22,6 +22,8 @@ def localtyperegistry(request):
     type_registry.set(registry)
     if hasattr(request.cls, 'type'):
         registry.register(request.cls.type)
+    if hasattr(request.cls, 'other'):
+        registry.register(request.cls.other)
     for type in getattr(request.cls, 'types', []):
         registry.register(type)
     for type in getattr(request.cls, 'extra_types', []):
