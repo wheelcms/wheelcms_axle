@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, include
+from django.conf.urls import patterns, include
 from wheelcms_axle.urls import urlpatterns as wheelpatterns
 
 urlpatterns = patterns('',

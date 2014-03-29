@@ -1,4 +1,4 @@
-from django.conf.urls.defaults import patterns, url, include
+from django.conf.urls import patterns, url, include
 from two.ol.base import twpatterns
 from wheelcms_axle.main import MainHandler, wheel_500, wheel_404
 from wheelcms_axle.configuration import ConfigurationHandler
