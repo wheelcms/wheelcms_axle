@@ -6,7 +6,6 @@ import pytest
 from wheelcms_axle.spoke import indexfactory
 
 from haystack.query import SearchQuerySet, EmptySearchQuerySet
-from haystack import site
 
 ##
 ## These tests should be written in such a way that there's no dependency
@@ -26,8 +25,6 @@ class BaseTestSearch(object):
         return self.other.model(**kw).save()
 
     def setup(self):
-        site._registry = {}
-
         self.registry = TypeRegistry()
         type_registry.set(self.registry)
         self.registry.register(self.type)
