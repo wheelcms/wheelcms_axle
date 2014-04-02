@@ -1,14 +1,7 @@
-class Registry(object):
-    def __init__(self, wrapped):
-        self.wrapped = wrapped
+from warnings import warn
 
-    def set(self, wrapped):
-        self.wrapped = wrapped
+warn("wheelcms_axle.registry is deprecated, "
+     "please use wheelcms_axle.registries.registry in stead",
+     DeprecationWarning)
 
-    #def __getattr__(self, k):
-    #    return getattr(self.wrapped, k)
-    def __iter__(self):
-        return self.wrapped.__iter__()
-
-    def __getattr__(self, name):
-        return getattr(self.wrapped, name)
+from .registries.registry import Registry
