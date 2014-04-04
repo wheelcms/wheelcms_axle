@@ -14,6 +14,8 @@ from wheelcms_axle.toolbar import Toolbar
 
 from wheelcms_axle.base import WheelHandlerMixin
 from wheelcms_axle.utils import get_active_language
+from wheelcms_axle.forms import AngularForm
+
 from wheelcms_axle import translate
 from wheelcms_axle import locale
 
@@ -898,11 +900,9 @@ class MainHandler(WheelRESTHandler):
             if part in [a[0] for a in ALIGN_CHOICES]:
                 forminitial['align'] = part
 
-        class PropForm(forms.Form):
-            def __init__(self, *a, **b):
-                super(PropForm, self).__init__(*a, **b)
-                for (k, v) in self.fields.iteritems():
-                    v.widget.attrs.update({'ng-model': 'propsform.' + k})
+        class PropForm(AngularForm):
+            ng_ns = "propsform"
+
             title = forms.CharField()
             if type == "link":
                 target = forms.ChoiceField(choices=TARGET_CHOICES,

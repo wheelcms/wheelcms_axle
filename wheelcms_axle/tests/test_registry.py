@@ -80,3 +80,51 @@ class TestTypeRegistry(object):
 
 
         assert set(r.extenders(M2)) == set([A, B])
+
+from wheelcms_axle.registries.core_registry import CoreRegistry
+from wheelcms_axle.registries.registry import Registry
+
+class TestCoreRegistry(object):
+    """ Test the core registry, that holds other registries """
+
+    def test_default(self):
+        """ default empty init """
+        r = CoreRegistry()
+        assert r.reg == {}
+
+    def test_set(self):
+        """ using the set() method """
+        r = CoreRegistry()
+        r.set('a', 'b')
+        assert r.a.wrapped == 'b'
+
+    def test_setattr(self):
+        """ attribute assignment """
+        r = CoreRegistry()
+        r.a = 'b'
+        assert r.a.wrapped == 'b'
+
+class TestRegistry(object):
+    """ A registry actually proxies """
+
+    def test_wrap(self):
+        """ default wrapping """
+        w = Registry('a')
+        assert w.wrapped == 'a'
+
+    def test_wrap_proxy(self):
+        """ attribute access is proxied """
+        l = []
+        w = Registry(l)
+        assert w.append == l.append
+
+    def test_set_override(self):
+        """ Wrapped content can be replaced """
+        w = Registry('a')
+        w.set('b')
+        assert w.wrapped == 'b'
+
+    def test_iter(self):
+        """ __iter__ works """
+        w = Registry(iter("abc"))
+        assert list(w) == list("abc")

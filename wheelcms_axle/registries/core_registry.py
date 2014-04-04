@@ -1,4 +1,4 @@
-from .registry import Registry
+from .registry import RegistryProxy
 
 ##
 ## Idea: A stack of registries, the topone being the one consulted.
@@ -8,10 +8,10 @@ from .registry import Registry
 
 class CoreRegistry(object):
     def __init__(self):
-        self.reg = {}
+        self.__dict__['reg'] = {} ## bypass __setattr__ recursion
 
     def set(self, name, registry):
-        wrapped = Registry(registry)
+        wrapped = RegistryProxy(registry)
         self.reg[name] = wrapped
         return wrapped
 
@@ -21,7 +21,7 @@ class CoreRegistry(object):
         except KeyError:
             raise AttributeError(k)
 
-    def __setattr(self, k, v):
+    def __setattr__(self, k, v):
         self.set(k, v)
 
 core = CoreRegistry()

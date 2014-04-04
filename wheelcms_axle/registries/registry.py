@@ -10,3 +10,5 @@ class Registry(object):
 
     def __getattr__(self, name):
         return getattr(self.wrapped, name)
+
+RegistryProxy = Registry
