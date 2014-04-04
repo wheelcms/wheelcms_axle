@@ -373,3 +373,17 @@ def FileFormfactory(type, light=False):
             return title
     return Form
 
+class AngularForm(forms.Form):
+    """
+        Adjusts fields so it will work with angular two way binding/ng-model
+    """
+    ng_ns = ""
+
+    def __init__(self, *a, **b):
+        super(AngularForm, self).__init__(*a, **b)
+        for (k, v) in self.fields.iteritems():
+            ng_ns = self.ng_ns
+
+            if ng_ns:
+                ng_ns += "."
+            v.widget.attrs.update({'ng-model': ng_ns + k})
