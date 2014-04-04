@@ -387,3 +387,6 @@ class AngularForm(forms.Form):
             if ng_ns:
                 ng_ns += "."
             v.widget.attrs.update({'ng-model': ng_ns + k})
+
+            if v.required:
+                v.widget.attrs.update({'required': 'required'})

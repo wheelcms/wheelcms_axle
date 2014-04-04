@@ -21,6 +21,8 @@ from wheelcms_axle import locale
 
 from wheelcms_axle import auth
 
+from wheelcms_axle import permissions
+
 from .templates import template_registry
 from .actions import action_registry
 
@@ -155,7 +157,8 @@ class MainHandler(WheelRESTHandler):
         if spoke:
             return [tab for tab in spoke.tabs()
                     if auth.has_access(self.request, spoke, spoke,
-                                       tab['permission'])]
+                                       tab.get('permission',
+                                               permissions.edit_content))]
 
     @context
     def content(self, language=None):
