@@ -40,7 +40,7 @@ class SpokeCharField(indexes.CharField):
 
 def indexfactory(spoke):
     """ return a generic index definition bound to 'spoke' """
-    class WheelIndex(indexes.SearchIndex):
+    class WheelIndex(indexes.SearchIndex, indexes.Indexable):
         text = SpokeCharField(spoke=spoke, document=True,
                               model_attr='searchable_text')
         title = indexes.CharField(stored=True, indexed=False,
@@ -70,12 +70,16 @@ def indexfactory(spoke):
         owner = SpokeCharField(spoke=spoke, stored=True, indexed=True,
                                model_attr="owner_name")
 
-        def index_queryset(self):
+        def index_queryset(self, using=None):
             """ Should the content to be indexed restricted here?
                 Or index everything and apply filters depending on
                 context? """
             ## only index content that's attached.
             return spoke.model.objects.filter(node__isnull=False)
+
+        def get_model(self):
+            return spoke.model
+
     return WheelIndex
 
 class Spoke(object):
