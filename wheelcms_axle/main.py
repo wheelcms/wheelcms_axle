@@ -139,14 +139,13 @@ class MainHandler(WheelRESTHandler):
                 return model.spoke()
         return None
 
-    @context
-    def typeahead_tags(self):
+    @json
+    def handle_tags(self):
         """ make this a +action? XXX """
-        import json
         from taggit.models import Tag
 
         tags = list(Tag.objects.values_list("name", flat=True).all())
-        return json.dumps(tags)
+        return tags
 
     @context
     def tabs(self, spoke=None):

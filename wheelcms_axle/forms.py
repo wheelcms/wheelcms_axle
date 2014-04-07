@@ -18,6 +18,7 @@ from tinymce.widgets import TinyMCE as BaseTinyMCE
 
 from taggit.utils import parse_tags
 from django.utils.safestring import mark_safe
+from django.forms.util import flatatt
 
 class ParentField(forms.Field):
     def __init__(self, parenttype=None, *args, **kw):
@@ -54,11 +55,20 @@ class TagWidget(forms.TextInput):
         to "quote" tags containing a space, something that our tagsManager
         plugin can't handle wel.
     """
+    input_type = "hidden"
+
     def render(self, name, value, attrs=None):
         if value is not None and not isinstance(value, basestring):
             value = ",".join(o.tag.name for o in value.select_related("tag"))
 
-        return super(TagWidget, self).render(name, value, attrs)
+        final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
+        final_attrs["value"] = value
+        final_attrs["ng-model"] = "hidden_tags"
+
+        return mark_safe("""<tags-input ng-model="tags">
+<auto-complete source="loadTags($query)"></auto-complete>
+</tags-input><input%s>""" % flatatt(final_attrs))
+        # return super(TagWidget, self).render(name, value, attrs)
 
 class SubcontentField(forms.MultipleChoiceField):
     """
@@ -161,14 +171,6 @@ class BaseForm(forms.ModelForm):
         if 'description' in self.fields:
             self.fields['description'].widget.attrs['rows'] = 4
 
-        if 'tags' in self.fields:
-            self.fields['tags'].widget.attrs['class'] = "tagManager"
-            self.fields['tags'].widget.attrs['data-role'] = "tagsinput"
-            self.fields['tags'].widget.attrs['data-provide'] = "typeahead"
-            ## The placeholder is used to size the tag input, which will
-            ## default to 1 if unspecified.
-            self.fields['tags'].widget.attrs['placeholder'] = " " * 30
-            self.fields['tags'].required = False
 
         ## workaround for https://code.djangoproject.com/ticket/21173
         for patch_dt in ("publication", "expire", "created"):
