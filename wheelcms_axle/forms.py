@@ -18,6 +18,7 @@ from tinymce.widgets import TinyMCE as BaseTinyMCE
 
 from taggit.utils import parse_tags
 from django.utils.safestring import mark_safe
+from django.forms.util import flatatt
 
 class ParentField(forms.Field):
     def __init__(self, parenttype=None, *args, **kw):
@@ -54,11 +55,14 @@ class TagWidget(forms.TextInput):
         to "quote" tags containing a space, something that our tagsManager
         plugin can't handle wel.
     """
+    input_type = 'tag'
     def render(self, name, value, attrs=None):
         if value is not None and not isinstance(value, basestring):
             value = ",".join(o.tag.name for o in value.select_related("tag"))
 
-        return super(TagWidget, self).render(name, value, attrs)
+        final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
+        # return mark_safe(u'<tags model="foo"></tags>')
+        return mark_safe(u'<tags model="[\'ivo\', \'bar\']" %s></tags>' % flatatt(final_attrs))
 
 class SubcontentField(forms.MultipleChoiceField):
     """
@@ -160,15 +164,6 @@ class BaseForm(forms.ModelForm):
         ## make the description textarea a bit smaller
         if 'description' in self.fields:
             self.fields['description'].widget.attrs['rows'] = 4
-
-        if 'tags' in self.fields:
-            self.fields['tags'].widget.attrs['class'] = "tagManager"
-            self.fields['tags'].widget.attrs['data-role'] = "tagsinput"
-            self.fields['tags'].widget.attrs['data-provide'] = "typeahead"
-            ## The placeholder is used to size the tag input, which will
-            ## default to 1 if unspecified.
-            self.fields['tags'].widget.attrs['placeholder'] = " " * 30
-            self.fields['tags'].required = False
 
         ## workaround for https://code.djangoproject.com/ticket/21173
         for patch_dt in ("publication", "expire", "created"):

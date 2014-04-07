@@ -5,7 +5,7 @@
 
 {% block angular_init %}
 <script type="text/javascript">
-  var extradeps = ["contentbrowser"];
+  var extradeps = ["contentbrowser", "decipher.tags", "ui.bootstrap.typeahead"];
 </script>
 {% endblock %}
 
@@ -15,7 +15,7 @@
 <link rel="stylesheet" href="{% static "css/wheel3.css" %}" media="screen, projection, print"/>
 <link rel="stylesheet" href="{% static "css/wheel_content.css" %}" media="screen, projection, print"/>
 <link rel="stylesheet" href="{% static "css/upload/jquery.fileupload-ui.css" %}" media="screen, projection, print"/>
-<link rel="stylesheet" href="{% static "tagmanager/bootstrap-tagsinput.css" %}" media="screen, projection, print"/>
+<link rel="stylesheet" href="{% static "angular-tags/angular-tags-0.3.1.css" %}"/>
 
 {% endgranule %}
 {% granule "javascript" %}
@@ -28,8 +28,6 @@
 <script src="{% static "js/upload/jquery.fileupload-process.js" %}"></script>
 <script src="{% static "js/upload/jquery.fileupload-resize.js" %}"></script>
 <script src="{% static "js/upload/jquery.fileupload-validate.js" %}"></script>
-<script src="{% static "tagmanager/bootstrap-tagsinput.js" %}"></script>
-<script src="{% static "tagmanager/typeahead.js" %}"></script>
 
 <script type="text/javascript" charset="utf-8">
     var upload_modal = (function() {
@@ -509,29 +507,12 @@
         }
     }
 
-    $(document).ready(function() {
-        /*
-         * Messy hack; bootstrap3 broke all existing tags/typeahead combo's.
-         * Make sure tag gets added and input gets cleared.
-         * Assumes there's a single tag input.
-         * Dropdown remains broken - gets clipped by accordeon.
-         */
-        $(".tagManager").tagsinput('input').typeahead(
-          {name: "tags", source: {{typeahead_tags|safe}},
-           updater:$.proxy(function (value) {
-          $(".tagManager").tagsinput('add', value);
-          $("div.bootstrap-tagsinput input").val("");
-          
-        })});
-        $("div.bootstrap-tagsinput").css("width", "100%");
-        $("div.bootstrap-tagsinput input").addClass('form-control'
-        );
-    });
 
 </script>
 
 <script src="{% static "js/ui-bootstrap-0.10.0.min.js" %}"></script>
 <script src="{% static "js/ui-bootstrap-tpls-0.10.0.min.js" %}"></script>
+<script src="{% static "angular-tags/angular-tags-0.3.1-tpls.js" %}"></script>
 <script src="{% static "js/admin.js" %}"></script>
 <script src="{% static "js/contentbrowser.js" %}"></script>
 
