@@ -60,9 +60,11 @@ class TagWidget(forms.TextInput):
         if value is not None and not isinstance(value, basestring):
             value = ",".join(o.tag.name for o in value.select_related("tag"))
 
+        attrs['class'] = "tag-input form-control"
+
         final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
         # return mark_safe(u'<tags model="foo"></tags>')
-        return mark_safe(u'<tags model="[\'ivo\', \'bar\']" src="b for b in [\'aaaaaa\', \'aaaaaa1\', \'aaaaaa2\', \'aaaaa3a\', \'aaaaaa4\', \'aa5aaaa\', \'aaaa6aa\', \'bbbbbb\', \'cccccc\', \'dddddd\', \'eeeeee\', \'ffffff\']" %s></tags>' % flatatt(final_attrs))
+        return mark_safe(u'<tags options="{addable:true}" value="[\'ivo\', \'bar\']" src="b for b in [\'aaaaaa\', \'aaaaaa1\', \'aaaaaa2\', \'aaaaa3a\', \'aaaaaa4\', \'aa5aaaa\', \'aaaa6aa\', \'bbbbbb\', \'cccccc\', \'dddddd\', \'eeeeee\', \'ffffff\']" %s></tags>' % flatatt(final_attrs))
 
 class SubcontentField(forms.MultipleChoiceField):
     """
