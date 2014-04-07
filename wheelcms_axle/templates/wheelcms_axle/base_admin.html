@@ -516,16 +516,20 @@
          * Assumes there's a single tag input.
          * Dropdown remains broken - gets clipped by accordeon.
          */
-        $(".tagManager").tagsinput('input').typeahead(
-          {name: "tags", source: {{typeahead_tags|safe}},
-           updater:$.proxy(function (value) {
-          $(".tagManager").tagsinput('add', value);
-          $("div.bootstrap-tagsinput input").val("");
+        var tag_input = $(".tagManager").tagsinput('input');
+        if(tag_input) {
+          tag_input.typeahead({
+                name: "tags", source: {{typeahead_tags|safe}},
+                updater:$.proxy(function (value) {
+                    $(".tagManager").tagsinput('add', value);
+                    $("div.bootstrap-tagsinput input").val("");
           
-        })});
+                })
+          });
+        }
+
         $("div.bootstrap-tagsinput").css("width", "100%");
-        $("div.bootstrap-tagsinput input").addClass('form-control'
-        );
+        $("div.bootstrap-tagsinput input").addClass('form-control');
     });
 
 </script>
