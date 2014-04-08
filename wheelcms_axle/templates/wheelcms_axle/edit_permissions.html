@@ -10,7 +10,13 @@
 {% endblock %}
 
 
+
 {% block form_form %}
+<div class="row">
+  <div class="col-md-12">
+    <h3>Permissions</h3>
+  </div>
+</div>
 <form method="post" action="{{spoke.instance.get_absolute_url}}+auth/">
   {% csrf_token %}
   <table class="table table-condensed table-responsive table-bordered">
