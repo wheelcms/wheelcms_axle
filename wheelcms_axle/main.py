@@ -140,15 +140,6 @@ class MainHandler(WheelRESTHandler):
         return None
 
     @context
-    def typeahead_tags(self):
-        """ make this a +action? XXX """
-        import json
-        from taggit.models import Tag
-
-        tags = list(Tag.objects.values_list("name", flat=True).all())
-        return json.dumps(tags)
-
-    @context
     def tabs(self, spoke=None):
         """ return the tabs / actions the user has access to """
         if not spoke and self.instance and self.instance.content():
