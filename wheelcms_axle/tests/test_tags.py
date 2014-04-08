@@ -12,7 +12,7 @@ class TestTagAction(object):
     def test_empty(self, client):
         s = Spoke(mock.MagicMock())
         handler = mock.MagicMock()
-        request = mock.MagicMock(request={})
+        request = mock.MagicMock(GET={})
 
         res = s.tags(handler, request, "tags")
         assert loads(res.content) == []
