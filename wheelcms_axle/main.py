@@ -139,14 +139,6 @@ class MainHandler(WheelRESTHandler):
                 return model.spoke()
         return None
 
-    @json
-    def handle_tags(self):
-        """ make this a +action? XXX """
-        from taggit.models import Tag
-
-        tags = list(Tag.objects.values_list("name", flat=True).all())
-        return tags
-
     @context
     def tabs(self, spoke=None):
         """ return the tabs / actions the user has access to """

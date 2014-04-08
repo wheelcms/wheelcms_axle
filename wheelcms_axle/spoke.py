@@ -4,7 +4,10 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.conf import settings
 
+from taggit.models import Tag
+
 from haystack import indexes
+
 
 from wheelcms_axle.content import Content
 from wheelcms_axle.node import Node
@@ -19,6 +22,7 @@ from .impexp import WheelSerializer
 from .actions import action
 
 from two.ol.util import classproperty
+from two.ol.base import json
 
 from warnings import warn
 
@@ -480,6 +484,14 @@ class Spoke(object):
         ctx['roles'] = roles
         ctx['permissions'] = permissions
         return handler.template("wheelcms_axle/edit_permissions.html", **ctx)
+
+    @action
+    @json
+    def tags(self, handler, request, action):
+        q = request.GET.get('query', '').lower()
+        tags = list(Tag.objects.filter(name__istartswith=q
+                    ).values_list("name", flat=True).all())
+        return tags
 
 class FileSpoke(Spoke):
     @classproperty

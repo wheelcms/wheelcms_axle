@@ -65,10 +65,7 @@ class TagWidget(forms.TextInput):
         final_attrs["value"] = value
         final_attrs["ng-model"] = "hidden_tags"
 
-        return mark_safe("""<tags-input ng-model="tags">
-<auto-complete source="loadTags($query)"></auto-complete>
-</tags-input><input%s>""" % flatatt(final_attrs))
-        # return super(TagWidget, self).render(name, value, attrs)
+        return mark_safe("<inputwrap %s></inputwrap>" % flatatt(final_attrs))
 
 class SubcontentField(forms.MultipleChoiceField):
     """

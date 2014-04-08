@@ -133,16 +133,6 @@ app.directive('optionsDisabled', function($parse) {
 app.controller('EditCtrl', function($http, $rootScope, $scope, $location) {
     /* can't use $location.hash() or html5mode stuff */
     $scope.advanced_open = /collapseadvanced$/.test(document.location.hash);
-    
-    $scope.hidden_tags = "";
-
-    $scope.tags = "aaa,bbb,ccc";
-
-
-
-    $scope.loadTags = function(query) {
-        return $http.get('/tags?query=' + query);
-    };
 });
 
 
