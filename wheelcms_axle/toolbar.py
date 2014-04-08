@@ -16,7 +16,7 @@ class Toolbar(object):
 
         Possible toolbar/context states:
         view - viewing content
-        update - updating contetn
+        update - updating content
         list - listing content
         create - creating content
         special - not in a content-context

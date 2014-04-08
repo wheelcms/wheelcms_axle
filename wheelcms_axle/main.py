@@ -461,7 +461,7 @@ class MainHandler(WheelRESTHandler):
 
         self.context['redirect_cancel'] = self.instance.get_absolute_url() + \
                                           "?info=Update+cancelled"
-        self.context['toolbar'] = Toolbar(self.instance, self.request, status="edit")
+        self.context['toolbar'] = Toolbar(self.instance, self.request, status="update")
 
         formclass =  typeinfo.form
         slug = instance.slug(language=language)
@@ -520,7 +520,6 @@ class MainHandler(WheelRESTHandler):
                 args['initial']['language'] = language
             self.context['form'] = formclass(**args)
 
-        self.context['toolbar'].status = 'update'
         if create_translation:
             primary_content = self.instance.primary_content()
             ## there must be primary content, else the node would be unattached
@@ -613,6 +612,8 @@ class MainHandler(WheelRESTHandler):
             if not auth.has_access(self.request, spoke, spoke, required_permission):
                 return self.forbidden()
 
+            ## if there's an action, assume it's actually an update action.
+            self.context['toolbar'] = Toolbar(self.instance, self.request, status="update")
             return action_handler(self, self.request, action)
 
         if not auth.has_access(self.request, spoke, spoke, perm):
