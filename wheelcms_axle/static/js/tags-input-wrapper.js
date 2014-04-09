@@ -12,7 +12,13 @@ mod.directive('inputwrap', function($rootScope, $http) {
             flat_tags: '@value'
         },
         controller: function($scope, $element, $attrs) {
-            $scope.tags = $scope.flat_tags.split(",");
+            $scope.flat_tags = $attrs.value;
+            if($scope.flat_tags) {
+                $scope.tags = $scope.flat_tags.split(",");
+            }
+            else {
+                $scope.tags = [];
+            }
 
             $scope.loadTags = function(query) {
                 return $http.get($rootScope.urlbase + '+tags/?query=' + query);
