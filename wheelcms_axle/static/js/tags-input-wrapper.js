@@ -12,7 +12,6 @@ mod.directive('inputwrap', function($rootScope, $http) {
             flat_tags: '@value'
         },
         controller: function($scope, $element, $attrs) {
-            $scope.flat_tags = $attrs.value;
             if($scope.flat_tags) {
                 $scope.tags = $scope.flat_tags.split(",");
             }
