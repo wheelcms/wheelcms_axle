@@ -57,6 +57,12 @@ class TestTagAction(object):
 class TestTagWidget(object):
     """ Test some of the specific behaviour in the TagWidget """
 
+    def test_nonevalue(self):
+        """ value can be None """
+        tw = TagWidget()
+        res = tw.render("tags", None, attrs={'foo':'bar'})
+        assert 'value=""' in res
+
     def test_stringvalue(self):
         """ It can be passed a string value """
         tw = TagWidget()

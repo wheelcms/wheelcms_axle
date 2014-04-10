@@ -62,7 +62,7 @@ class TagWidget(forms.TextInput):
             value = ",".join(o.tag.name for o in value.select_related("tag"))
 
         final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
-        final_attrs["value"] = value
+        final_attrs["value"] = value or ''
         final_attrs["ng-model"] = "hidden_tags"
 
         return mark_safe("<inputwrap %s></inputwrap>" % flatatt(final_attrs))
