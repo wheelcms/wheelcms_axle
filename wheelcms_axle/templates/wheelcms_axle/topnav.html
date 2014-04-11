@@ -4,15 +4,16 @@
     <li class="{% if item.active %}active{% endif %} dropdown">
       <a href="{{item.url}}" data-target="#"
          data-toggle="dropdown" class="dropdown-toggle">
-         {{item.title}}
+          {{item.title}}
          <b class="caret"></b>
       </a>
       <ul class="dropdown-menu" role="menu">
         {# repeat toplevel item here since the navbar link will toggle the dropdown #}
-        <li><a href="{{item.url}}">{{item.title}}</a></li>
         {% for s in item.sub %}
           <li><a href="{{s.url}}">{{s.title}}</a></li>
         {% endfor %}
+        <li class="divider"></li>
+        <li> <a href="{{item.url}}"><i class="glyphicon glyphicon-th"></i> {{item.title}}</a></li>
       </ul>
     </li>
     {% else %}
