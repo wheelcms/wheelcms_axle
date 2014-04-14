@@ -13,6 +13,16 @@ class TestParentField(object):
         assert f.parent is None
         assert f.parenttype == something
 
+    def test_default_widget(self):
+        something = mock.Mock()
+        f = ParentField(something)
+        assert isinstance(f.widget, forms.HiddenInput)
+
+    def test_explicit_widget(self):
+        something = mock.Mock()
+        f = ParentField(something, widget=something)
+        assert f.widget == something
+
     def test_clean_noparent(self):
         something = mock.Mock()
         f = ParentField(something)

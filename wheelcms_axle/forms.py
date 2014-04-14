@@ -21,11 +21,11 @@ from django.utils.safestring import mark_safe
 from django.forms.util import flatatt
 
 class ParentField(forms.Field):
-    def __init__(self, parenttype=None, *args, **kw):
+    def __init__(self, parenttype=None, widget=None, *args, **kw):
         super(ParentField, self).__init__(*args, **kw)
         self.parenttype = parenttype
         self.required = False
-        self.widget = forms.HiddenInput()
+        self.widget = widget or forms.HiddenInput()
         self.parent = None
 
     def clean(self, v):
