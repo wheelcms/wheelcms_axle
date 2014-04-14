@@ -286,7 +286,6 @@ class ImageContent(FileContent):
     class Meta(FileContent.Meta):
         abstract = True
 
-from haystack import exceptions, site
 
 class TypeRegistry(dict):
     def __init__(self, *a, **b):
@@ -302,12 +301,6 @@ class TypeRegistry(dict):
                     self._extenders.setdefault(e, []).append(t)
             except TypeError: # not iterable
                 self._extenders.setdefault(extends, []).append(t)
-
-        if t.add_to_index:
-            try:
-                site.register(t.model, t.index())
-            except exceptions.AlreadyRegistered:
-                pass
 
     def extenders(self, model):
         """ find extenders for a given model """
