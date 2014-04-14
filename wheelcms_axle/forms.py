@@ -34,7 +34,6 @@ class ParentField(forms.Field):
                 return self.parenttype.objects.get(pk=int(v))
             except self.parenttype.DoesNotExist:
                 pass
-
         
         if self.parent:
             if self.parenttype is None \
