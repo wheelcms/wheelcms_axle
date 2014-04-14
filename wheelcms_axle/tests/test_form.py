@@ -45,6 +45,14 @@ class TestParentField(object):
 
         assert f.clean("") == "content"
 
+    def test_clean_value(self):
+        parenttype = mock.Mock(**{"objects.get.return_value":"explicit"})
+        f = ParentField(parenttype)
+        
+        assert f.clean(42) == "explicit"
+        assert parenttype.objects.get.call_args[1].get('pk') == 42
+
+
     def test_forminit(self, client):
         """ A ParentField should receive its parent form the form """
         ## unfortunately, BaseForm depends on lots of stuff, including

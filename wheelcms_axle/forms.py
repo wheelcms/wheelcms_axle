@@ -22,13 +22,20 @@ from django.forms.util import flatatt
 
 class ParentField(forms.Field):
     def __init__(self, parenttype=None, widget=None, *args, **kw):
-        super(ParentField, self).__init__(*args, **kw)
+        super(ParentField, self).__init__(widget=widget, *args, **kw)
         self.parenttype = parenttype
         self.required = False
         self.widget = widget or forms.HiddenInput()
         self.parent = None
 
     def clean(self, v):
+        if self.parenttype and v not in ('', None):
+            try:
+                return self.parenttype.objects.get(pk=int(v))
+            except self.parenttype.DoesNotExist:
+                pass
+
+        
         if self.parent:
             if self.parenttype is None \
                or isinstance(self.parent.content(), self.parenttype):
