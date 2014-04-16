@@ -234,6 +234,32 @@ class TestToolbar(object):
         assert not clipboard['cut']
         assert set(clipboard['items']) == set((t1, t2))
 
+    def test_single_child_empty(self):
+        """ No allowed children means there's not "a single" child """
+        with mock.patch("wheelcms_axle.toolbar.Toolbar.type",
+                        return_value=mock.Mock(children=())):
+            t = Toolbar(mock.Mock(), mock.Mock(), "view")
+            assert t.single_child() is None
+
+    def test_single_child_multi(self):
+        """ multiple allowed children means there's not "a single" child """
+        c1 = mock.Mock()
+        c2 = mock.Mock()
+
+        with mock.patch("wheelcms_axle.toolbar.Toolbar.type",
+                        return_value=mock.Mock(children=(c1, c2))):
+            t = Toolbar(mock.Mock(), mock.Mock(), "view")
+            assert t.single_child() is None
+
+    def test_single_child_single(self):
+        """ only valid case where there's "a single" child """
+        c1 = mock.Mock()
+        with mock.patch("wheelcms_axle.toolbar.Toolbar.type",
+                        return_value=mock.Mock(children=(c1,))):
+            t = Toolbar(mock.Mock(), mock.Mock(), "view")
+            assert t.single_child() is c1
+
+
 from django.utils import translation
 from .fixtures import multilang_ENNLFR, active_language
 

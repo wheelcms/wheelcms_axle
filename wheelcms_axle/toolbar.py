@@ -32,6 +32,17 @@ class Toolbar(object):
 
         return type_registry.get(self.instance.content().get_name())
 
+    def single_child(self):
+        """ return the single child if there's only one, else None.
+            This allows for a create button in stead of a dropup
+        """
+        type = self.type()
+        if type is None:
+            return None
+        if len(type.children) == 1:
+            return type.children[0]
+        return None
+
     def primary(self):
         """ return type details for this type's primary content, if any """
         type = self.type()
