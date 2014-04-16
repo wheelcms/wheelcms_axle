@@ -15,6 +15,8 @@ from twotest.util import create_request
 
 from .utils import DummyContent
 
+import mock
+
 import pytest
 
 @pytest.mark.usefixtures("localtyperegistry")
@@ -29,53 +31,79 @@ class TestToolbar(object):
         return set(x['name'] for x in children) == \
                set(c.name() for c in type_registry.values())
 
-    def test_unconnected(self, client):
+    @mock.patch("wheelcms_axle.content.type_registry.values",
+                return_value=(mock.Mock(), mock.Mock()))
+    def test_unconnected(self, mocked_registry):
         """
             Test behaviour on unconnected node - allow
             creation of all types of sub content
         """
-        root = Node.root()
-        toolbar = Toolbar(root, superuser_request("/"), "view")
-        assert toolbar.show_create()
-        assert self.allchildren(toolbar.children())
+        with mock.patch("wheelcms_axle.toolbar.Toolbar.type",
+                        return_value=None):
+            t = Toolbar(mock.Mock(), mock.Mock(), "view")
+            assert t.show_create()
+            assert self.allchildren(t.children())
 
-    def test_connected_no_restrictions(self, client):
+    @mock.patch("wheelcms_axle.content.type_registry.values",
+                return_value=(mock.Mock(), mock.Mock()))
+    def test_connected_no_restrictions(self, mocked_registry):
         """
             A node with content without restrictions
         """
-        root = Node.root()
-        content = Type1(node=root)
-        content.save()
-        toolbar = Toolbar(root, superuser_request("/"), "view")
-        assert toolbar.show_create()
-        assert self.allchildren(toolbar.children())
+        class T(mock.Mock):
+            primary = children = None
+            def allowed_spokes(self):
+                return type_registry.values()
 
-    def test_restriction_type(self, client):
+        with mock.patch("wheelcms_axle.toolbar.Toolbar.type",
+                        return_value=T):
+            t = Toolbar(mock.Mock(), mock.Mock(), "view")
+            assert t.show_create()
+            assert self.allchildren(t.children())
+
+    def test_restriction_type(self):
         """
             A single childtype allowed
         """
-        class DummyNode(object):
-            def content(self):
+        c = mock.Mock()
+        class T(mock.Mock):
+            primary = None
+            children = (c,)
+            def allowed_spokes(self):
+                return (c,)
 
-                class DummyType(Spoke):
-                    model = DummyContent
-                    children = (Type1Type,)
-                    add_to_index = False
+        with mock.patch("wheelcms_axle.toolbar.Toolbar.type",
+                        return_value=T):
+            t = Toolbar(mock.Mock(), mock.Mock(), "view")
+            assert t.show_create()
+            children = t.children()
+            assert len(children) == 1
+            assert children[0]['name'] == c.name()
+            assert children[0]['title'] == c.title
+            assert children[0]['icon_path'] == c.full_type_icon_path()
 
-                    @classmethod
-                    def name(cls):
-                        return cls.model.get_name()
+        # class DummyNode(object):
+        #     def content(self):
 
-                type_registry.register(DummyType)
+        #         class DummyType(Spoke):
+        #             model = DummyContent
+        #             children = (Type1Type,)
+        #             add_to_index = False
 
-                return DummyContent()
+        #             @classmethod
+        #             def name(cls):
+        #                 return cls.model.get_name()
 
-        toolbar = Toolbar(DummyNode(), superuser_request("/"), "view")
-        children = toolbar.children()
-        assert len(children) == 1
-        assert children[0]['name'] == Type1Type.name()
-        assert children[0]['title'] == Type1Type.title
-        assert children[0]['icon_path'] == Type1Type.full_type_icon_path()
+        #         type_registry.register(DummyType)
+
+        #         return DummyContent()
+
+        # toolbar = Toolbar(DummyNode(), superuser_request("/"), "view")
+        # children = toolbar.children()
+        # assert len(children) == 1
+        # assert children[0]['name'] == Type1Type.name()
+        # assert children[0]['title'] == Type1Type.title
+        # assert children[0]['icon_path'] == Type1Type.full_type_icon_path()
 
     def test_restriction_none(self, client):
         """
