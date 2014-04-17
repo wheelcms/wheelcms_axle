@@ -40,7 +40,7 @@ basemodel.factory('BaseModel',
         save: function() {
             var deferred = $q.defer();
             var m = this;
-            $http.post($rootScope.urlbase + "+" + this.method + "/", {
+            $http.post(this.construct_method(this.method), {
                     data:$filter('json')(_data)
             }).success(
                 function(data, status, headers, config) {
@@ -81,6 +81,7 @@ basemodel.factory('BaseModel',
             if(existing.state != "added") {
                 existing.state = "modified";
             }
+            return existing;
         }
     };
 }]);
