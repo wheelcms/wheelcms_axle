@@ -129,8 +129,11 @@ app.directive('optionsDisabled', function($parse) {
     };
 });
 
+app.controller('AdminCtrl', function($rootScope, $scope) {
+    $scope.init = function(urlbase) {
+        $rootScope.urlbase = urlbase;
+    };
 
-app.controller('EditCtrl', function($http, $rootScope, $scope, $location) {
     /* can't use $location.hash() or html5mode stuff */
     $scope.advanced_open = /collapseadvanced$/.test(document.location.hash);
 });

@@ -1,12 +1,13 @@
-contentbrowser = angular.module('contentbrowser', []);
+contentbrowser = angular.module('contentbrowser', ["ui.bootstrap"]);
 
 /*
  * props_or_browser is invoked by TinyMCE. Hook it into our AngularJS
  * controllers
  */
 function props_or_browser(path, type, options, callback) {
-    var scope =  angular.element($("#wheelcms-admin").get()).scope();
+    var scope =  angular.element($("#content").get()).scope();
 
+    // XXX Use events in stead?
     scope.$apply(
         function() {
             scope.select_content(path, type, options, callback);
@@ -14,15 +15,7 @@ function props_or_browser(path, type, options, callback) {
     );
 }
 
-/*
- * Admin wide controller, bootstraps the calling of specific
- * dialogs
- */
-app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
-    $scope.init = function(urlbase) {
-        $rootScope.urlbase = urlbase;
-    };
-
+contentbrowser.controller('BrowseCtrl', function($rootScope, $scope, $modal) {
     var type = "link";
 
     $scope.select_content = function(path, _type, options, callback) {
@@ -46,11 +39,10 @@ app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
     };
 
     function open_browser(path, type, options, callback) {
-        console.log("open_browser(" + path + ")");
         var modalInstance = $modal.open({
             templateUrl: 'BrowseModal.html',
             windowClass: "browsemodal",
-            controller: "BrowseCtrl",
+            controller: "BrowseModalCtrl",
             resolve: {
                 path: function() { return path; },
                 type: function() { return type; },
@@ -112,7 +104,6 @@ app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
                         selected.path += '+download';
                     }
                 }
-                console.log("callback", selected);
                 callback(selected.path, selected.props);
             }
         }, function (reason) {
@@ -122,9 +113,8 @@ app.controller('AdminCtrl', function($rootScope, $scope, $modal) {
             }
         });
 
-    };
+    }
 
-    //$scope.open_browser("", "link", {}, function(res) { console.log("RESULT " + res); });
 });
 
 contentbrowser.factory("PropsModal", function() {
@@ -135,7 +125,6 @@ contentbrowser.factory("BrowseModal", function() {
 
 contentbrowser.factory("UploadModal", function() {
 });
-
 
 contentbrowser.controller('PropsCtrl',
            ["$scope", "$modalInstance", "$compile", "$http", "PropsModal", "path", "type", "options",
@@ -183,7 +172,6 @@ contentbrowser.controller('UploadCtrl',
 
     $scope.state = {};
 
-    console.log("UploadCtr(" + path + ")");
     if(path === "") {
         path = "/";
     }
@@ -253,7 +241,6 @@ contentbrowser.controller('UploadCtrl',
     };
 
     $scope.type_change = function() {
-        console.log($scope.state.content_type);
         load_contentform();
     };
 
@@ -291,7 +278,7 @@ contentbrowser.controller('UploadCtrl',
  * selectable
  * - currently encoded in ng-click-openURL. But also returned by panels, latter suffices?
  */
-contentbrowser.controller('BrowseCtrl',
+contentbrowser.controller('BrowseModalCtrl',
                ["$scope", "$modalInstance", "$compile", "$http", "BrowseModal", "path",
                 "type", "options",
                function($scope, $modalInstance, $compile, $http, BrowseModal,
@@ -316,7 +303,6 @@ contentbrowser.controller('BrowseCtrl',
                         {active: false, disabled: false }];
 
         if(mode == "link") {
-            console.log("Link");
             $scope.tabs[1].disabled = false;
             $scope.tabs[2].disabled = true;
         }
@@ -384,7 +370,6 @@ contentbrowser.controller('BrowseCtrl',
     init(path, type, options);
 
     $scope.openURL = function(newpath) {
-        console.log("klik " + newpath);
         load_panels(newpath);
         $scope.path = newpath;
     };
@@ -419,7 +404,6 @@ contentbrowser.controller('BrowseCtrl',
      * Button actions
      */
     $scope.ok = function () {
-      console.log("OK " + $scope.path);
       if(tab == "browse") {
         path = $scope.path;
       } else { // (external) url or image

@@ -4,8 +4,10 @@
 {% load granules %}
 
 {% block angular_init %}
+{{block.super}}
 <script type="text/javascript">
-  var extradeps = ["contentbrowser", "tagInputWrapper"];
+  extradeps.push("contentbrowser");
+  extradeps.push("tagInputWrapper");
 </script>
 {% endblock %}
 
@@ -523,130 +525,135 @@
 {% endblock %}
 {% block base_main %}
 
-<script type="text/ng-template" id="BrowseModal.html">
-    <div class="modal-content">
-      <div class="modal-body">
-        <tabset>
-          <tab heading="Local / Browse" active="tabs[0].active"
-            select="browse_tab()"
-            ng-hide="$parent.tabs[0].disabled">
-            <div class="row" id="browsecrumbs">
-              <div class="col-sm-12 crumbcontainer">
-              </div>
-            </div>
-            <div class="row" id="panels">
-              <div class="col-sm-3 panel panel0" data-panel="0" id="panel0">
-              </div>
-              <div class="col-sm-4 panel panel1" data-panel="1" id="panel1">
-              </div>
-              <div class="col-sm-3 panel panel2" data-panel="2" id="panel2">
-              </div>
-            </div>
-          </tab>
-          <tab heading="External Link" active="tabs[1].active"
-               select="external_url_tab()"
-               ng-hide="$parent.tabs[1].disabled">
-            <div class="row">
-              <div class="col-sm-6">
-                <form>
-                  <legend>External URL</legend>
-                  <label class="control-label" for="external_url">URL</label>
-                  <div class="input-append">
-                    <input id="external_url" type="text" ng-model="selected.external_url" name="url" maxlength="256" />
-                    <button id="external_url_preview" class="btn">Preview <i class="glyphicon glyphicon-chevron-right"></i></button>
-                  </div>
-                  <div class="help-block">
-                    Not all sites (e.g. facebook) may support preview/embedding
-                  </div>
-                </form>
-              </div>
-              <div class="col-sm-6">
-                <iframe width="100%" id="external_iframe" src=""></iframe>
-              </div>
-            </div>
-          </tab>
-          <tab heading="External Image" active="tabs[2].active"
-               select="external_image_tab"
-               ng-hide="$parent.tabs[2].disabled">
-            <div class="row">
-              <div class="col-sm-6">
-                <form>
-                  <legend>External Image</legend>
-                  <label class="control-label" for="external_image_url">URL</label>
-                  <div class="input-append">
-                    <input id="external_image_url" ng-model="selected.external_url" type="text" name="url" maxlength="256" />
-                    <button id="external_image_url_preview" class="btn">Preview <i class="glyphicon glyphicon-chevron-right"></i></button>
-                  </div>
-                  <div class="help-block">
-                    Not all sites (e.g. facebook) may support preview/embedding
-                  </div>
-                </form>
-              </div>
-              <div class="col-sm-6">
-                <img id="external_image" width="100%" src="{% static 'img/preview.png' %}" class="img-polaroid">
-              </div>
-            </div>
-          </tab>
-        </tabset>
-      </div> <!-- modal-body -->
-      <div class="modal-footer">
-        <button class="btn" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">Close</button>
-        <button class="btn btn-info modal_upload" ng-disabled="!upload_enabled()" ng-click="upload()">Upload</button>
-        <button class="btn btn-primary modal_select" ng-disabled="!select_enabled()" ng-click="ok()">Select</button>
-      </div>
-   </div> <!-- modal-content -->
-</script>
+<div ng-app="wheelcms-admin" ng-init="init('{{spoke.instance.get_absolute_url}}');" ng-controller="AdminCtrl" id="wheelcms-admin">
 
-<script type="text/ng-template" id="UploadModal.html">
+  <div ng-controller="BrowseCtrl" id="content">
+    <script type="text/ng-template" id="BrowseModal.html">
+        <div class="modal-content">
+          <div class="modal-body">
+            <tabset>
+              <tab heading="Local / Browse" active="tabs[0].active"
+                select="browse_tab()"
+                ng-hide="$parent.tabs[0].disabled">
+                <div class="row" id="browsecrumbs">
+                  <div class="col-sm-12 crumbcontainer">
+                  </div>
+                </div>
+                <div class="row" id="panels">
+                  <div class="col-sm-3 panel panel0" data-panel="0" id="panel0">
+                  </div>
+                  <div class="col-sm-4 panel panel1" data-panel="1" id="panel1">
+                  </div>
+                  <div class="col-sm-3 panel panel2" data-panel="2" id="panel2">
+                  </div>
+                </div>
+              </tab>
+              <tab heading="External Link" active="tabs[1].active"
+                   select="external_url_tab()"
+                   ng-hide="$parent.tabs[1].disabled">
+                <div class="row">
+                  <div class="col-sm-6">
+                    <form>
+                      <legend>External URL</legend>
+                      <label class="control-label" for="external_url">URL</label>
+                      <div class="input-append">
+                        <input id="external_url" type="text" ng-model="selected.external_url" name="url" maxlength="256" />
+                        <button id="external_url_preview" class="btn">Preview <i class="glyphicon glyphicon-chevron-right"></i></button>
+                      </div>
+                      <div class="help-block">
+                        Not all sites (e.g. facebook) may support preview/embedding
+                      </div>
+                    </form>
+                  </div>
+                  <div class="col-sm-6">
+                    <iframe width="100%" id="external_iframe" src=""></iframe>
+                  </div>
+                </div>
+              </tab>
+              <tab heading="External Image" active="tabs[2].active"
+                   select="external_image_tab"
+                   ng-hide="$parent.tabs[2].disabled">
+                <div class="row">
+                  <div class="col-sm-6">
+                    <form>
+                      <legend>External Image</legend>
+                      <label class="control-label" for="external_image_url">URL</label>
+                      <div class="input-append">
+                        <input id="external_image_url" ng-model="selected.external_url" type="text" name="url" maxlength="256" />
+                        <button id="external_image_url_preview" class="btn">Preview <i class="glyphicon glyphicon-chevron-right"></i></button>
+                      </div>
+                      <div class="help-block">
+                        Not all sites (e.g. facebook) may support preview/embedding
+                      </div>
+                    </form>
+                  </div>
+                  <div class="col-sm-6">
+                    <img id="external_image" width="100%" src="{% static 'img/preview.png' %}" class="img-polaroid">
+                  </div>
+                </div>
+              </tab>
+            </tabset>
+          </div> <!-- modal-body -->
+          <div class="modal-footer">
+            <button class="btn" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">Close</button>
+            <button class="btn btn-info modal_upload" ng-disabled="!upload_enabled()" ng-click="upload()">Upload</button>
+            <button class="btn btn-primary modal_select" ng-disabled="!select_enabled()" ng-click="ok()">Select</button>
+          </div>
+       </div> <!-- modal-content -->
+    </script>
+    
+    <script type="text/ng-template" id="UploadModal.html">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="uploadModalLabel"><[upload_title()]></h3>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-lg-12 upload-alert">
+              </div>
+            </div>
+            <div class="form-horizontal">
+              <div class="form-group">
+                <label class="control-label col-lg-2" for="select_type">Upload</label>
+                <div class="col-lg-10">
+                  <div class="controls upload_types">
+                    <select ng-change="type_change()"
+                            ng-model="state.content_type"
+                            class="select_type form-control"
+                            ng-options="t.title for t in upload_types">
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-lg-12 uploadform">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn modal_close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">Close</button>
+            <button class="btn btn-primary modal_select" ng-disabled="!canSave()" ng-click="ok()">Save</button>
+          </div>
+    </script>
+    
+    <script type="text/ng-template" id="PropsModal.html">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="uploadModalLabel"><[upload_title()]></h3>
+        <h3>Selection properties</h3>
       </div>
-      <div class="modal-body">
-        <div class="row">
-          <div class="col-lg-12 upload-alert">
-          </div>
-        </div>
-        <div class="form-horizontal">
-          <div class="form-group">
-            <label class="control-label col-lg-2" for="select_type">Upload</label>
-            <div class="col-lg-10">
-              <div class="controls upload_types">
-                <select ng-change="type_change()"
-                        ng-model="state.content_type"
-                        class="select_type form-control"
-                        ng-options="t.title for t in upload_types">
-                </select>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-lg-12 uploadform">
-          </div>
-        </div>
+      <div class="modal-body" id="detailsModalBody">
       </div>
       <div class="modal-footer">
-        <button class="btn modal_close" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">Close</button>
-        <button class="btn btn-primary modal_select" ng-disabled="!canSave()" ng-click="ok()">Save</button>
+        <button class="btn" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">Close</button>
+        <button class="btn btn-info modal_change" ng-click="change()">Change selection</button>
+        <button class="btn btn-primary modal_select" ng-click="ok()">Select</button>
       </div>
-</script>
-
-<script type="text/ng-template" id="PropsModal.html">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3>Selection properties</h3>
-  </div>
-  <div class="modal-body" id="detailsModalBody">
-  </div>
-  <div class="modal-footer">
-    <button class="btn" data-dismiss="modal" aria-hidden="true" ng-click="cancel()">Close</button>
-    <button class="btn btn-info modal_change" ng-click="change()">Change selection</button>
-    <button class="btn btn-primary modal_select" ng-click="ok()">Select</button>
-  </div>
-</script> <!-- detailsModal -->
+    </script> <!-- detailsModal -->
 
 
-{{ block.super }}
+  {{ block.super }}
 
+  </div> {# #content #}
+</div> {# wheelcms-admin #}
 {% endblock %}

@@ -1,8 +1,7 @@
 {% extends "wheelcms_axle/base_admin.html" %}
 {# base template for create/edit templates #}
 
-{% block base_main %}
-<div ng-app="wheelcms-admin" ng-init="init('{{spoke.instance.get_absolute_url}}');" ng-controller="AdminCtrl" id="wheelcms-admin">
+{% block main %}
 
 {{ block.super }}
 
@@ -18,7 +17,7 @@
 
 
 {% block form_form %}
-<div id="content" class="tab-pane active" ng-controller="EditCtrl">
+<div id="content" class="tab-pane active">
   <form role="form" method="post" action="{{form_action|default:'.'}}" class="form-horizontal checksave"
     {% if form.is_multipart %}enctype="multipart/form-data"{%endif%}>
     {% csrf_token %}
@@ -49,7 +48,6 @@
     </div>
   </form>
 </div>
-{% endblock %}
+{% endblock form_form %}
 
-</div> {# ng-app wheelcms-admin ng-controller AdminCtrl #}
-{% endblock %}
+{% endblock main %}
