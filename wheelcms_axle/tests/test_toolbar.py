@@ -82,28 +82,6 @@ class TestToolbar(object):
             assert children[0]['title'] == c.title
             assert children[0]['icon_path'] == c.full_type_icon_path()
 
-        # class DummyNode(object):
-        #     def content(self):
-
-        #         class DummyType(Spoke):
-        #             model = DummyContent
-        #             children = (Type1Type,)
-        #             add_to_index = False
-
-        #             @classmethod
-        #             def name(cls):
-        #                 return cls.model.get_name()
-
-        #         type_registry.register(DummyType)
-
-        #         return DummyContent()
-
-        # toolbar = Toolbar(DummyNode(), superuser_request("/"), "view")
-        # children = toolbar.children()
-        # assert len(children) == 1
-        # assert children[0]['name'] == Type1Type.name()
-        # assert children[0]['title'] == Type1Type.title
-        # assert children[0]['icon_path'] == Type1Type.full_type_icon_path()
 
     def test_restriction_none(self, client):
         """
