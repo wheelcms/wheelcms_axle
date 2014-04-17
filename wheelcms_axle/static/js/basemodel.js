@@ -16,6 +16,9 @@ basemodel.factory('BaseModel',
         method: '--error--',
 
         handle_data: function(data) { return data; },
+        construct_method: function(method) {
+            return $rootScope.urlbase + "+" + method + "/";
+        },
 
         retrieve: function() {
             var deferred = $q.defer();
@@ -25,7 +28,7 @@ basemodel.factory('BaseModel',
                 return deferred.promise;
             }
 
-            $http.get($rootScope.urlbase + "+" + this.method + "/").success(
+            $http.get(this.construct_method(this.method)).success(
                 function(data, status, headers, config) {
                     _data = m.handle_data(data);
                     deferred.resolve(data);
