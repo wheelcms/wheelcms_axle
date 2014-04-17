@@ -1,0 +1,87 @@
+import pytest
+import mock
+
+from twotest.util import create_request
+from two.ol.base import Forbidden
+
+from ..configuration import ConfigurationHandler
+import wheelcms_axle.permissions as p
+
+from .test_handler import superuser_request
+
+class TestConfigurationHandler(object):
+    """
+        The configuration handler is responsible for handling
+        multiple, dynamically addable, configuration tabs, classes
+        and actions
+    """
+    def test_permission_view_denied(self, client):
+        """ Verify view is guarded by modify_settings permission """
+        with mock.patch("wheelcms_axle.auth.has_access") as m:
+            m.return_value = False
+
+            request = create_request("GET", "/@/configuration", data={})
+            h = ConfigurationHandler(request)
+            with pytest.raises(Forbidden):
+                h.index()
+
+            assert m.call_args[0][3] == p.modify_settings
+
+    def test_permission_view_access(self, client):
+        """ if permission is present, call should succeed """
+        with mock.patch("wheelcms_axle.auth.has_access") as m:
+            m.return_value = True
+
+            request = create_request("GET", "/@/configuration", data={})
+            h = ConfigurationHandler(request)
+            assert h.index() is not None
+
+            assert m.call_args[0][3] == p.modify_settings
+
+    def test_permission_process_denied(self, client):
+        """ Verify process is guarded by modify_settings permission """
+        with mock.patch("wheelcms_axle.auth.has_access") as m:
+            m.return_value = False
+            request = create_request("POST", "/@/configuration", data={})
+            h = ConfigurationHandler(request)
+            with pytest.raises(Forbidden):
+                h.process()
+
+            assert m.call_args[0][3] == p.modify_settings
+
+    def test_permission_process_access(self):
+        """ if permission is present, call should succeed """
+        with mock.patch("wheelcms_axle.auth.has_access") as m:
+            m.return_value = True
+            request = create_request("POST", "/@/configuration", data={})
+            h = ConfigurationHandler(request)
+
+            assert h.process() is not None
+
+            assert m.call_args[0][3] == p.modify_settings
+
+    def test_action_view(self, client):
+        m = mock.Mock(**{"test.action":True})
+        mklass = mock.Mock(return_value=m)
+
+        request = superuser_request("/@/configuration", "GET", action="test")
+        with mock.patch("wheelcms_axle.registries."
+                        "configuration.configuration_registry.get",
+                        return_value=mklass):
+            h = ConfigurationHandler(request)
+            h.index(action="test")
+
+            assert m.test.call_args is not None
+
+    def test_action_process(self, client):
+        m = mock.Mock(**{"test.action":True})
+        mklass = mock.Mock(return_value=m)
+
+        request = superuser_request("/@/configuration", "POST", action="test")
+        with mock.patch("wheelcms_axle.registries."
+                        "configuration.configuration_registry.get",
+                        return_value=mklass):
+            h = ConfigurationHandler(request)
+            h.process(action="test")
+
+            assert m.test.call_args is not None

@@ -97,7 +97,7 @@ class ConfigurationHandler(FormHandler, WheelHandlerMixin):
 
     # @require(p.modify_settings)
     @applyrequest
-    def index(self, config=""):
+    def index(self, config="", action=""):
         ## XXX Decorate this!
         if not auth.has_access(self.request, Spoke, None, p.modify_settings):
             return self.forbidden()
@@ -106,12 +106,19 @@ class ConfigurationHandler(FormHandler, WheelHandlerMixin):
         klass = configuration_registry.get(config)
         self.context['tabs'] = self.construct_tabs(klass.id)
 
-        return klass().view(self, instance)
+        k = klass()
+
+        if action:
+            action_handler = getattr(k, action, None)
+            if action_handler and getattr(action_handler, 'action', False):
+                return getattr(k, action)(self, instance)
+
+        return k.view(self, instance)
 
 
     #@require(p.modify_settings)
     @applyrequest
-    def process(self, config=""):
+    def process(self, config="", action=""):
         ## XXX Decorate this!
         if not auth.has_access(self.request, Spoke, None, p.modify_settings):
             return self.forbidden()
@@ -119,6 +126,14 @@ class ConfigurationHandler(FormHandler, WheelHandlerMixin):
 
         klass = configuration_registry.get(config)
         self.context['tabs'] = self.construct_tabs(klass.id)
+
+        k = klass()
+
+        if action:
+            action_handler = getattr(k, action, None)
+            if action_handler and getattr(action_handler, 'action', False):
+                return getattr(k, action)(self, instance)
+
         return klass().process(self, instance)
 
 
