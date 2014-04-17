@@ -61,6 +61,7 @@ class TestConfigurationHandler(object):
             assert m.call_args[0][3] == p.modify_settings
 
     def test_action_view(self, client):
+        """ Verify an action gets forwarded appropriately """
         m = mock.Mock(**{"test.action":True})
         mklass = mock.Mock(return_value=m)
 
@@ -73,7 +74,22 @@ class TestConfigurationHandler(object):
 
             assert m.test.call_args is not None
 
+    def test_nonaction_view(self, client):
+        """ Verify an action gets blocked appropriately """
+        m = mock.Mock(**{"test.action":False})
+        mklass = mock.Mock(return_value=m)
+
+        request = superuser_request("/@/configuration", "GET", action="test")
+        with mock.patch("wheelcms_axle.registries."
+                        "configuration.configuration_registry.get",
+                        return_value=mklass):
+            h = ConfigurationHandler(request)
+            h.index(action="test")
+
+            assert m.test.call_args is None
+
     def test_action_process(self, client):
+        """ Verify an action gets forwarded appropriately """
         m = mock.Mock(**{"test.action":True})
         mklass = mock.Mock(return_value=m)
 
@@ -85,3 +101,17 @@ class TestConfigurationHandler(object):
             h.process(action="test")
 
             assert m.test.call_args is not None
+
+    def test_nonaction_process(self, client):
+        """ Verify an action gets forwarded appropriately """
+        m = mock.Mock(**{"test.action":False})
+        mklass = mock.Mock(return_value=m)
+
+        request = superuser_request("/@/configuration", "POST", action="test")
+        with mock.patch("wheelcms_axle.registries."
+                        "configuration.configuration_registry.get",
+                        return_value=mklass):
+            h = ConfigurationHandler(request)
+            h.process(action="test")
+
+            assert m.test.call_args is None
