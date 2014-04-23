@@ -8,7 +8,7 @@ from two.ol.base import RESTLikeHandler, applyrequest, context, json, handler
 from wheelcms_axle.node import Node, NodeNotFound, CantMoveToOffspring
 from wheelcms_axle.content import type_registry, ImageContent
 
-from wheelcms_axle.spoke import FileSpoke
+from wheelcms_axle.spoke import FileSpoke, Spoke
 
 from wheelcms_axle.toolbar import Toolbar
 
@@ -591,12 +591,14 @@ class MainHandler(WheelRESTHandler):
         language = self.active_language()
         spoke = self.spoke(language=language)
 
-        perm = spoke.permissions.get('view')
 
         if spoke:
             ## update the context with addtional data from the spoke
             self.context.update(spoke.context(self, self.request,
                                 self.instance))
+            perm = spoke.permissions.get('view')
+        else:
+            perm = Spoke.permissions.get('view')
 
         action = self.kw.get('action', '')
         if action:
@@ -656,9 +658,11 @@ class MainHandler(WheelRESTHandler):
 
         if spoke:
             perm = spoke.permissions.get('list')
-            if not auth.has_access(self.request, spoke, spoke, perm):
-                return self.forbidden()
-            ## or what else? XXX
+        else:
+            perm = Spoke.permissions.get('list')
+
+        if not auth.has_access(self.request, spoke, spoke, perm):
+            return self.forbidden()
 
         self.context['toolbar'] = Toolbar(self.instance, self.request,
                                           status="list")
