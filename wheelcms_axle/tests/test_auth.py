@@ -203,6 +203,9 @@ class TestHasAccess(object):
         t = Type1Type.create().save()
         assert has_access(super_request, Type1Type, t, testpermission)
 
+    def test_has_access_public(self, anon_request):
+        assert has_access(anon_request, None, None, p.public)
+
 @pytest.mark.usefixtures("localtyperegistry")
 class TestRolesContext(object):
     """ Verify a user gets the correct roles assigned, locally / globally """

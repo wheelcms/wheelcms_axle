@@ -429,10 +429,18 @@ class MainHandler(WheelRESTHandler):
             if action_handler is None:
                 return self.notfound()
 
-            return action_handler(self, self.request, action)
+            spoke = self.spoke()
+            if spoke:
+                perm = spoke.permissions.get('view')
+            else:
+                perm = Spoke.permissions.get('view')
 
-        #if not self.hasaccess():
-        #    return self.forbidden()
+            required_permission = getattr(action_handler, 'permission', perm)
+            if not auth.has_access(self.request, spoke, spoke, required_permission):
+                return self.forbidden()
+
+
+            return action_handler(self, self.request, action)
 
 
         content = instance.content(language=language)
@@ -450,7 +458,7 @@ class MainHandler(WheelRESTHandler):
             spoke = content.spoke()
 
         perm = typeinfo.permissions.get('edit')
-        
+
         if not auth.has_access(self.request, typeinfo, spoke, perm):
             return self.forbidden()
 
@@ -610,7 +618,7 @@ class MainHandler(WheelRESTHandler):
                 return self.notfound()
 
             ## get permission from handler. If not present, use contents view permission
-            required_permission = action_handler.permission or perm
+            required_permission = getattr(action_handler, 'permission', perm)
             if not auth.has_access(self.request, spoke, spoke, required_permission):
                 return self.forbidden()
 

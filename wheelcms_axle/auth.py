@@ -76,7 +76,15 @@ def get_roles_in_context(request, type, spoke=None):
         r.append(roles.member)
     return set(r)
 
+## special permission which makes content public, permission is not explicitly
+## required
+public = Permission("public")
+
 def has_access(request, type, spoke, permission):
+    ## special case
+    if permission == public:
+        return True
+
     if request.user.is_authenticated() and not request.user.is_active:
         return False
 

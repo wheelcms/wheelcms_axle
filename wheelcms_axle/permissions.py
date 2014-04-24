@@ -1,4 +1,7 @@
-import auth
+from . import auth
+
+## make sure public can be imported from permissions module
+public = auth.public
 
 create_content = auth.Permission("wheelcms.create_content", "Create content")
 edit_content = auth.Permission("wheelcms.edit_content", "Edit content")
