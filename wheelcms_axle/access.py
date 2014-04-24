@@ -1,3 +1,10 @@
+from . import roles
+
 def has_access(user, instance=None):
-    return user.is_active and (user.is_superuser or
-                               user.groups.filter(name="managers").exists())
+    if user.is_anonymous():
+        return False
+    if not user.is_active:
+        return False
+    if user.is_superuser:
+        return True
+    return roles.admin in [r.role for r in user.roles.all()]

@@ -134,6 +134,7 @@ class Spoke(object):
         p.delete_content: (roles.owner, roles.editor, roles.admin),
         p.list_content: (roles.owner, roles.editor, roles.admin),
         p.change_auth_content: (roles.owner, roles.admin),
+        p.modify_settings: (roles.admin,),
     }
 
     workflowclass = DefaultWorkflow

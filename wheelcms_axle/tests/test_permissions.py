@@ -20,10 +20,6 @@ class BasePermissionTest(object):
 
     has_access = False
 
-    def setup(self):
-        """ create the managers group """
-        self.managers, _ = Group.objects.get_or_create(name="managers")
-
     def setup_handler(self, user=None, method="GET", with_instance=False,
                       state="private"):
         """ setup the mainhandler """
