@@ -1,7 +1,7 @@
 git+git://github.com/iivvoo/twotest
 south
 django-haystack==2.1.0
-django-taggit
+django-taggit==0.11.2
 django-tinymce
 django-userena
 stracks-api==0.2dev
