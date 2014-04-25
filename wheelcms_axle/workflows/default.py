@@ -1,3 +1,5 @@
+from warnings import warn
+
 from django.dispatch import receiver
 from ..signals import state_changed
 from wheelcms_axle.content import Content
@@ -59,6 +61,7 @@ class DefaultWorkflow(Workflow):
 
     def is_visible(self):
         ## XXX deprecate this, should become a permission check
+        warn("Workflow.is_visible is deprecated; use permissions in stead!")
         return self.is_published() or self.spoke.instance.state == self.VISIBLE
 
     def state(self):
