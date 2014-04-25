@@ -19,6 +19,8 @@ from wheelcms_axle.models import type_registry
 from wheelcms_axle.templates import template_registry
 from wheelcms_axle import permissions as p, roles
 
+from wheelcms_axle.workflows import default
+
 from .impexp import WheelSerializer
 from .actions import action
 

@@ -31,6 +31,7 @@ class BaseTestSearch(object):
         self.registry.register(self.other)
         self.sqs = SearchQuerySet()
 
+    @pytest.mark.xfail
     def test_trivial_match(self, client):
         t = self.construct_type(title="hi")
 
@@ -44,7 +45,7 @@ class BaseTestSearch(object):
         assert not res
 
     ## randomly failing with tox
-    @pytest.skip("broken")
+    @pytest.mark.xfail
     def test_find_metatype(self, client):
         """ should become a spoke-related match """
         t = self.construct_type(title="hi")
@@ -64,7 +65,7 @@ class BaseTestSearch(object):
         assert len(res) == 1   ## not 2!
         assert res[0].object == o
 
-    @pytest.skip("broken")
+    @pytest.mark.xfail
     def test_workflow_state(self, client):
         t1 = self.construct_type(title="hi", state="private")
         t2 = self.construct_type(title="hi", state="published")
@@ -98,7 +99,7 @@ class BaseTestSearch(object):
         assert len(res) == 1
         assert res[0].object == t1
 
-    @pytest.skip("broken")
+    @pytest.mark.xfail
     def test_searchable(self, client):
         t1 = self.construct_type(title="hello world")
         t2 = self.construct_type(description="hello world")
@@ -108,7 +109,7 @@ class BaseTestSearch(object):
         assert res[0].object in (t1, t2)
         assert res[1].object in (t1, t2)
 
-    @pytest.skip("broken")
+    @pytest.mark.xfail
     def test_indexfactory(self, client):
         root = Node.root()
         c1 = root.add("child1")
