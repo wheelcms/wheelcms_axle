@@ -648,21 +648,10 @@ class TestTranslations(object):
 from .test_spoke import filedata, filedata2
 from .models import TestImage, TestImageType
 
-from wheelcms_axle.content import TypeRegistry, type_registry
-
 @pytest.mark.usefixtures("localtyperegistry")
 class TestImageCreateUpdate(object):
     types = (Type1Type, TestImageType)
 
-    def setup(self):
-        self.registry = TypeRegistry()
-        self.old_registry = type_registry.wrapped
-        type_registry.set(self.registry)
-        self.registry.register(TestImageType)
-
-    def teardown(self):
-        type_registry.set(self.old_registry)
-        
     def test_create_image(self, client, root):
         request = superuser_request("/create", method="POST",
                                       title="Test",

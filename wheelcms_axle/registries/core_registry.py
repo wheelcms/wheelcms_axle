@@ -25,3 +25,7 @@ class CoreRegistry(object):
         self.set(k, v)
 
 core = CoreRegistry()
+
+from .workflow import WorkflowRegistry
+
+core.workflow = WorkflowRegistry()

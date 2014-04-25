@@ -96,13 +96,13 @@ class TestCoreRegistry(object):
         """ using the set() method """
         r = CoreRegistry()
         r.set('a', 'b')
-        assert r.a.wrapped == 'b'
+        assert r.a == 'b'
 
     def test_setattr(self):
         """ attribute assignment """
         r = CoreRegistry()
         r.a = 'b'
-        assert r.a.wrapped == 'b'
+        assert r.a == 'b'
 
 class TestRegistry(object):
     """ A registry actually proxies """
@@ -110,7 +110,7 @@ class TestRegistry(object):
     def test_wrap(self):
         """ default wrapping """
         w = Registry('a')
-        assert w.wrapped == 'a'
+        assert w == 'a'
 
     def test_wrap_proxy(self):
         """ attribute access is proxied """
@@ -122,7 +122,8 @@ class TestRegistry(object):
         """ Wrapped content can be replaced """
         w = Registry('a')
         w.set('b')
-        assert w.wrapped == 'b'
+        assert w == 'b'
+        assert w.__wrapped__ == 'b'
 
     def test_iter(self):
         """ __iter__ works """

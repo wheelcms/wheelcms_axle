@@ -1,4 +1,3 @@
-import re
 import mimetypes
 import operator
 
@@ -7,6 +6,7 @@ from django.conf import settings
 from django.forms.widgets import DateTimeInput
 
 from wheelcms_axle.node import Node
+from wheelcms_axle.registries import core
 
 from wheelcms_axle.models import type_registry, Configuration
 from wheelcms_axle.templates import template_registry
@@ -217,14 +217,14 @@ class BaseForm(forms.ModelForm):
             can be reached from a given state)
         """
         spoke = type_registry.get(self._meta.model.get_name())
-        return spoke.workflowclass.states
+        return core.workflow.get(spoke).states
 
     def workflow_default(self):
         """
             Return default state for active workflow
         """
         spoke = type_registry.get(self._meta.model.get_name())
-        return spoke.workflowclass.default
+        return core.workflow.get(spoke).default
 
     def clean_allowed(self):
         data = self.data.getlist('allowed')

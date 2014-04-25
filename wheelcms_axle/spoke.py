@@ -12,7 +12,8 @@ from haystack import indexes
 from wheelcms_axle.content import Content
 from wheelcms_axle.node import Node
 from wheelcms_axle.forms import formfactory, FileFormfactory
-from wheelcms_axle.workflows.default import DefaultWorkflow
+
+from wheelcms_axle.registries import core
 
 from wheelcms_axle.models import type_registry
 from wheelcms_axle.templates import template_registry
@@ -136,8 +137,6 @@ class Spoke(object):
         p.change_auth_content: (roles.owner, roles.admin),
         p.modify_settings: (roles.admin,),
     }
-
-    workflowclass = DefaultWorkflow
 
     basetabs = (
         dict(id="attributes", label="Attributes", action="edit",
@@ -318,7 +317,8 @@ class Spoke(object):
 
     def workflow(self):
         """ the workflow, initialized to this spoke """
-        return self.workflowclass(self)
+        return core.workflow[self.__class__](self)
+
 
     def state(self):
         """ current workflow state information for this spoke """

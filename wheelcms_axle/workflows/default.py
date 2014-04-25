@@ -87,3 +87,6 @@ def worklist():
     pending = Content.objects.filter(state="pending", node__isnull=False)
     return pending
 
+from wheelcms_axle.registries import core
+
+core.workflow.set_default(DefaultWorkflow)

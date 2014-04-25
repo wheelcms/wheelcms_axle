@@ -6,6 +6,8 @@ from wheelcms_axle.models import Node
 from wheelcms_axle.workflows.default import DefaultWorkflow
 from wheelcms_axle.tests.models import Type1, Type1Type
 
+from wheelcms_axle.registries import core
+
 class TestDefaultWorkflow(object):
     """
         Test the default workflow
@@ -74,8 +76,10 @@ class TestDefaultWorkflow(object):
     def test_form_choices(self):
         """ the form should get its choices from the workflow """
         form = Type1Type.form(parent=Node.root())
-        assert form.workflow_choices() == Type1Type.workflowclass.states
-        assert form.workflow_default() == Type1Type.workflowclass.default
+        wfclass = core.workflow[Type1Type]
+
+        assert form.workflow_choices() == wfclass.states
+        assert form.workflow_default() == wfclass.default
 
     def test_form_choices_instance(self, client):
         """ and it's value should be taken from the instance """
