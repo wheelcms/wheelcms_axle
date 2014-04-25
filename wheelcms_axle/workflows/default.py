@@ -69,6 +69,15 @@ class DefaultWorkflow(Workflow):
         if newperms:
             self.spoke.update_perms(newperms)
 
+class NonPublicDefaultWorkflow(DefaultWorkflow):
+    permission_assignment = DefaultWorkflow.permission_assignment.copy()
+    permission_assignment[DefaultWorkflow.PUBLISHED] = {
+        p.view_content:(r.owner, r.admin, r.member)
+    }
+    permission_assignment[DefaultWorkflow.VISIBLE] = {
+        p.view_content:(r.owner, r.admin, r.member)
+    }
+
 
 @receiver(state_changed, dispatch_uid="wheelcms_axle.workflow.state_changed")
 def handle_state_changed(sender, oldstate, newstate, **kwargs):
