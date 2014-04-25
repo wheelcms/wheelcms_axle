@@ -618,7 +618,7 @@ class MainHandler(WheelRESTHandler):
                 return self.notfound()
 
             ## get permission from handler. If not present, use contents view permission
-            required_permission = getattr(action_handler, 'permission', perm)
+            required_permission = getattr(action_handler, 'permission', perm) or perm
             if not auth.has_access(self.request, spoke, spoke, required_permission):
                 return self.forbidden()
 
