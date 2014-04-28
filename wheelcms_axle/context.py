@@ -13,4 +13,9 @@ class ContentContext(object):
     def url(self):
         return self.content.instance.get_absolute_url()
 
+class ContextWrappable(object):
+    contextclass = ContentContext
 
+    def ctx(self, *args, **kwargs):
+        """ return a context wrapped version of self """
+        return self.contextclass(self, *args, **kwargs)

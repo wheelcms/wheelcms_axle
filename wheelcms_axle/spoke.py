@@ -19,7 +19,7 @@ from wheelcms_axle.models import type_registry
 from wheelcms_axle.templates import template_registry
 from wheelcms_axle import permissions as p, roles
 
-from wheelcms_axle.workflows import default
+from .context import ContextWrappable
 
 from .impexp import WheelSerializer
 from .actions import action
@@ -120,7 +120,7 @@ class tab(object):
 
         return wrapped
 
-class Spoke(object):
+class Spoke(ContextWrappable):
     model = Content  ## is it smart to set this to Content? A nonsensible default..
     permissions = dict(
         create=p.create_content,
