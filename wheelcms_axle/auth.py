@@ -70,11 +70,16 @@ def get_roles_in_context(request, type, spoke=None):
         if spoke and spoke.instance and spoke.instance.owner == request.user:
             r.append(roles.owner)
 
-    if request.user.username == 'ivo':
-        r.extend([roles.admin, roles.member])
-    elif request.user.username == 'admin':
-        r.append(roles.member)
+        r.extend(local_roles(spoke, request=request, lookup=lr))
+
     return set(r)
+
+import reg
+@reg.generic
+def local_roles(obj, request=None):
+    return []
+
+lr = reg.Registry()
 
 ## special permission which makes content public, permission is not explicitly
 ## required

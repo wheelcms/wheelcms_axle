@@ -23,7 +23,8 @@ setup(name='wheelcms_axle',
           'setuptools',
           'pytest',
           'mock',
-          'wrapt'
+          'wrapt',
+          'reg'
       ],
       entry_points={
       },
