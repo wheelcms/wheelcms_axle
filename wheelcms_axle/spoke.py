@@ -29,6 +29,8 @@ from two.ol.base import json
 
 from warnings import warn
 
+from .context import ContextWrappable
+
 import auth
 
 from drole.models import RolePermission
@@ -120,7 +122,7 @@ class tab(object):
 
         return wrapped
 
-class Spoke(object):
+class Spoke(ContextWrappable):
     model = Content  ## is it smart to set this to Content? A nonsensible default..
     permissions = dict(
         create=p.create_content,
