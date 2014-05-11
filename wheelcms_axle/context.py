@@ -8,10 +8,14 @@ class ContentContext(object):
         self.content = content
 
     def title(self):
+        ## deprecated through __getattr__
         return self.content.instance.title
 
     def url(self):
         return self.content.instance.get_absolute_url()
+
+    def __getattr__(self, attribute):
+        return getattr(self.content.instance, attribute)
 
 class ContextWrappable(object):
     contextclass = ContentContext
