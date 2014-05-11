@@ -34,6 +34,19 @@ def localtyperegistry(request):
     for type in getattr(request.cls, 'extra_types', []):
         registry.register(type)
 
+from wheelcms_axle.registries import core
+from wheelcms_axle.workflows.default import DefaultWorkflow
+from wheelcms_axle.registries.workflow import WorkflowRegistry
+
+@pytest.fixture()
+def defaultworkflow(request):
+    old = core.workflow
+    core.workflow = WorkflowRegistry()
+    core.workflow.set_default(DefaultWorkflow)
+
+    def fin():
+        core.workflow = old
+
 @pytest.fixture()
 def localtemplateregistry(request):
     template_registry.set(TemplateRegistry())

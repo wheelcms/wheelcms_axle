@@ -11,7 +11,7 @@ from wheelcms_axle.main import MainHandler
 
 import pytest
 
-@pytest.mark.usefixtures("localtyperegistry")
+@pytest.mark.usefixtures("localtyperegistry", "defaultworkflow")
 class BasePermissionTest(object):
     """
         Base test to be used against different types of users that may
