@@ -19,15 +19,6 @@ class TestVisibleChildrenQueries(object):
         testable = root.add("sub")
         assert get_visible_children(testable).count() == 0
 
-    def test_not_published(self, client):
-        """ content that's in navigation but not published """
-        root = Node.root()
-        testable = root.add("sub")
-        child = testable.add("child")
-        content = Type1(node=child, navigation=True)
-        content.save()
-
-        assert get_visible_children(testable).count() == 0
 
     def test_not_visible(self, client):
         """ content that's published but not in navigation """
@@ -66,4 +57,4 @@ class TestVisibleChildrenQueries(object):
                     state="published").save()
 
         visible = list(get_visible_children(testable))
-        assert visible == [ch1.node, ch3.node, ch5.node]
+        assert visible == [ch1.node, ch3.node, ch4.node, ch5.node]

@@ -6,8 +6,9 @@ def get_visible_children(node, language=None):
         are published and in navigation,
         ordered by position
     """
-    q = dict(contentbase__state="published",
-             contentbase__navigation=True)
+    ## published state no longer determines visibility; permissions do
+    ## (which are controlled by workflow state)
+    q = dict(contentbase__navigation=True)
     if language:
         q['contentbase__language'] = language
 
