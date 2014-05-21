@@ -2,6 +2,7 @@
 {% extends "wheelcms_axle/base.html" %}
 {% load staticfiles %}
 {% load granules %}
+{% load i18n %}
 
 {% block angular_init %}
 {{block.super}}
@@ -32,6 +33,7 @@
 <script src="{% static "js/upload/jquery.fileupload-resize.js" %}"></script>
 <script src="{% static "js/upload/jquery.fileupload-validate.js" %}"></script>
 
+
 <script src="{% static "js/ui-bootstrap-0.10.0.min.js" %}"></script>
 <script src="{% static "js/ui-bootstrap-tpls-0.10.0.min.js" %}"></script>
 
@@ -39,6 +41,35 @@
 <script src="{% static "js/tags-input-wrapper.js" %}"></script>
 <script src="{% static "js/admin.js" %}"></script>
 <script src="{% static "js/contentbrowser.js" %}"></script>
+
+<script type="text/javascript" src="{% static "tiny_mce/tiny_mce.js" %}"></script>
+  <script type="text/javascript">
+    {# this script will have no effect after a submit where the content has not been saved, for example in case of a validation error #}
+    $(document).ready(function() {
+      var request_leave = false;
+      $("form.checksave").on("change", function() {
+            request_leave = true;
+      });
+      $("form.checksave").on("keydown", function() {
+            request_leave = true;
+      });
+      $("form.checksave .canleave").click(function() {
+            request_leave = false;
+      });
+      $(window).on('beforeunload',
+          function() {
+              if(request_leave) {
+                return '{% trans "unsaved_changes_js_warning" %}';
+              }
+              for(var ed in tinyMCE.editors) {
+                  if(tinyMCE.editors[ed].isDirty()) {
+                    return '{% trans "unsaved_changes_js_warning" %}';
+                  }
+              }
+
+          } );
+    });
+  </script>
 
 
 {% endgranule %}

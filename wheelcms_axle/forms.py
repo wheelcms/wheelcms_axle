@@ -47,8 +47,6 @@ class TinyMCE(BaseTinyMCE):
         ## be a problem when the theme changes.
         self.mce_attrs['content_css'] = self.theme_css()
         widget = super(TinyMCE, self).render(name, value, attrs)
-        # XXX Disabled. Breaks with angularjs inside <accordion>
-        # widget = widget.replace("tinyMCE.init(", "tinyMCE_init_delayed(")
         return mark_safe(widget)
 
     def theme_css(self):

@@ -47,14 +47,6 @@
   <script src="{% static "js/angular-1.2.14.js" %}"></script>
   {{config.head|safe}}
   <script type="text/javascript" encoding="utf-8">
-    /*
-     * XXX deprecate?
-     * Doesn't work with angularjs due to double registration. Do we still need this?
-    delayed_confs = [];
-
-    function tinyMCE_init_delayed(conf) {
-        delayed_confs.push(conf);
-    }*/
   {% granules "head_javascript" %}
   </script>
 {% endblock %} {# extra_head #}
@@ -132,7 +124,6 @@
 
 {% block base_javascript %}
   <script src="{% static "js/wheel.js" %}"></script>
-  <script type="text/javascript" src="{% static "tiny_mce/tiny_mce.js" %}"></script>
   {% if config.analytics.strip %}
     <script type="text/javascript">
       var _gaq = _gaq || [];
@@ -146,44 +137,6 @@
       })();
     </script>
   {% endif %}
-  <script type="text/javascript">
-    {# this script will have no effect after a submit where the content has not been saved, for example in case of a validation error #}
-    $(document).ready(function() {
-      var request_leave = false;
-      $("form.checksave").on("change", function() {
-            request_leave = true;
-      });
-      $("form.checksave").on("keydown", function() {
-            request_leave = true;
-      });
-      $("form.checksave .canleave").click(function() {
-            request_leave = false;
-      });
-      $(window).on('beforeunload',
-          function() {
-              if(request_leave) {
-                return '{% trans "unsaved_changes_js_warning" %}';
-              }
-              for(var ed in tinyMCE.editors) {
-                  if(tinyMCE.editors[ed].isDirty()) {
-                    return '{% trans "unsaved_changes_js_warning" %}';
-                  }
-              }
-
-          } );
-    });
-  </script>
-  <script type="text/javascript">
-    $(document).ready(function () {
-        /*
-         * XXX Deprecate. See above
-        for(i=0; i < delayed_confs.length; i++) {
-            console.log("init delayed");
-            tinyMCE.init(delayed_confs[i]);
-        }
-        */
-    });
-  </script>
   {% granules "javascript" %}
 
 {% endblock %}
