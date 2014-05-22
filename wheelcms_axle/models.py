@@ -164,3 +164,18 @@ def assign_perms(sender, instance, created, **kwargs):
     if hasattr(sender, 'permission_assignment') and created:
         assign_perms(instance, instance.permission_assignment)
 
+## Give new user additional userena permissions
+from userena.managers import ASSIGNED_PERMISSIONS
+from guardian.shortcuts import assign_perm
+
+@receiver(post_save, sender=User, dispatch_uid='userena.created.permissions')
+def user_created(sender, instance, created, raw, using, **kwargs):
+  """ Adds 'change_profile' permission to created user objects """
+  if created:
+    for perm in ASSIGNED_PERMISSIONS['profile']:
+        assign_perm(perm[0], instance, instance.get_profile())
+
+    # Give permissions to view and change itself
+    for perm in ASSIGNED_PERMISSIONS['user']:
+        assign_perm(perm[0], instance, instance)
+
