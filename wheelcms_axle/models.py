@@ -167,15 +167,23 @@ def assign_perms(sender, instance, created, **kwargs):
 ## Give new user additional userena permissions
 from userena.managers import ASSIGNED_PERMISSIONS
 from guardian.shortcuts import assign_perm
+from guardian.models import Permission
 
 @receiver(post_save, sender=User, dispatch_uid='userena.created.permissions')
 def user_created(sender, instance, created, raw, using, **kwargs):
-  """ Adds 'change_profile' permission to created user objects """
-  if created:
-    for perm in ASSIGNED_PERMISSIONS['profile']:
-        assign_perm(perm[0], instance, instance.get_profile())
+    """ Adds 'change_profile' permission to created user objects """
+    ## Ignore missing permissions - nothing we can do about it.
+    if created:
+        for perm in ASSIGNED_PERMISSIONS['profile']:
+            try:
+                assign_perm(perm[0], instance, instance.get_profile())
+            except Permission.DoesNotExist:
+                pass
 
-    # Give permissions to view and change itself
-    for perm in ASSIGNED_PERMISSIONS['user']:
-        assign_perm(perm[0], instance, instance)
+        # Give permissions to view and change itself
+        for perm in ASSIGNED_PERMISSIONS['user']:
+            try:
+                assign_perm(perm[0], instance, instance)
+            except Permission.DoesNotExist:
+                pass
 
