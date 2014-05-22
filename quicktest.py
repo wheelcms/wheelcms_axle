@@ -9,12 +9,13 @@ if __name__ == '__main__':
             'django.contrib.staticfiles',
             'django.contrib.humanize',
 
-            'userena',
 
             'south',
             'haystack',
 
             'wheelcms_axle',
+            'userena',
+            'guardian',
 
             'drole',
             'granules',
