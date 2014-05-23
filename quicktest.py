@@ -26,6 +26,9 @@ if __name__ == '__main__':
             'wheelcms_axle.tests',
 
         ),
+        TEMPLATE_CONTEXT_PROCESSORS=(
+            'django.core.context_processors.request',
+        ),
         ROOT_URLCONF="wheelcms_axle.quicktest_urls",
         ANONYMOUS_USER_ID=-1,
         HAYSTACK_CONNECTIONS={'default':{'engine':'haystack.backends.simple_backend.SimpleEngine'}},
