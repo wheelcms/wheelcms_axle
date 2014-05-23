@@ -10,8 +10,6 @@ from wheelcms_axle.content import type_registry, ImageContent
 
 from wheelcms_axle.spoke import FileSpoke, Spoke
 
-from wheelcms_axle.toolbar import Toolbar
-
 from wheelcms_axle.base import WheelHandlerMixin
 from wheelcms_axle.utils import get_active_language
 from wheelcms_axle.forms import AngularForm
@@ -28,6 +26,7 @@ from .actions import action_registry
 
 from django.utils import translation
 from .models import WheelProfile
+from .toolbar import get_toolbar, create_toolbar, Toolbar
 
 import stracks
 
@@ -102,6 +101,25 @@ class MainHandler(WheelRESTHandler):
     model = dict(instance=Node, parent=Node)
     instance = None
     parent = None
+
+    @property
+    def toolbar(self):
+        """
+            _toolbar is set in pre_handler, but in test situations this method
+            may not have been called. Additionally, the toolbar middleware may
+            not have been called.
+
+            Return a local, already configured _toolbar or create/initialize
+            one on the fly.
+        """
+        try:
+            return self._toolbar
+        except AttributeError:
+            self._toolbar = get_toolbar() or create_toolbar(self.request)
+            self._toolbar.instance = self.instance
+            self._toolbar.status = Toolbar.VIEW
+
+        return self._toolbar
 
     def active_language(self):
         return get_active_language()
@@ -215,9 +233,13 @@ class MainHandler(WheelRESTHandler):
 
     def pre_handler(self):
         """ invoked before a method """
-        # import pdb; pdb.set_trace()
-        
         super(MainHandler, self).pre_handler()
+
+        ## configure the toolbar
+        self._toolbar = get_toolbar()
+        self._toolbar.status = Toolbar.VIEW
+        self._toolbar.instance = self.instance
+
         ## if user authenticated, find language setting, activate it.
         ## Will only work for requests that go through this handler
         self._stored_language = None
@@ -400,7 +422,7 @@ class MainHandler(WheelRESTHandler):
             self.context['breadcrumb'] = self.breadcrumb(operation="Attach", details=' "%s"' % typeinfo.title)
         else:
             self.context['breadcrumb'] = self.breadcrumb(operation="Create", details=' "%s"' % typeinfo.title)
-        self.context['toolbar'] = Toolbar(self.instance, self.request, status="create")
+        self.toolbar.status = Toolbar.CREATE
 
         template = typeinfo.create_template(self.request, parent)
 
@@ -469,7 +491,7 @@ class MainHandler(WheelRESTHandler):
 
         self.context['redirect_cancel'] = self.instance.get_absolute_url() + \
                                           "?info=Update+cancelled"
-        self.context['toolbar'] = Toolbar(self.instance, self.request, status="update")
+        self.toolbar.status = Toolbar.UPDATE
 
         formclass =  typeinfo.form
         slug = instance.slug(language=language)
@@ -623,15 +645,12 @@ class MainHandler(WheelRESTHandler):
                 return self.forbidden()
 
             ## if there's an action, assume it's actually an update action.
-            self.context['toolbar'] = Toolbar(self.instance, self.request, status="update")
+            self.toolbar.status = Toolbar.UPDATE
             return action_handler(self, self.request, action)
 
         if not auth.has_access(self.request, spoke, spoke, perm):
             return self.forbidden()
 
-
-        if self.hasaccess():
-            self.context['toolbar'] = Toolbar(self.instance, self.request)
 
         if spoke:
             tpl = spoke.view_template()
@@ -672,8 +691,7 @@ class MainHandler(WheelRESTHandler):
         if not auth.has_access(self.request, spoke, spoke, perm):
             return self.forbidden()
 
-        self.context['toolbar'] = Toolbar(self.instance, self.request,
-                                          status="list")
+        self.toolbar.status = Toolbar.LIST
         self.context['breadcrumb'] = self.breadcrumb(operation="Contents")
 
         self.context['can_paste'] = \

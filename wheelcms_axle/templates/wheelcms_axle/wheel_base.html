@@ -4,6 +4,7 @@
 {% load topnav %}
 {% load granules %}
 {% load staticfiles %}
+{% load toolbar %}
 
 {% block htmltitle %}
   <title>{{page_title}}</title>
@@ -144,7 +145,7 @@
 {% block body_class %}{{body_class}}{%endblock %}
 {% block bodytop %}
 {% if user.is_authenticated %}
-{% include "wheelcms_axle/toolbar.html" %}
+{% toolbar %}
 {% endif %}
 {% endblock %}
 

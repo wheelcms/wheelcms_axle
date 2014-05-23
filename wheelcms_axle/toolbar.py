@@ -9,6 +9,22 @@ from wheelcms_axle import access
 from wheelcms_axle.utils import get_active_language
 from wheelcms_axle import translate
 
+from threading import local
+
+_toolbar_storage = local()
+
+def create_toolbar(request):
+    try:
+        return _toolbar_storage.toolbar
+    except AttributeError:
+        _toolbar_storage.toolbar = Toolbar(Node.root(), request=request, status="special")
+    return _toolbar_storage.toolbar
+
+def get_toolbar():
+    try:
+        return _toolbar_storage.toolbar
+    except AttributeError:
+        return None
 
 class Toolbar(object):
     """
@@ -21,7 +37,14 @@ class Toolbar(object):
         create - creating content
         special - not in a content-context
     """
-    def __init__(self, instance, request, status="view"):
+    VIEW = "view"
+    UPDATE = "update"
+    LIST = "list"
+    CREATE = "create"
+    SPECIAL = "special"
+    ATTACH = "attach"
+
+    def __init__(self, instance, request, status=VIEW):
         self.instance = instance
         self.request = request
         self.status = status
@@ -78,11 +101,11 @@ class Toolbar(object):
                 for c in ch if c != primary]
 
     def show_create(self):
-        if self.status == 'special':  ## special page
+        if self.status == Toolbar.SPECIAL:  ## special page
             return False
 
         ## do not show when creating or updating
-        if self.status in ('create', 'update'):
+        if self.status in (Toolbar.CREATE, Toolbar.UPDATE):
             return False
         if self.type() is None:
             return True
@@ -91,7 +114,7 @@ class Toolbar(object):
         return bool(self.type().children)
 
     def show_update(self):
-        if self.status == 'special':  ## special page
+        if self.status == Toolbar.SPECIAL:  ## special page
             return False
 
         ## do not show when creating or updating
@@ -109,11 +132,11 @@ class Toolbar(object):
             button in stead of an 'edit' button (with the exact same action,
             though!)
         """
-        if self.status == 'special':  ## special page
+        if self.status == Toolbar.SPECIAL:  ## special page
             return False
 
         ## do not show when creating or updating
-        if self.status in ("update", "create"):
+        if self.status in (Toolbar.UPDATE, Toolbar.CREATE):
             return False
         active_language = get_active_language()
 
@@ -125,28 +148,28 @@ class Toolbar(object):
         return False
 
     def show_list(self):
-        if self.status == 'special':  ## special page
+        if self.status == Toolbar.SPECIAL:  ## special page
             return False
 
-        if self.status == "list":
+        if self.status == Toolbar.LIST:
             return False
 
         return True
 
     def show_view(self):
-        if self.status == 'special':  ## special page
+        if self.status == Toolbar.SPECIAL:  ## special page
             return False
 
-        if self.status == "view":
+        if self.status == Toolbar.VIEW:
             return False
 
         return True
 
     def show_attach(self):
-        if self.status == 'special':  ## special page
+        if self.status == Toolbar.SPECIAL:  ## special page
             return False
 
-        if self.status == "attach":
+        if self.status == Toolbar.ATTACH:
             return False
 
         if self.instance and self.instance.primary_content():
@@ -185,7 +208,7 @@ class Toolbar(object):
             If there's no second language (ignoring 'Any'), don't return
             anything; this will hide the translation menu entirely.
         """
-        if not self.instance or self.status == "special":
+        if not self.instance or self.status == Toolbar.SPECIAL:
             return None
 
         if len(settings.CONTENT_LANGUAGES) == 1:
@@ -206,16 +229,16 @@ class Toolbar(object):
             if lang == active_language:
                 active = option
             else:
-                if self.status == "update":
+                if self.status == Toolbar.UPDATE:
                     option['action_url'] = base_url + '&rest=edit'
-                elif self.status == "view":
+                elif self.status == Toolbar.VIEW:
                     option['action_url'] = base_url + ''
-                elif self.status == "list":
+                elif self.status == Toolbar.LIST:
                     option['action_url'] = base_url + '&rest=list'
-                elif self.status == "create":
+                elif self.status == Toolbar.CREATE:
                     option['action_url'] = base_url + '&rest=' + urllib2.quote('create?type=' + self.request.GET.get('type'))
 
-                if content and self.status != 'create':
+                if content and self.status != Toolbar.CREATE:
                     translated.append(option)
                 else:
                     untranslated.append(option)

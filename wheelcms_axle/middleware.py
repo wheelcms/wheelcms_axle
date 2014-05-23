@@ -29,3 +29,10 @@ class FixMessageMiddleware(object):
             storage._decode(data)
         except IndexError:
             del request.COOKIES['messages']
+
+from .toolbar import create_toolbar
+
+class ToolbarMiddleware(object):
+    def process_request(self, request):
+        create_toolbar(request)
+

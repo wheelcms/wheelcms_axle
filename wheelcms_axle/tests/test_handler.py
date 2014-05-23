@@ -1,4 +1,6 @@
 # *-* encoding: utf-8
+import mock
+
 from django.utils import translation
 
 from wheelcms_axle.main import MainHandler

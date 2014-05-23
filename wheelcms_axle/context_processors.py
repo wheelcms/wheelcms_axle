@@ -51,9 +51,15 @@ def configuration(request):
                 root=Node.root(),
                 is_logout_url=is_logout_url)
 
+from .toolbar import get_toolbar
+from warnings import warn
+
+
 def toolbar(request):
+    warn("wheelcms_axle.context_processors.toolbar is deprecated, "
+     "please use wheelcms_axle.middleware.ToolbarMiddleware in stead",
+     DeprecationWarning)
     if request.user.is_authenticated():
-        return dict(toolbar=Toolbar(Node.root(), request=request,
-                                    status="special"))
+        return dict(toolbar=get_toolbar())
     return dict()
 
