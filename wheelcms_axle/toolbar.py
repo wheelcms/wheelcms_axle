@@ -234,6 +234,13 @@ class Toolbar(object):
                     actions.append(a.with_toolbar(self))
         return actions
 
+    def username(self):
+        """ attempt to return a reasonable username """
+        user = self.request.user
+        name = user.get_full_name().strip() or user.email
+        if not name:
+            name = user.username
+        return name
 
 from registries.toolbar import toolbar_registry
 import copy
