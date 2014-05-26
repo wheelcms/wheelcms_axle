@@ -172,7 +172,7 @@ def user_created(sender, instance, created, raw, using, **kwargs):
     from guardian.shortcuts import assign_perm
     from guardian.models import Permission
 
-    from django.db.utils import ProgrammingError
+    from django.db import ProgrammingError
 
     ## Ignore missing permissions - nothing we can do about it.
     if created:
