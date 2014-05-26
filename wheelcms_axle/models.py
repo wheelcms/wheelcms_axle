@@ -172,18 +172,22 @@ def user_created(sender, instance, created, raw, using, **kwargs):
     from guardian.shortcuts import assign_perm
     from guardian.models import Permission
 
+    from django.db.utils import ProgrammingError
+
     ## Ignore missing permissions - nothing we can do about it.
     if created:
         for perm in ASSIGNED_PERMISSIONS['profile']:
             try:
                 assign_perm(perm[0], instance, instance.get_profile())
-            except Permission.DoesNotExist:
+            except (Permission.DoesNotExist, ProgrammingError):
+                """ data or models may be missing, e.g. when
+                    running syncdb --migrate """
                 pass
 
         # Give permissions to view and change itself
         for perm in ASSIGNED_PERMISSIONS['user']:
             try:
                 assign_perm(perm[0], instance, instance)
-            except Permission.DoesNotExist:
+            except (ProgrammingError, Permission.DoesNotExist):
                 pass
 
