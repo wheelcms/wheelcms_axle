@@ -1,0 +1,9 @@
+ {% load i18n %}
+
+<a class="btn btn-warning" href="{{action.url}}"
+{% for k,v in action.attrs.items %}
+  {{k}}="{{v}}"
+{% endfor %}
+>
+<i class="glyphicon glyphicon-eye-open"></i> {% trans action.name %}
+</a>
