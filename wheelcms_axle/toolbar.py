@@ -13,11 +13,15 @@ from threading import local
 
 _toolbar_storage = local()
 
-def create_toolbar(request):
+def create_toolbar(request, force=False):
     try:
-        return _toolbar_storage.toolbar
+        if not force:
+            return _toolbar_storage.toolbar
     except AttributeError:
-        _toolbar_storage.toolbar = Toolbar(Node.root(), request=request, status="special")
+        pass
+
+    _toolbar_storage.toolbar = Toolbar(Node.root(), request=request,
+                                       status="special")
     return _toolbar_storage.toolbar
 
 def get_toolbar():
@@ -48,6 +52,12 @@ class Toolbar(object):
         self.instance = instance
         self.request = request
         self.status = status
+
+        self.actions = []
+
+    def addAction(self, action):
+        self.actions.append(action)
+
 
     def type(self):
         if not (self.instance and self.instance.content()):
@@ -251,10 +261,13 @@ class Toolbar(object):
         ## order?
         actions = []
 
-        for a in toolbar_registry.values():
+        # import pdb; pdb.set_trace()
+        
+        for a in toolbar_registry.values() + self.actions:
             if a.type == "button":
                 if not a.states or self.status in a.states:
                     actions.append(a.with_toolbar(self))
+
         return actions
 
     def username(self):
@@ -268,9 +281,14 @@ class Toolbar(object):
 from registries.toolbar import toolbar_registry
 import copy
 
+from django.template.loader import render_to_string
+from django.template import RequestContext
+
 class ToolbarAction(object):
     type = "generic"
     states = ()
+
+    template = "wheelcms_axle/toolbar/action.html"
 
     def __init__(self, id, toolbar=None):
         self.id = id
@@ -289,6 +307,10 @@ class ToolbarAction(object):
         a = copy.copy(self)
         a.toolbar = toolbar
         return a
+
+    def render(self, context):
+        return render_to_string(self.template, {"action":self}, context_instance=context)
+
 
 class ButtonAction(ToolbarAction):
     type = "button"

@@ -493,6 +493,23 @@ class MainHandler(WheelRESTHandler):
                                           "?info=Update+cancelled"
         self.toolbar.status = Toolbar.UPDATE
 
+        from .toolbar import ButtonAction
+
+        class SaveEditAction(ButtonAction):
+            template = "wheelcms_axle/toolbar/save_cancel.html"
+            # states = ('edit',)
+
+            def __init__(self, id, cancelurl, toolbar=None):
+                super(SaveEditAction, self).__init__(id, toolbar)
+
+                self.cancelurl = cancelurl
+
+            def name(self):
+                return "Save"
+
+        self.toolbar.addAction(SaveEditAction('se', self.instance.get_absolute_url() + \
+                                          "?info=Update+cancelled" ))
+
         formclass =  typeinfo.form
         slug = instance.slug(language=language)
 

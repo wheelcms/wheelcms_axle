@@ -1,6 +1,7 @@
 {% load url from future %}
 {% load i18n %}
 {% load staticfiles %}
+{% load toolbar %}
 
 {% if toolbar %}
 <div class="navbar navbar-fixed-bottom navbar-inverse toolbar">
@@ -80,13 +81,8 @@
               <div class="btn-group dropup navbar-btn">
                 {% for action in toolbar.button_actions %}
                   {% if action.show %}
-                    <a class="btn btn-warning" href="{{action.url}}"
-                       {% for k,v in action.attrs.items %}
-                           {{k}}="{{v}}"
-                       {% endfor %}
-                       >
-                       <i class="glyphicon glyphicon-eye-open"></i> {% trans action.name %}
-                    </a>
+                    {% toolbar_action action %}
+                    {{action.render|safe}}
                   {% endif %}
                 {% endfor %}
                 {% if 0 %}
