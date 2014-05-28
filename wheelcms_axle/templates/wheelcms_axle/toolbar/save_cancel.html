@@ -1,13 +1,10 @@
-{% load granules %}
-
-{% granule head_javascript %}
+{% load static %}
 <script type="text/javascript">
   extradeps.push("toolbar_savebutton");
 </script>
-// lala
-{% endgranule %}
+<script src="{% static "js/toolbar/save_cancel.js" %}"></script>
 
 <div class="col-lg-12" ng-controller="SaveCancelController">
-    <input class="btn btn-primary canleave" type="submit" value="Update">
+    <input class="btn btn-primary canleave" type="submit" value="Update <[foo]>">
     <a href="{{action.cancelurl}}" class="btn btn-default canleave">Cancel</a>
 </div>

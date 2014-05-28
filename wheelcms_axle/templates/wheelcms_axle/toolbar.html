@@ -82,7 +82,6 @@
                 {% for action in toolbar.button_actions %}
                   {% if action.show %}
                     {% toolbar_action action %}
-                    {{action.render|safe}}
                   {% endif %}
                 {% endfor %}
                 {% if 0 %}

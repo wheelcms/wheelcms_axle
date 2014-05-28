@@ -309,7 +309,8 @@ class ToolbarAction(object):
         return a
 
     def render(self, context):
-        return render_to_string(self.template, {"action":self}, context_instance=context)
+        return render_to_string(self.template, {"action":self},
+                                context_instance=context)
 
 
 class ButtonAction(ToolbarAction):

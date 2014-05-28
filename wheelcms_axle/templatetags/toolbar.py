@@ -32,6 +32,7 @@ class ActionNode(template.Node):
         self.actionvar = actionvar
 
     def render(self, context):
+        print "RENDER action"
         val = context[self.actionvar]
 
         return val.render(context)
