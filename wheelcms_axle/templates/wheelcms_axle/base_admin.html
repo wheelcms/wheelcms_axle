@@ -3,6 +3,7 @@
 {% load staticfiles %}
 {% load granules %}
 {% load i18n %}
+{% load toolbar %}
 
 {% block angular_init %}
 {{block.super}}
@@ -75,8 +76,8 @@
 {% endgranule %}
 {% endblock %}
 {% block base_main %}
-
 <div ng-app="wheelcms-admin" ng-init="init('{{spoke.instance.get_absolute_url}}');" ng-controller="AdminCtrl" id="wheelcms-admin">
+{% toolbar %}
 
   <div ng-controller="BrowseCtrl" id="content">
     <script type="text/ng-template" id="BrowseModal.html">
