@@ -138,4 +138,12 @@ app.controller('AdminCtrl', function($rootScope, $scope) {
     $scope.advanced_open = /collapseadvanced$/.test(document.location.hash);
 });
 
+app.controller('EditFormController', function($rootScope, $scope, $element) {
+    var unbind = $rootScope.$on('toolbar.savebutton.click', function(args, a){
+                console.log('submit?', args, a);
+                $element.submit();
+    });
 
+    $scope.$on('$destroy', unbind);
+
+});

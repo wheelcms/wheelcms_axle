@@ -4,6 +4,7 @@
 {% load topnav %}
 {% load granules %}
 {% load staticfiles %}
+{% load toolbar %}
 
 {% block htmltitle %}
   <title>{{page_title}}</title>
@@ -142,7 +143,17 @@
 {% endblock %}
 
 {% block body_class %}{{body_class}}{%endblock %}
+{% block body_attrs %}
+  {% if user.is_authenticated %}
+    ng-app="wheelcms-admin"
+    ng-init="init('{{spoke.instance.get_absolute_url}}');"
+    ng-controller="AdminCtrl" id="wheelcms-admin"
+  {% endif %}
+{% endblock %}
 {% block bodytop %}
+  {% if user.is_authenticated %}
+    {% toolbar %}
+  {% endif %}
 {% endblock %}
 
 {% block jumbotron %}{% endblock %}
