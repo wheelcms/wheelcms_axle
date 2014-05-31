@@ -56,6 +56,10 @@
       $("form.checksave .canleave").click(function() {
             request_leave = false;
       });
+      // the toolbar can have save/cancel buttons as well
+      $(".toolbar .canleave").click(function() {
+            request_leave = false;
+      });
       $(window).on('beforeunload',
           function() {
               if(request_leave) {
