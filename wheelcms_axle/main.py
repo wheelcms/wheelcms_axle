@@ -33,6 +33,20 @@ import stracks
 
 from wheelcms_axle import context_processors
 
+from .toolbar import ButtonAction
+
+class SaveEditAction(ButtonAction):
+    template = "wheelcms_axle/toolbar/save_cancel.html"
+    # states = ('edit',)
+
+    def __init__(self, id, cancelurl, toolbar=None):
+        super(SaveEditAction, self).__init__(id, toolbar)
+
+        self.cancelurl = cancelurl
+
+    def name(self):
+        return "Save"
+
 def resolve_path(p):
     """
         The path we receive from javascript code will include possible settings 
@@ -444,6 +458,11 @@ class MainHandler(WheelRESTHandler):
             self.context.update(self.spoke().context(self, self.request,
                                 self.instance))
 
+        self.toolbar.status = Toolbar.UPDATE
+
+        self.toolbar.addAction(SaveEditAction('se', self.instance.get_absolute_url() + \
+                                          "?info=Update+cancelled" ))
+
         if action:
             ## match against path, not get_absolute_url which is configuration specific
             action_handler = action_registry.get(action, self.instance.path,
@@ -491,24 +510,6 @@ class MainHandler(WheelRESTHandler):
 
         self.context['redirect_cancel'] = self.instance.get_absolute_url() + \
                                           "?info=Update+cancelled"
-        self.toolbar.status = Toolbar.UPDATE
-
-        from .toolbar import ButtonAction
-
-        class SaveEditAction(ButtonAction):
-            template = "wheelcms_axle/toolbar/save_cancel.html"
-            # states = ('edit',)
-
-            def __init__(self, id, cancelurl, toolbar=None):
-                super(SaveEditAction, self).__init__(id, toolbar)
-
-                self.cancelurl = cancelurl
-
-            def name(self):
-                return "Save"
-
-        self.toolbar.addAction(SaveEditAction('se', self.instance.get_absolute_url() + \
-                                          "?info=Update+cancelled" ))
 
         formclass =  typeinfo.form
         slug = instance.slug(language=language)
@@ -663,6 +664,9 @@ class MainHandler(WheelRESTHandler):
 
             ## if there's an action, assume it's actually an update action.
             self.toolbar.status = Toolbar.UPDATE
+            self.toolbar.addAction(SaveEditAction('se', self.instance.get_absolute_url() + \
+                                              "?info=Update+cancelled" ))
+
             return action_handler(self, self.request, action)
 
         if not auth.has_access(self.request, spoke, spoke, perm):

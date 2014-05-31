@@ -5,7 +5,7 @@
 {% block granules %}
   {{block.super}}
   {% granule "javascript" %}
-    <script src="{% static "js/edit_permissions.js" %}"></script>
+    {# <script src="{% static "js/edit_permissions.js" %}"></script> #}
   {% endgranule %}
 {% endblock %}
 
@@ -17,7 +17,8 @@
     <h3>Permissions</h3>
   </div>
 </div>
-<form method="post" action="{{spoke.instance.get_absolute_url}}+auth/">
+<form method="post" action="{{spoke.instance.get_absolute_url}}+auth/"
+      ng-controller="EditFormController">
   {% csrf_token %}
   <table class="table table-condensed table-responsive table-bordered">
     <thead>

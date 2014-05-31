@@ -140,8 +140,7 @@ app.controller('AdminCtrl', function($rootScope, $scope) {
 
 app.controller('EditFormController', function($rootScope, $scope, $element) {
     var unbind = $rootScope.$on('toolbar.savebutton.click', function(args, a){
-                console.log('submit?', args, a);
-                $element.submit();
+        $element.submit();
     });
 
     $scope.$on('$destroy', unbind);
