@@ -52,6 +52,18 @@
   </script>
 {% endblock %} {# extra_head #}
 
+{% block granules %}
+  {{block.super}}
+  {% granule "javascript" %}
+    {% if user.is_authenticated %}
+      {# actually: if toolbar is show/admin is active #}
+      <script src="{% static "js/ui-bootstrap-0.10.0.min.js" %}"></script>
+      <script src="{% static "js/ui-bootstrap-tpls-0.10.0.min.js" %}"></script>
+      <script src="{% static "js/admin.js" %}"></script>
+    {% endif %}
+  {% endgranule %}
+
+{% endblock %}
 {% block topbar_brand %}
   <a class="navbar-brand" href="{{root.get_absolute_url}}">{{config.title}}</a>
 {% endblock %}
