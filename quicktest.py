@@ -1,7 +1,11 @@
+import sys
+
 from twotest.quicktest import QuickDjangoTest
 
 if __name__ == '__main__':
     QuickDjangoTest(
+        pytestargs=sys.argv[1:],
+        args=(),
         apps=("wheelcms_axle",),
         installed_apps=(
             'django.contrib.sites',
