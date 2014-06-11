@@ -38,11 +38,12 @@ class TestToolbar(object):
             Test behaviour on unconnected node - allow
             creation of all types of sub content
         """
-        with mock.patch("wheelcms_axle.toolbar.Toolbar.type",
-                        return_value=None):
-            t = Toolbar(mock.Mock(), mock.Mock(), "view")
-            assert t.show_create()
-            assert self.allchildren(t.children())
+        node = mock.Mock()
+        node.content.return_value = None
+
+        t = Toolbar(node, mock.Mock(), "view")
+        assert t.show_create()
+        assert self.allchildren(t.children())
 
     @mock.patch("wheelcms_axle.content.type_registry.values",
                 return_value=(mock.Mock(), mock.Mock()))
@@ -50,16 +51,14 @@ class TestToolbar(object):
         """
             A node with content without restrictions
         """
-        class T(mock.Mock):
-            primary = children = None
-            def allowed_spokes(self):
-                return type_registry.values()
-
-        with mock.patch("wheelcms_axle.toolbar.Toolbar.type",
-                        return_value=T):
-            t = Toolbar(mock.Mock(), mock.Mock(), "view")
-            assert t.show_create()
-            assert self.allchildren(t.children())
+        node = mock.Mock()
+        node.content().spoke().primary = None
+        node.content().spoke().children = None
+        node.content().spoke().allowed_spokes.return_value = \
+                               type_registry.values()
+        t = Toolbar(node, mock.Mock(), "view")
+        assert t.show_create()
+        assert self.allchildren(t.children())
 
     def test_restriction_type(self):
         """
@@ -72,37 +71,29 @@ class TestToolbar(object):
             def allowed_spokes(self):
                 return (c,)
 
-        with mock.patch("wheelcms_axle.toolbar.Toolbar.type",
-                        return_value=T):
-            t = Toolbar(mock.Mock(), mock.Mock(), "view")
-            assert t.show_create()
-            children = t.children()
-            assert len(children) == 1
-            assert children[0]['name'] == c.name()
-            assert children[0]['title'] == c.title
-            assert children[0]['icon_path'] == c.full_type_icon_path()
+        node = mock.Mock()
+        node.content().spoke().primary = None
+        node.content().spoke().children = (c,)
+        node.content().spoke().allowed_spokes.return_value = (c,)
+
+        t = Toolbar(node, mock.Mock(), "view")
+        assert t.show_create()
+        children = t.children()
+        assert len(children) == 1
+        assert children[0]['name'] == c.name()
+        assert children[0]['title'] == c.title
+        assert children[0]['icon_path'] == c.full_type_icon_path()
 
 
     def test_restriction_none(self, client):
         """
             No children at all allowed
         """
-        class DummyNode(object):
-            def content(self):
-                class DummyType(Spoke):
-                    model = DummyContent
-                    children = ()
-                    add_to_index = False
+        node = mock.Mock()
+        node.content().spoke().children = ()
+        node.content().spoke().allowed_spokes.return_value = ()
 
-                    @classmethod
-                    def name(cls):
-                        return DummyContent.get_name()
-
-                type_registry.register(DummyType)
-
-                return DummyContent()
-
-        toolbar = Toolbar(DummyNode(), superuser_request("/"), "view")
+        toolbar = Toolbar(node, superuser_request("/"), "view")
         assert toolbar.children() == []
         assert not toolbar.show_create()
 
@@ -129,7 +120,6 @@ class TestToolbar(object):
             should still not allow creation of non-implicit_add
             types """
 
-
         class DummyType(Spoke):
             model = DummyContent
             children = ()
@@ -141,7 +131,6 @@ class TestToolbar(object):
                 return ''
 
         type_registry.register(DummyType)
-
 
         node = Node.root()
         toolbar = Toolbar(node, superuser_request("/"), "view")
@@ -164,25 +153,12 @@ class TestToolbar(object):
 
     def test_primary(self, client):
         """ a type with primary should behave differently """
+        node = mock.Mock()
+        node.content().spoke().children = (Type1Type, Type2Type)
+        node.content().spoke().primary = Type1Type
+        node.content().spoke().allowed_spokes.return_value = (Type2Type,)
 
-
-        class DummyNode(object):
-            def content(self):
-                class DummyType(Spoke):
-                    model = DummyContent
-                    children = (Type1Type, Type2Type)
-                    primary = Type1Type
-                    add_to_index = False
-
-                    @classmethod
-                    def name(cls):
-                        return cls.model.get_name()
-
-                type_registry.register(DummyType)
-
-                return DummyContent()
-
-        toolbar = Toolbar(DummyNode(), superuser_request("/"), "view")
+        toolbar = Toolbar(node, superuser_request("/"), "view")
         children = toolbar.children()
         assert len(children) == 1
         assert children[0]['name'] == Type2Type.name()
@@ -242,28 +218,26 @@ class TestToolbar(object):
 
     def test_single_child_empty(self):
         """ No allowed children means there's not "a single" child """
-        with mock.patch("wheelcms_axle.toolbar.Toolbar.type",
-                        return_value=mock.Mock(children=())):
-            t = Toolbar(mock.Mock(), mock.Mock(), "view")
-            assert t.single_child() is None
+        node = mock.Mock()
+        node.content().spoke().children = ()
+
+        t = Toolbar(node, mock.Mock(), "view")
+        assert t.single_child() is None
 
     def test_single_child_multi(self):
         """ multiple allowed children means there's not "a single" child """
-        c1 = mock.Mock()
-        c2 = mock.Mock()
-
-        with mock.patch("wheelcms_axle.toolbar.Toolbar.type",
-                        return_value=mock.Mock(children=(c1, c2))):
-            t = Toolbar(mock.Mock(), mock.Mock(), "view")
-            assert t.single_child() is None
+        node = mock.Mock()
+        node.content().spoke().children = (mock.Mock(), mock.Mock())
+        t = Toolbar(node, mock.Mock(), "view")
+        assert t.single_child() is None
 
     def test_single_child_single(self):
         """ only valid case where there's "a single" child """
         c1 = mock.Mock()
-        with mock.patch("wheelcms_axle.toolbar.Toolbar.type",
-                        return_value=mock.Mock(children=(c1,))):
-            t = Toolbar(mock.Mock(), mock.Mock(), "view")
-            assert t.single_child() is c1
+        node = mock.Mock()
+        node.content().spoke().children = (c1,)
+        t = Toolbar(node, mock.Mock(), "view")
+        assert t.single_child() is c1
 
 
 from django.utils import translation

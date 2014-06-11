@@ -58,51 +58,48 @@ class Toolbar(object):
     def addAction(self, action):
         self.actions.append(action)
 
-
-    def type(self):
-        if not (self.instance and self.instance.content()):
-            return None
-
-        return type_registry.get(self.instance.content().get_name())
+    def spoke(self):
+        """ return the (node) instance bound to the toolbar to a
+            spoke. Return None if this is somehow not possible (e.g.
+            unattached content)
+        """
+        if self.instance:
+            c = self.instance.content()
+            if c:
+                return c.spoke()
+        return None
 
     def single_child(self):
         """ return the single child if there's only one, else None.
             This allows for a create button in stead of a dropup
         """
-        type = self.type()
-        if type is None:
-            return None
-        if len(type.children) == 1:
-            return type.children[0]
+        spoke = self.spoke()
+        if spoke:
+            if len(spoke.children) == 1:
+                return spoke.children[0]
+
         return None
 
     def primary(self):
         """ return type details for this type's primary content, if any """
-        type = self.type()
-        if type is None:
-            ## unconnected
-            return None
-
-        p = type.primary
-
-        if p:
-            return dict(name=p.name(),
-                        title=p.title,
-                        icon_path=p.full_type_icon_path())
+        spoke = self.spoke()
+        if spoke:
+            if spoke.primary:
+                return dict(name=spoke.primary.name(),
+                            title=spoke.primary.title,
+                            icon_path=spoke.primary.full_type_icon_path())
         return None
 
     def children(self):
         """ return the addable children for this type, except the primary
             type (if any) """
-        type = self.type()
-        ## order?
-        ## unconnected, or no restrictions
-        if type is None:
+        spoke = self.spoke()
+        if spoke is None:
             ch = [t for t in type_registry.values() if t.implicit_add]
             primary = None
         else:
-            ch = type(self.instance.content()).allowed_spokes()
-            primary = type.primary
+            ch = spoke.allowed_spokes()
+            primary = spoke.primary
 
         
         return [dict(name=c.name(),
@@ -117,11 +114,11 @@ class Toolbar(object):
         ## do not show when creating or updating
         if self.status in (Toolbar.CREATE, Toolbar.UPDATE):
             return False
-        if self.type() is None:
+        if self.spoke() is None:
             return True
-        if self.type().children is None:
+        if self.spoke().children is None:
             return True
-        return bool(self.type().children)
+        return bool(self.spoke().children)
 
     def show_update(self):
         if self.status == Toolbar.SPECIAL:  ## special page
