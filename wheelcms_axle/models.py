@@ -14,6 +14,11 @@ from drole.fields import RoleField
 from .impexp import WheelSerializer
 from .themes import theme_registry
 
+## import the default workflow, so it can register itself as default
+## should be in some sort of base configuration class in stead of here
+
+import workflows.default
+
 ## import pytz
 
 from django.utils.translation import ugettext as _
