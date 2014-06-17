@@ -13,15 +13,21 @@ from threading import local
 
 _toolbar_storage = local()
 
-def create_toolbar(request, storage=None):
+def create_toolbar(request, storage=None, force=False):
     storage = storage or _toolbar_storage
-    try:
+
+    if not hasattr(storage, 'toolbar'):
+        storage.toolbar = None
+
+    if storage.toolbar and not force:
         return storage.toolbar
-    except AttributeError:
-        if not request.user.is_anonymous():
-            storage.toolbar = Toolbar(Node.root(), request=request, status="special")
-            return storage.toolbar
-    return None
+
+    if not request.user.is_anonymous():
+        storage.toolbar = Toolbar(Node.root(), request=request, status="special")
+    else:
+        storage.toolbar = None
+
+    return storage.toolbar
 
 def get_toolbar():
     try:

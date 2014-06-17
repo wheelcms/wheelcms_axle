@@ -493,7 +493,7 @@ from wheelcms_axle.toolbar import create_toolbar
 class TestCreateToolbar(object):
     """ Test the behaviour of the create_toolbar method """
 
-    def test_anonymous(self):
+    def test_anonymous(self, client):
         """ no toolbar should be created for anonymous users """
         request = mock.Mock()
         storage = mock.Mock(toolbar=None)
@@ -501,7 +501,7 @@ class TestCreateToolbar(object):
         assert create_toolbar(request, storage=storage) is None
         assert storage.toolbar is None
 
-    def test_creates(self):
+    def test_creates(self, client):
         """ but in non-anonymous cases it should create """
         request = mock.Mock()
         storage = mock.Mock(toolbar=None)
@@ -509,9 +509,10 @@ class TestCreateToolbar(object):
         storage.toolbar = None
 
         a = create_toolbar(request, storage=storage)
+        assert a is not None
         assert a == storage.toolbar
-        
-    def test_creates_singleton(self):
+
+    def test_creates_singleton(self, client):
         """ it should return the same instance on multiple invocations """
         request = mock.Mock()
         storage = mock.Mock(toolbar=None)
@@ -520,4 +521,23 @@ class TestCreateToolbar(object):
 
         a =  create_toolbar(request, storage=storage)
         b =  create_toolbar(request, storage=storage)
+        assert a is not None
         assert a == b
+
+    def test_force(self, client):
+        """ force always creates a new toolbar """
+        request = mock.Mock()
+        storage = mock.Mock(toolbar="Hello")
+        request.user.is_anonymous.return_value=False
+
+        a =  create_toolbar(request, storage=storage, force=True)
+        assert a != "Hello"
+
+    def test_no_force(self, client):
+        """ no force doesn't create if not necessary """
+        request = mock.Mock()
+        storage = mock.Mock(toolbar="Hello")
+        request.user.is_anonymous.return_value=False
+
+        a =  create_toolbar(request, storage=storage, force=False)
+        assert a == "Hello"
