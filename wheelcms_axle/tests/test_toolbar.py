@@ -461,3 +461,37 @@ class TestToolbarActionPreviewction(BaseTestToolbarAction):
         """ verify get_absolute_url is invoked """
         m = mock.Mock(**{"instance.get_absolute_url.return_value": "/foo"})
         assert self.action("test").with_toolbar(m).url().startswith("/foo")
+
+from wheelcms_axle.toolbar import create_toolbar
+
+class TestCreateToolbar(object):
+    """ Test the behaviour of the create_toolbar method """
+
+    def test_anonymous(self):
+        """ no toolbar should be created for anonymous users """
+        request = mock.Mock()
+        storage = mock.Mock(toolbar=None)
+        request.user.is_anonymous.return_value=True
+        assert create_toolbar(request, storage=storage) is None
+        assert storage.toolbar is None
+
+    def test_creates(self):
+        """ but in non-anonymous cases it should create """
+        request = mock.Mock()
+        storage = mock.Mock(toolbar=None)
+        request.user.is_anonymous.return_value=False
+        storage.toolbar = None
+
+        a = create_toolbar(request, storage=storage)
+        assert a == storage.toolbar
+        
+    def test_creates_singleton(self):
+        """ it should return the same instance on multiple invocations """
+        request = mock.Mock()
+        storage = mock.Mock(toolbar=None)
+        request.user.is_anonymous.return_value=False
+        storage.toolbar = None
+
+        a =  create_toolbar(request, storage=storage)
+        b =  create_toolbar(request, storage=storage)
+        assert a == b
