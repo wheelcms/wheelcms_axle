@@ -216,7 +216,7 @@ class Spoke(ContextWrappable):
     @property
     def o(self):
         warn("{0}.o is obsolete, please use {0}.instance".format(self),
-             DeprecationWarning)
+             DeprecationWarning, stacklevel=2)
         return self.instance
 
     def icon_base(self):
@@ -317,7 +317,7 @@ class Spoke(ContextWrappable):
     def description(self):
         """ attempt to provide some sort of description """
         warn("Spoke.description is deprecated, "
-             "use context or .instance.description")
+             "use context or .instance.description", stacklevel=2)
         return self.instance.description
 
     def workflow(self):
@@ -413,8 +413,9 @@ class Spoke(ContextWrappable):
 
     def addable_children(self):
         """ deprecated name """
-        warn("Spoke.addable_children is obsolete, please use allowed_spokes in stead",
-             DeprecationWarning)
+        warn("Spoke.addable_children is obsolete, "
+             "please use allowed_spokes in stead",
+             DeprecationWarning, stacklevel=2)
         return self.allowed_spokes()
 
     def searchable_text(self):
