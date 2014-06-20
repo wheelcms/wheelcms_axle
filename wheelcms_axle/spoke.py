@@ -311,10 +311,13 @@ class Spoke(ContextWrappable):
     @classproperty
     def title(cls):
         """ The title for this type, not for it's specific content """
+        ## XXX somewhat inconsistent with spoke.description
         return cls.model._meta.object_name + " content"
 
     def description(self):
         """ attempt to provide some sort of description """
+        warn("Spoke.description is deprecated, "
+             "use context or .instance.description")
         return self.instance.description
 
     def workflow(self):
