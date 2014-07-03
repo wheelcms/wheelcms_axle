@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="{% static "css/upload/jquery.fileupload-ui.css" %}" media="screen, projection, print"/>
 <link rel="stylesheet" href="{% static "ngtags/ng-tags-input.css" %}" media="screen, projection, print"/>
 <link rel="stylesheet" href="{% static "ngtags/ng-tags-input-wheel.css" %}" media="screen, projection, print"/>
+<link rel="stylesheet" href="{% static "bootstrap-datetimepicker/bootstrap-datetimepicker.css" %}" media="screen, projection, print">
 
 {% endgranule %}
 {% granule "javascript" %}
@@ -36,6 +37,9 @@
 
 <script src="{% static "js/ui-bootstrap-0.10.0.min.js" %}"></script>
 <script src="{% static "js/ui-bootstrap-tpls-0.10.0.min.js" %}"></script>
+
+<script src="{% static "bootstrap-datetimepicker/moment.js" %}"></script>
+<script src="{% static "bootstrap-datetimepicker/bootstrap-datetimepicker.js" %}"></script>
 
 <script src="{% static "ngtags/ng-tags-input.js" %}"></script>
 <script src="{% static "js/tags-input-wrapper.js" %}"></script>
@@ -68,6 +72,8 @@
               }
 
           } );
+      // temp, angularify this XXX
+      $('.datetimepicker').datetimepicker();
     });
   </script>
 
