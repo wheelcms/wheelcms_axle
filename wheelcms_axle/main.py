@@ -116,8 +116,9 @@ class MainHandler(WheelRESTHandler):
             return self._toolbar
         except AttributeError:
             self._toolbar = get_toolbar() or create_toolbar(self.request)
-            self._toolbar.instance = self.instance
-            self._toolbar.status = Toolbar.VIEW
+            if self._toolbar:
+                self._toolbar.instance = self.instance
+                self._toolbar.status = Toolbar.VIEW
 
         return self._toolbar
 
@@ -237,8 +238,9 @@ class MainHandler(WheelRESTHandler):
 
         ## configure the toolbar
         self._toolbar = get_toolbar()
-        self._toolbar.status = Toolbar.VIEW
-        self._toolbar.instance = self.instance
+        if self._toolbar:
+            self._toolbar.status = Toolbar.VIEW
+            self._toolbar.instance = self.instance
 
         ## if user authenticated, find language setting, activate it.
         ## Will only work for requests that go through this handler
@@ -422,7 +424,8 @@ class MainHandler(WheelRESTHandler):
             self.context['breadcrumb'] = self.breadcrumb(operation="Attach", details=' "%s"' % typeinfo.title)
         else:
             self.context['breadcrumb'] = self.breadcrumb(operation="Create", details=' "%s"' % typeinfo.title)
-        self.toolbar.status = Toolbar.CREATE
+        if self.toolbar:
+            self.toolbar.status = Toolbar.CREATE
 
         template = typeinfo.create_template(self.request, parent)
 
@@ -491,7 +494,8 @@ class MainHandler(WheelRESTHandler):
 
         self.context['redirect_cancel'] = self.instance.get_absolute_url() + \
                                           "?info=Update+cancelled"
-        self.toolbar.status = Toolbar.UPDATE
+        if self.toolbar:
+            self.toolbar.status = Toolbar.UPDATE
 
         formclass =  typeinfo.form
         slug = instance.slug(language=language)
@@ -645,7 +649,8 @@ class MainHandler(WheelRESTHandler):
                 return self.forbidden()
 
             ## if there's an action, assume it's actually an update action.
-            self.toolbar.status = Toolbar.UPDATE
+            if self.toolbar:
+                self.toolbar.status = Toolbar.UPDATE
             return action_handler(self, self.request, action)
 
         if not auth.has_access(self.request, spoke, spoke, perm):
@@ -691,7 +696,8 @@ class MainHandler(WheelRESTHandler):
         if not auth.has_access(self.request, spoke, spoke, perm):
             return self.forbidden()
 
-        self.toolbar.status = Toolbar.LIST
+        if self.toolbar:
+            self.toolbar.status = Toolbar.LIST
         self.context['breadcrumb'] = self.breadcrumb(operation="Contents")
 
         self.context['can_paste'] = \

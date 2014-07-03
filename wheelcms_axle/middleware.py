@@ -34,5 +34,5 @@ from .toolbar import create_toolbar
 
 class ToolbarMiddleware(object):
     def process_request(self, request):
-        create_toolbar(request)
+        create_toolbar(request, force=True)
 

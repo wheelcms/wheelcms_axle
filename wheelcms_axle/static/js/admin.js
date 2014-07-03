@@ -138,4 +138,7 @@ app.controller('AdminCtrl', function($rootScope, $scope) {
     $scope.advanced_open = /collapseadvanced$/.test(document.location.hash);
 });
 
+app.controller('EditFormController', function($rootScope, $scope) {
+  // implemented in toolbar_actions, some code already depends on its presence
+});
 
