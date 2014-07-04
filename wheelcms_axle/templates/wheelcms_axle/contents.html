@@ -1,6 +1,7 @@
-{% extends "wheelcms_axle/base.html" %}
+{% extends "wheelcms_axle/base_admin.html" %}
 
 {% block javascript %}
+{{ block.super }}
 <script type="text/javascript" charset="utf-8">
   function delete_dialog(deletes) {
     /*
@@ -39,8 +40,8 @@
     $(".toggle-all").click(function(e) {
         /* select/deselect all entries */
         var boxes = $("input[type='checkbox'][name='selection']");
-        var state = $(this).attr("checked")?true:false;
-        boxes.attr("checked", state);
+        var state = $(this).prop('checked');
+        boxes.prop("checked", state);
         $(".toggleaction").attr("disabled", !state);
     });
     $(".sortable").sortable({
@@ -72,7 +73,9 @@
 </script>
 {% endblock %}
 
-{% block base_main %}
+{% block main %}
+{{ block.super }}
+
 <form class="contentsform" method="post" action="contents_actions_delete">
 {% csrf_token %}
 
@@ -116,7 +119,7 @@
 <form method="POST" action="contents_actions_cutcopypaste">
 {% csrf_token %}
 {% block listing_table %}
-  <table class="table table-condensed table-hover wheel-contentlist">
+  <table class="table table-condensed table-hover wheel-contentlist" ng-controller="ContentsCtrl">
     <thead>
       <th><input class="toggle-all" type="checkbox"></th>
       <th>Title</th>
