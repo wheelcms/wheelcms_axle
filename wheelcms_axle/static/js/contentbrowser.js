@@ -81,6 +81,12 @@ contentbrowser.controller('BrowseCtrl', function($rootScope, $scope, $modal) {
     }
 
     function open_props(path, type, options, callback, newselection) {
+        var download = false;
+
+        if(path.match(/\+download$/)) {
+            path = path.replace(/\/\+download$/, '');
+            options.download = true;
+        }
         var modalInstance = $modal.open({
             templateUrl: 'PropsModal.html',
             controller: "PropsCtrl",
@@ -98,11 +104,13 @@ contentbrowser.controller('BrowseCtrl', function($rootScope, $scope, $modal) {
                  * been explicitly requested
                  */
                 if(selected.path.indexOf("http") !== 0) {
-                    if(type == "image" || selected.download) {
+                    if(type == "image" || selected.props.download) {
                         if(!/\/$/.test(selected.path)) {
                             selected.path += '/';
                         }
-                        selected.path += '+download';
+                        if(!selected.path.match(/\+download$/)) {
+                            selected.path += '+download';
+                        }
                     }
                 }
                 callback(selected.path, selected.props);
@@ -150,6 +158,7 @@ contentbrowser.controller('PropsCtrl',
               $scope.propsform = initial;
               // passed properties are always leading
               angular.extend($scope.propsform, options);
+
               var propsform = $("#detailsModalBody");
               propsform.html($compile(template)($scope));
           });

@@ -924,6 +924,12 @@ class MainHandler(WheelRESTHandler):
                            float=FLOAT_CHOICES[1][0],
                            align=ALIGN_CHOICES[0][0])
 
+        ## if not target, determine local/new based on locality of url
+        if not forminitial['target']:
+            if path:
+                forminitial['target'] = "_self"
+            else:
+                forminitial['target'] = "_blank"
         klass_parts = klass.split()
 
         for part in klass_parts:
