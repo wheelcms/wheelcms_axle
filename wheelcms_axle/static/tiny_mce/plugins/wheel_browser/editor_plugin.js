@@ -21,10 +21,6 @@
                     href = dom.getAttrib(anchor, 'href');
                     options.title = dom.getAttrib(anchor, 'title');
                     options.target = dom.getAttrib(anchor, 'target');
-                    if(href.match(/\+download$/)) {
-                        options.download = true;
-                        href = href.replace(/\/\+download$/, '');
-                    }
                 }
 
                 ed.getWin().parent.props_or_browser(href, "link", options,
@@ -40,13 +36,6 @@
                                    });
                         anchor = elementArray[0]; // expect one, only one
                     }
-                    /*
-                    if(options.download) {
-                        if(!/\/$/.test(link)) {
-                            link += '/';
-                        }
-                        link += "/+download";
-                    }*/
                     dom.setAttrib(anchor, 'href', link);
                     if(options.title) {
                         dom.setAttrib(anchor, 'title', options.title);
@@ -76,12 +65,6 @@
                         ed.getWin().focus();
                     }
                     var args = {src:link, "class":""};
-                    /*if(options.local) {
-                        if(!/\/$/.test(args.src)) {
-                            args.src += '/';
-                        }
-                        args.src += '+download';
-                    }*/
                     if(options.title) {
                         args.title = options.title;
                         args.alt = options.title;

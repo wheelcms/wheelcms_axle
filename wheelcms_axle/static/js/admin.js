@@ -142,3 +142,6 @@ app.controller('EditFormController', function($rootScope, $scope) {
   // implemented in toolbar_actions, some code already depends on its presence
 });
 
+
+app.controller('ContentsCtrl', function($rootScope, $scope) {
+});

@@ -31,7 +31,7 @@ contentbrowser.controller('BrowseCtrl', function($rootScope, $scope, $modal) {
        */
       type = _type;
       if(path) {
-          open_props(path, type, options, callback);
+          open_props(path, type, options, callback, false);
       }
       else {
           open_browser(path, type, options, callback);
@@ -54,7 +54,7 @@ contentbrowser.controller('BrowseCtrl', function($rootScope, $scope, $modal) {
             var args = options || {};
             args.download = false;
 
-            open_props(selected, type, options, callback);
+            open_props(selected, type, options, callback, true);
         }, function (result) {
             // reason = upload or dismissed
             if(result.reason == "upload") {
@@ -80,14 +80,21 @@ contentbrowser.controller('BrowseCtrl', function($rootScope, $scope, $modal) {
         });
     }
 
-    function open_props(path, type, options, callback) {
+    function open_props(path, type, options, callback, newselection) {
+        var download = false;
+
+        if(path.match(/\+download$/)) {
+            path = path.replace(/\/\+download$/, '');
+            options.download = true;
+        }
         var modalInstance = $modal.open({
             templateUrl: 'PropsModal.html',
             controller: "PropsCtrl",
             resolve: {
                 path: function() { return path; },
                 type: function() { return type; },
-                options: function() { return options; }
+                options: function() { return options; },
+                newselection: function() { return newselection; }
             }
         });
         modalInstance.result.then(function (selected) {
@@ -97,11 +104,13 @@ contentbrowser.controller('BrowseCtrl', function($rootScope, $scope, $modal) {
                  * been explicitly requested
                  */
                 if(selected.path.indexOf("http") !== 0) {
-                    if(type == "image" || selected.download) {
+                    if(type == "image" || selected.props.download) {
                         if(!/\/$/.test(selected.path)) {
                             selected.path += '/';
                         }
-                        selected.path += '+download';
+                        if(!selected.path.match(/\+download$/)) {
+                            selected.path += '+download';
+                        }
                     }
                 }
                 callback(selected.path, selected.props);
@@ -127,8 +136,8 @@ contentbrowser.factory("UploadModal", function() {
 });
 
 contentbrowser.controller('PropsCtrl',
-           ["$scope", "$modalInstance", "$compile", "$http", "PropsModal", "path", "type", "options",
-    function($scope, $modalInstance, $compile, $http, PropsModal, path, type, options) {
+           ["$scope", "$modalInstance", "$compile", "$http", "PropsModal", "path", "type", "options", "newselection",
+    function($scope, $modalInstance, $compile, $http, PropsModal, path, type, options, newselection) {
 
     $scope.propsform = options;
 
@@ -136,6 +145,9 @@ contentbrowser.controller('PropsCtrl',
         var params = angular.copy(options);
         params.path = path;
         params.type = type;
+        if(newselection) {
+            params.newselection = true;
+        }
 
         $http.get($scope.urlbase + "panel_selection_details",
                   {params: params}
@@ -146,6 +158,7 @@ contentbrowser.controller('PropsCtrl',
               $scope.propsform = initial;
               // passed properties are always leading
               angular.extend($scope.propsform, options);
+
               var propsform = $("#detailsModalBody");
               propsform.html($compile(template)($scope));
           });

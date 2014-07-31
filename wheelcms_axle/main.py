@@ -898,7 +898,7 @@ class MainHandler(WheelRESTHandler):
             ("img_content_thumb", "Thumb"),
             ("img_content_small", "Small"),
             ("img_content_medium", "Medium"),
-            ("img_content_large", "Original"),
+            ("img_content_large", "Large"),
         )
         FLOAT_CHOICES = (
             ("img_align_left", "Left"),
@@ -919,8 +919,17 @@ class MainHandler(WheelRESTHandler):
         ## framename
 
         ## translate klass back to size/float/align
-        forminitial = dict(title=default_title, target=target, download=download)
+        forminitial = dict(title=default_title, target=target, download=download,
+                           size=SIZE_CHOICES[-1][0],
+                           float=FLOAT_CHOICES[1][0],
+                           align=ALIGN_CHOICES[0][0])
 
+        ## if not target, determine local/new based on locality of url
+        if not forminitial['target']:
+            if path:
+                forminitial['target'] = "_self"
+            else:
+                forminitial['target'] = "_blank"
         klass_parts = klass.split()
 
         for part in klass_parts:
