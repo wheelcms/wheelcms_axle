@@ -14,6 +14,9 @@ class ContentContext(object):
     def url(self):
         return self.content.instance.get_absolute_url()
 
+    def state(self):
+        return self.content.state()
+
     def __getattr__(self, attribute):
         return getattr(self.content.instance, attribute)
 
