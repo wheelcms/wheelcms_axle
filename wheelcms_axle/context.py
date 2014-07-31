@@ -17,6 +17,9 @@ class ContentContext(object):
     def state(self):
         return self.content.state()
 
+    def workflow(self):
+        return self.content.workflow()
+
     def __getattr__(self, attribute):
         return getattr(self.content.instance, attribute)
 

@@ -11,6 +11,21 @@ class Workflow(object):
     def __init__(self, spoke):
         self.spoke = spoke
 
+    def state(self):
+        return dict(self.states)[self.spoke.instance.state]
+
+    def is_published(self):
+        return True
+
+    def is_visible(self):
+        warn("Workflow.is_visible is deprecated; use permissions in stead!")
+        return self.is_published()
+
+
+    def state_changed(self, oldstate, newstate):
+        newperms = self.permission_assignment.get(newstate, ())
+        if newperms:
+            self.spoke.update_perms(newperms)
 """
     Define states as classes and the available transitions between them
     published = State("Published", dest=(Private,))
@@ -64,8 +79,6 @@ class DefaultWorkflow(Workflow):
         warn("Workflow.is_visible is deprecated; use permissions in stead!")
         return self.is_published() or self.spoke.instance.state == self.VISIBLE
 
-    def state(self):
-        return dict(self.states)[self.spoke.instance.state]
 
     def state_changed(self, oldstate, newstate):
         newperms = self.permission_assignment.get(newstate, ())
