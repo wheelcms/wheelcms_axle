@@ -429,6 +429,7 @@ class NodeBase(models.Model):
                 count = 0
                 while self.child(slug, lang):
                     slug = "copy_%s_of_%s" % (count, base_slug)
+                    count += 1
                 slug_per_lang[lang] = slug
 
 

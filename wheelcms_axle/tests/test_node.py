@@ -584,6 +584,16 @@ class TestNodeCopyPaste(Base):
         child = root.add('foo')
         assert child.get_absolute_url() == '/foo/'
 
+    def test_issue_785_paste_existing_0(self, client, root):
+        """ pasting "foo" in node containing "foo" and "copy_0_of_foo" results
+            in endless loop """
+        foo = root.add("foo")
+        foo2 = root.add("copy_0_of_foo")
+
+        res, success, failed = root.paste(foo, copy=True)
+
+        assert res.path == "/copy_1_of_foo"
+
 from .models import Type1, Type1Type
 
 @pytest.mark.usefixtures("localtyperegistry")
