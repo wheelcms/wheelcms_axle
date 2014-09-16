@@ -14,8 +14,8 @@ function appdeps() {
 
 app = angular.module('wheelcms-admin', appdeps(),
  function ($interpolateProvider) {
-    $interpolateProvider.startSymbol('<[');
-    $interpolateProvider.endSymbol(']>');
+//    $interpolateProvider.startSymbol('<[');
+//    $interpolateProvider.endSymbol(']>');
 });
 
 app.config(['$httpProvider', function($httpProvider) {
