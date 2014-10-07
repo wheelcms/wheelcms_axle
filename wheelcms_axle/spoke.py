@@ -70,7 +70,7 @@ def indexfactory(spoke):
         path = indexes.CharField(stored=True, indexed=True,
                               model_attr='get_absolute_url')
         slug = indexes.CharField(stored=True, indexed=True,
-                                  model_attr='node__slug')
+                                  model_attr='node__slug', default='')
         created = indexes.DateField(stored=True, indexed=True,
                                     model_attr="created")
         modified = indexes.DateField(stored=True, indexed=True,

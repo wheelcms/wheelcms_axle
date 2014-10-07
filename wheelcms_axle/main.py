@@ -399,6 +399,9 @@ class MainHandler(WheelRESTHandler):
                         sub.set(p)
                         target = sub
 
+                    ## force reindex
+                    typeinfo.model.objects.get(pk=p.pk).save()
+
                     ent = stracks.content(p.id, name=p.title)
                     ent.log("? (%s) created by ?" % typeinfo.title,
                             stracks.user(self.user()), action=stracks.create())
