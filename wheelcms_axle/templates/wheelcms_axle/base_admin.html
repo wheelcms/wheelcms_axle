@@ -8,8 +8,31 @@
 {{block.super}}
 <script type="text/javascript">
   extradeps.push("contentbrowser");
+  extradeps.push("notifier");
   extradeps.push("tagInputWrapper");
 </script>
+{% endblock %}
+{% block notifications %}
+{{block.super}}
+  <div ng-controller="NotifierCtrl">
+        <div ng-if="notification.info" class="alert alert-block alert-info fade in">
+          <a class="close" data-dismiss="alert" href="#">×</a>
+          <p><[notification.info]></p>
+        </div>
+        <div ng-if="notification.success" class="alert alert-block alert-success fade in">
+          <a class="close" data-dismiss="alert" href="#">×</a>
+          <p><[notification.success]></p>
+        </div>
+        <div ng-if="notification.warning" class="alert alert-block alert-warning fade in">
+          <a class="close" data-dismiss="alert" href="#">×</a>
+          <p><[notification.warning]></p>
+        </div>
+        <div ng-if="notification.error" class="alert alert-block alert-danger fade in">
+          <a class="close" data-dismiss="alert" href="#">×</a>
+          <p><[notification.error]></p>
+        </div>
+  </div>
+
 {% endblock %}
 
 {% block granules %}
@@ -44,6 +67,7 @@
 <script src="{% static "ngtags/ng-tags-input.js" %}"></script>
 <script src="{% static "js/tags-input-wrapper.js" %}"></script>
 <script src="{% static "js/admin.js" %}"></script>
+<script src="{% static "js/notifier.js" %}"></script>
 <script src="{% static "js/contentbrowser.js" %}"></script>
 
 <script type="text/javascript" src="{% static "tiny_mce/tiny_mce.js" %}"></script>
@@ -80,10 +104,16 @@
 
 {% endgranule %}
 {% endblock %}
+{% block body_attrs %}
+  {{block.super}}
+
+  ng-app="wheelcms-admin"
+  ng-controller="AdminCtrl"
+  ng-init="init('{{spoke.instance.get_absolute_url}}');"
+{% endblock body_attrs %}
 {% block base_main %}
 
-<div ng-app="wheelcms-admin" ng-init="init('{{spoke.instance.get_absolute_url}}');" ng-controller="AdminCtrl" id="wheelcms-admin">
-
+<div id="wheelcms-admin">
   <div ng-controller="BrowseCtrl" id="content">
     <script type="text/ng-template" id="BrowseModal.html">
         <div class="modal-content">
