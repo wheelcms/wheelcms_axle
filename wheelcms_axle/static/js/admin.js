@@ -8,7 +8,6 @@ function appdeps() {
     if(typeof extradeps !== 'undefined') {
         basedeps = basedeps.concat(extradeps);
     }
-    console.log(basedeps);
     return basedeps;
 }
 
