@@ -5,6 +5,8 @@ from wheelcms_axle.templates import TemplateRegistry, template_registry
 from wheelcms_axle.registries.toolbar import (ToolbarActionRegistry,
                              toolbar_registry as original_toolbar_registry)
 
+from wheelcms_axle.actions import ActionRegistry, action_registry
+
 import pytest
 
 @pytest.fixture()
@@ -33,6 +35,11 @@ def localtyperegistry(request):
         registry.register(type)
     for type in getattr(request.cls, 'extra_types', []):
         registry.register(type)
+
+@pytest.fixture()
+def localactionregistry(request):
+    registry = ActionRegistry()
+    action_registry.set(registry)
 
 from wheelcms_axle.registries import core
 from wheelcms_axle.workflows.default import DefaultWorkflow

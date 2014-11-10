@@ -1,7 +1,9 @@
 import mock
+import pytest
 from drole.types import Permission
 from wheelcms_axle.spoke import Spoke, tab
 
+@pytest.mark.usefixtures("localactionregistry")
 class TestSpokeTabs(object):
     def test_defaults(self):
         """ simple @action() syntax """

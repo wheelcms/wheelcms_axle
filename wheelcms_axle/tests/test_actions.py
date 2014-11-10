@@ -7,16 +7,13 @@ from ..node import Node
 from .models import Type1, Type1Type
 from .test_handler import MainHandlerTestable, superuser_request
 
-from ..actions import ActionRegistry, action_registry, action
+from ..actions import action_registry, action
 
 
-@pytest.mark.usefixtures("localtyperegistry")
+@pytest.mark.usefixtures("localtyperegistry", "localactionregistry")
 class TestAction(object):
     type = Type1Type
 
-    def setup(self):
-        self.action_registry = ActionRegistry()
-        action_registry.set(self.action_registry)
 
     def test_handler_action_decorator_root(self, client):
         root = Node.root()
@@ -55,7 +52,7 @@ class TestAction(object):
     def test_decorator_direct(self, client):
         spoke = Type1(node=Node.root(), title="Root").save().spoke()
 
-        h = self.action_registry.get('hello', spoke=spoke)
+        h = action_registry.get('hello', spoke=spoke)
         assert h == spoke.hello
 
     def test_decorator_direct_override(self, client):
@@ -64,7 +61,7 @@ class TestAction(object):
         def handler(*a, **b):
             pass
 
-        self.action_registry.register(handler, action="hello", spoke=spoke)
+        action_registry.register(handler, action="hello", spoke=spoke)
         h = action_registry.get('hello', spoke=spoke)
         assert h == handler
 
@@ -74,7 +71,7 @@ class TestAction(object):
         def handler(*a, **b):
             pass
 
-        self.action_registry.register(handler, action="hello",
+        action_registry.register(handler, action="hello",
                                       spoke=spoke, path="/foo")
         h = action_registry.get('hello', spoke=spoke, path="/foo")
         assert h == handler
@@ -85,7 +82,7 @@ class TestAction(object):
         def handler(*a, **b):
             pass
 
-        self.action_registry.register(handler, action="hello",
+        action_registry.register(handler, action="hello",
                                       spoke=spoke)
         h = action_registry.get('hello', spoke=spoke)
         assert h == handler
@@ -94,7 +91,7 @@ class TestAction(object):
         def handler(*a, **b):
             pass
 
-        self.action_registry.register(handler, action="hello",
+        action_registry.register(handler, action="hello",
                                       path="/foo")
         h = action_registry.get('hello', path="/foo")
         assert h == handler
@@ -105,7 +102,7 @@ class TestAction(object):
         def handler(*a, **b):
             pass
 
-        self.action_registry.register(handler, action="hello")
+        action_registry.register(handler, action="hello")
         assert action_registry.get('hello') == handler
         assert action_registry.get('hello', path="/foo") == handler
         assert action_registry.get('hello', spoke=spoke) == handler
@@ -121,7 +118,7 @@ class TestAction(object):
         def handler(*a, **b):
             pass
 
-        self.action_registry.register(handler, action="world",
+        action_registry.register(handler, action="world",
                                       spoke=spoke, path="/foo")
         assert action_registry.get('world', spoke=spoke) is None
         assert action_registry.get('world',  path="/foo") is None
