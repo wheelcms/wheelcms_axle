@@ -80,7 +80,6 @@ class tab(object):
 
     def __call__(self, f):
         def wrapped(self, *a, **b):
-            self.active_tab = wrapped.tab_id
             res = f(self, *a, **b)
             return res
 

@@ -2,6 +2,8 @@ import mock
 import pytest
 from drole.types import Permission
 from wheelcms_axle.spoke import Spoke, tab
+from wheelcms_axle.actions import action_registry
+
 
 @pytest.mark.usefixtures("localactionregistry")
 class TestSpokeTabs(object):
@@ -83,14 +85,38 @@ class TestSpokeTabs(object):
 
         assert 'test_tab' in [x['id'] for x in s.tabs()]
 
-    def test_active_tab(self):
-        """ A decorated method should be returned as tab """
+    def test_tab_action_registry(self):
+        """ tabs can be registered explicitly outside spokes """
         class TestSpoke(Spoke):
-            @tab()
-            def test_tab(self):
-                pass
+            pass
 
         s = TestSpoke(mock.MagicMock(tab=False, action=False))
-        s.test_tab()
 
-        assert s.active_tab == "test_tab"
+        @tab()
+        def tabhandler(handler, request, action):
+            pass
+
+        action_registry.register(tabhandler, 'tabhandler')
+
+        assert 'tabhandler' in [x['id'] for x in s.tabs()]
+
+    def test_tab_action_registry_restrct_spoke(self):
+        """ tabs can be registered explicitly outside spokes,
+            but if defined the spoke should match """
+        class TestSpoke(Spoke):
+            pass
+
+        class Test2Spoke(Spoke):
+            pass
+
+        s1 = TestSpoke(mock.MagicMock(tab=False, action=False))
+        s2 = Test2Spoke(mock.MagicMock(tab=False, action=False))
+
+        @tab()
+        def tabhandler(handler, request, action):
+            pass
+
+        action_registry.register(tabhandler, 'tabhandler', spoke=Test2Spoke)
+
+        assert 'tabhandler' not in [x['id'] for x in s1.tabs()]
+        assert 'tabhandler' in [x['id'] for x in s2.tabs()]
