@@ -10,7 +10,7 @@
 {% if tabs %}
 <ul class="nav nav-tabs">
   {% for tab in tabs %}
-  <li {% if tab.id == spoke.active_tab %}class="active"{% endif %}><a href="{{spoke.instance.get_absolute_url}}{{tab.action}}">{{tab.label}}</a></li>
+  <li {% if tab.id == tab_action %}class="active"{% endif %}><a href="{{spoke.instance.get_absolute_url}}{{tab.action}}">{{tab.label}}</a></li>
   {% endfor %}
 </ul>
 {% endif %}

@@ -22,7 +22,7 @@ from wheelcms_axle import permissions as p, roles
 from .context import ContextWrappable
 
 from .impexp import WheelSerializer
-from .actions import action
+from .actions import action, tab
 
 from two.ol.util import classproperty
 from two.ol.base import json
@@ -96,55 +96,8 @@ def indexfactory(spoke):
 
     return WheelIndex
 
-class tab(object):
-    def __init__(self, permission=None, id=None, label=None):
-        self.permission = permission
-        self.id = id
-        self.label = label
-
-    def __call__(self, f):
-        def wrapped(self, *a, **b):
-            self.active_tab = wrapped.tab_id
-            res = f(self, *a, **b)
-            return res
-
-        name = f.func_name
-
-        if self.permission:
-            wrapped = action(self.permission)(wrapped)
-        else:
-            wrapped = action(wrapped)
-        wrapped.tab = True
-        wrapped.tab_id = self.id or name
-        wrapped.tab_label = self.label or wrapped.tab_id
-
-        return wrapped
 
 class Spoke(ContextWrappable):
-    model = Content  ## is it smart to set this to Content? A nonsensible default..
-    permissions = dict(
-        create=p.create_content,
-        edit=p.edit_content,
-        view=p.view_content,
-        delete=p.delete_content,
-        list=p.list_content,
-    )
-
-    permission_assignment = {
-        p.view_content: (roles.owner, roles.editor, roles.admin),
-        p.edit_content: (roles.owner, roles.editor, roles.admin),
-        p.create_content: (roles.owner, roles.editor, roles.admin),
-        p.delete_content: (roles.owner, roles.editor, roles.admin),
-        p.list_content: (roles.owner, roles.editor, roles.admin),
-        p.change_auth_content: (roles.owner, roles.admin),
-        p.modify_settings: (roles.admin,),
-    }
-
-    basetabs = (
-        dict(id="attributes", label="Attributes", action="edit",
-             permission=p.edit_content),
-    )
-    active_tab = "attributes"
 
     ## None means no restrictions, () means no subcontent allowed
     children = None
@@ -193,7 +146,27 @@ class Spoke(ContextWrappable):
             context """
         decorated_tabs = []
 
+        explicit_tabs = {}
+
+        from .actions import action_registry
+
+        for (name, a) in action_registry.iteritems():
+            for (h, epath, espoke) in a:
+                # import pdb; pdb.set_trace()
+                if getattr(h, 'action', False) and getattr(h, 'tab', False):
+                    if espoke and espoke != self.__class__:
+                        continue
+                    
+                    decorated_tabs.append(dict(id=h.tab_id, label=h.tab_label,
+                                              action="+"+name,
+                                              permission=h.permission))
+                    explicit_tabs[name] = True
+
         for (name, m) in inspect.getmembers(self, inspect.ismethod):
+            ## 
+            if name in explicit_tabs:
+                continue
+
             #if name == "test_tab":
             #    import pytest; pytest.set_trace()
             if getattr(m, 'action', False) and getattr(m, 'tab', False):
@@ -201,7 +174,6 @@ class Spoke(ContextWrappable):
                 label = getattr(m, 'tab_label', id)
                 decorated_tabs.append(dict(id=id, label=label, action="+"+name,
                                            permission=m.permission))
-
         return self.basetabs + tuple(decorated_tabs)
 
     def assign_perms(self):
@@ -471,7 +443,6 @@ class Spoke(ContextWrappable):
                                       Permission(perm)).save()
 
         ctx = {'spoke':self}
-        self.active_tab = "auth"
 
 
         roles = Role.all()

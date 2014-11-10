@@ -22,7 +22,7 @@ from wheelcms_axle import auth
 from wheelcms_axle import permissions
 
 from .templates import template_registry
-from .actions import action_registry
+from .actions import action_registry, tabaction
 
 from django.utils import translation
 from .models import WheelProfile
@@ -450,6 +450,7 @@ class MainHandler(WheelRESTHandler):
             self.context.update(self.spoke().context(self, self.request,
                                 self.instance))
 
+        self.context['tab_action'] = 'attributes' # default
         if action:
             ## match against path, not get_absolute_url which is configuration specific
             action_handler = action_registry.get(action, self.instance.path,
@@ -468,6 +469,8 @@ class MainHandler(WheelRESTHandler):
                 return self.forbidden()
 
 
+            if tabaction(action_handler):
+                self.context['tab_action'] = tabaction(action_handler)
             return action_handler(self, self.request, action)
 
 
@@ -638,6 +641,7 @@ class MainHandler(WheelRESTHandler):
             perm = Spoke.permissions.get('view')
 
         action = self.kw.get('action', '')
+        self.context['tab_action'] = 'attributes' # default
         if action:
             ## again, use node's path directly, not get_absolute_url, which is
             ## configuration specific
@@ -654,6 +658,9 @@ class MainHandler(WheelRESTHandler):
             ## if there's an action, assume it's actually an update action.
             if self.toolbar:
                 self.toolbar.status = Toolbar.UPDATE
+
+            if tabaction(action_handler):
+                self.context['tab_action'] = tabaction(action_handler)
             return action_handler(self, self.request, action)
 
         if not auth.has_access(self.request, spoke, spoke, perm):

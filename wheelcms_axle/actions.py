@@ -72,4 +72,34 @@ class ActionRegistry(dict):
             return classhandler
         return None
 
+class tab(object):
+    def __init__(self, permission=None, id=None, label=None):
+        self.permission = permission
+        self.id = id
+        self.label = label
+
+    def __call__(self, f):
+        def wrapped(self, *a, **b):
+            self.active_tab = wrapped.tab_id
+            res = f(self, *a, **b)
+            return res
+
+        name = f.func_name
+
+        if self.permission:
+            wrapped = action(self.permission)(wrapped)
+        else:
+            wrapped = action(wrapped)
+        wrapped.tab = True
+        wrapped.tab_id = self.id or name
+        wrapped.tab_label = self.label or wrapped.tab_id
+
+        return wrapped
+
+def tabaction(handler):
+    """ return the tab identifier of a handler if it's a tab, or else None """
+    if getattr(handler, 'action', False) and getattr(handler, 'tab', False):    
+        return handler.tab_id
+    return None
+
 action_registry = Registry(ActionRegistry())
