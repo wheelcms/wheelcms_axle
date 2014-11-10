@@ -178,6 +178,9 @@ class Spoke(ContextWrappable):
             for (h, epath, espoke) in a:
                 # import pdb; pdb.set_trace()
                 if getattr(h, 'action', False) and getattr(h, 'tab', False):
+                    if h.condition and not h.condition(self):
+                        continue
+
                     if espoke and espoke != self.__class__:
                         continue
                     
@@ -194,6 +197,8 @@ class Spoke(ContextWrappable):
             #if name == "test_tab":
             #    import pytest; pytest.set_trace()
             if getattr(m, 'action', False) and getattr(m, 'tab', False):
+                if m.condition and not m.condition(self):
+                    continue
                 id = getattr(m, 'tab_id', name)
                 label = getattr(m, 'tab_label', id)
                 decorated_tabs.append(dict(id=id, label=label, action="+"+name,

@@ -73,10 +73,11 @@ class ActionRegistry(dict):
         return None
 
 class tab(object):
-    def __init__(self, permission=None, id=None, label=None):
+    def __init__(self, permission=None, id=None, label=None, condition=None):
         self.permission = permission
         self.id = id
         self.label = label
+        self.condition = condition
 
     def __call__(self, f):
         def wrapped(self, *a, **b):
@@ -92,6 +93,7 @@ class tab(object):
         wrapped.tab = True
         wrapped.tab_id = self.id or name
         wrapped.tab_label = self.label or wrapped.tab_id
+        wrapped.condition = self.condition
 
         return wrapped
 

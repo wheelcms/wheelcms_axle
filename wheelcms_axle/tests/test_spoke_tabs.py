@@ -120,3 +120,23 @@ class TestSpokeTabs(object):
 
         assert 'tabhandler' not in [x['id'] for x in s1.tabs()]
         assert 'tabhandler' in [x['id'] for x in s2.tabs()]
+
+    def test_tab_conditional_true(self):
+        class TestSpoke(Spoke):
+            @tab(condition=lambda s: True)
+            def test_tab(self):
+                pass
+
+        s = TestSpoke(mock.MagicMock(tab=False, action=False))
+
+        assert 'test_tab' in [x['id'] for x in s.tabs()]
+
+    def test_tab_conditional_false(self):
+        class TestSpoke(Spoke):
+            @tab(condition=lambda s: False)
+            def test_tab(self):
+                pass
+
+        s = TestSpoke(mock.MagicMock(tab=False, action=False))
+
+        assert 'test_tab' not in [x['id'] for x in s.tabs()]
