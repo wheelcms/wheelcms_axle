@@ -68,6 +68,7 @@ class ActionRegistry(dict):
             return None
 
         classhandler = getattr(spoke, action, None)
+        ## A lookup by action id is actually preferable XXX
         if classhandler and getattr(classhandler, 'action', False):
             return classhandler
         return None

@@ -183,7 +183,7 @@ class Spoke(ContextWrappable):
 
                     if espoke and espoke != self.__class__:
                         continue
-                    
+
                     decorated_tabs.append(dict(id=h.tab_id, label=h.tab_label,
                                               action="+"+name,
                                               permission=h.permission))
