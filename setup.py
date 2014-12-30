@@ -24,7 +24,8 @@ setup(name='wheelcms_axle',
           'pytest',
           'mock',
           'wrapt',
-          'reg'
+          'reg==0.8',
+          'django_drole'
       ],
       entry_points={
       },
