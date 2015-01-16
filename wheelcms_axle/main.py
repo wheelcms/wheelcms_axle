@@ -96,6 +96,16 @@ def strip_action(s):
         s = s.split("+", 1)[0].rstrip('/')
     return s
 
+from django.views.generic import View
+
+class MainView(View):
+    def view(self, *args, **kwargs):
+        ## way to hook into view
+
+        ## Handle exceptions here?
+
+        res = super(MainView, self).view(*args, **kwargs)
+        return res
 
 class MainHandler(WheelRESTHandler):
     model = dict(instance=Node, parent=Node)
