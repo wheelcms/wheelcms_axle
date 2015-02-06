@@ -40,6 +40,9 @@ class WheelView(View):
         t = self.get_template(template_path)
         result = t.render(self.context)
         self.context.pop()
+
+        ## Replace <[ ]> markers to {{ }} markers
+        result = result.replace("<[", "{{").replace("]>", "}}")
         return result
 
     def template(self, t, **kw):
