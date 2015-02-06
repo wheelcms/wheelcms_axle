@@ -3,11 +3,8 @@ import operator
 from django import forms
 from django.core.urlresolvers import reverse
 
-from two.ol.base import applyrequest
-
-from two.ol.base import FormHandler
 from wheelcms_axle.models import Configuration
-from wheelcms_axle.base import WheelHandlerMixin
+from wheelcms_axle.base import WheelView
 
 from .themes import theme_registry
 from .registries.configuration import configuration_registry
@@ -50,7 +47,7 @@ class ConfigurationForm(forms.ModelForm):
     theme = forms.ChoiceField()
 
 
-class ConfigurationHandler(FormHandler, WheelHandlerMixin):
+class ConfigurationHandler(WheelView):
     def construct_tabs(self, config):
         baseconf = Configuration.config()
         tabs = []
@@ -96,8 +93,10 @@ class ConfigurationHandler(FormHandler, WheelHandlerMixin):
         return instance
 
     # @require(p.modify_settings)
-    @applyrequest
-    def index(self, config="", action=""):
+    def get(self, request):
+        config = request.REQUEST.get('config', '')
+        action = request.REQUEST.get('action', '')
+
         ## XXX Decorate this!
         if not auth.has_access(self.request, Spoke, None, p.modify_settings):
             return self.forbidden()
@@ -117,8 +116,9 @@ class ConfigurationHandler(FormHandler, WheelHandlerMixin):
 
 
     #@require(p.modify_settings)
-    @applyrequest
-    def process(self, config="", action=""):
+    def process(self, request):
+        config = request.REQUEST.get('config', '')
+        action = request.REQUEST.get('action', '')
         ## XXX Decorate this!
         if not auth.has_access(self.request, Spoke, None, p.modify_settings):
             return self.forbidden()

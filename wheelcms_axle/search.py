@@ -1,24 +1,24 @@
 import urllib
 
 from django.core.paginator import Paginator, InvalidPage
-from two.ol.base import FormHandler, applyrequest
 from two.bootstrap.paginator import SectionedPaginator
 
 from haystack.forms import SearchForm as BaseForm
 from haystack.query import SearchQuerySet
 
-from wheelcms_axle.base import WheelHandlerMixin
 from wheelcms_axle import utils
+from wheelcms_axle.base import WheelView
 
 class SearchForm(BaseForm):
     pass
 
 
-class SearchHandler(FormHandler, WheelHandlerMixin):
+class SearchHandler(WheelView):
     results_per_page = 10
 
-    @applyrequest(page=int)
-    def index(self, page=1):
+    def get(self, request):
+        page = int(request.REQUEST.get('page', 1))
+
         sqs = SearchQuerySet()
         language = utils.get_active_language()
 
@@ -57,5 +57,4 @@ class SearchHandler(FormHandler, WheelHandlerMixin):
         ## move to wheecms_axle folder?
         return self.template("search/search.html")
 
-    ## POST == GET
-    process = index
+    post = get

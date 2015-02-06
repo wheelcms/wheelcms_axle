@@ -21,10 +21,10 @@ urlpatterns = patterns('',
 )
 
 urlpatterns += patterns('', 
-    twpatterns("/@/search", SearchHandler, name="haystack_search"),
+    url("@/search", SearchHandler.as_view(), name="haystack_search"),
 
     ## Special url for configuration; issue #553
-    twpatterns("/@/configuration", ConfigurationHandler, name="wheel_config"),
+    url("@/configuration", ConfigurationHandler.as_view(), name="wheel_config"),
 
     ## operations on the root (no explicit instance, so pass it explicitly)
     twpatterns("/", MainHandler, name="wheel_main", instance=""),
