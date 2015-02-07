@@ -4,13 +4,12 @@ from django.template import loader, Context
 from django.http import HttpResponseServerError, HttpResponseNotFound, Http404
 from django.core.urlresolvers import resolve
 
-from two.ol.base import RESTLikeHandler, applyrequest, context, json, handler
+from two.ol.base import applyrequest, context, json
 from wheelcms_axle.node import Node, NodeNotFound, CantMoveToOffspring
 from wheelcms_axle.content import type_registry, ImageContent
 
 from wheelcms_axle.spoke import FileSpoke, Spoke
 
-from wheelcms_axle.base import WheelHandlerMixin
 from wheelcms_axle.utils import get_active_language
 from wheelcms_axle.forms import AngularForm
 
@@ -87,20 +86,131 @@ def wheel_500(request):
     return HttpResponseServerError(t.render(wheel_error_context(request)))
 
 
-class WheelRESTHandler(RESTLikeHandler, WheelHandlerMixin):
-    pass
-
-
 def strip_action(s):
     if '+' in s:
         s = s.split("+", 1)[0].rstrip('/')
     return s
 
+from .base import WheelView
 
-class MainHandler(WheelRESTHandler):
+def gethandler(h, name):
+    """
+        return the handler method identified by 'name'. This
+        can be either 'handle_<name>', or name itself if it's
+        marked as handler
+
+        XXX deprecate
+    """
+    if hasattr(h, "handle_" + name):
+        return getattr(h, "handle_" + name)
+    if hasattr(h, name):
+        hh = getattr(h, name)
+        if getattr(hh, "ishandler", False):
+            return hh
+    return None
+
+def handler(f):
+    """ identify a method as being able to handle direct calls on a 
+        resource, e.g. /person/123/do_foo would map to either handle_do_foo
+        or @handler def do_foo()
+
+        XXX deprecate
+    """
+    f.ishandler = True
+    return f
+
+class MainHandler(WheelView):
     model = dict(instance=Node, parent=Node)
     instance = None
     parent = None
+
+    """
+        Huidige situatie:
+
+        GET op / werkt. Fallthrough url pattern voor reverses is in place.
+        coerce_with_request is deels overgenomen; is parent/path setup nog nodig?
+
+    """
+    ## This simulates the two.ol dispatching behaviour
+    def get(self, request, instance=None, path="", action="", **kw):
+        """
+            instance - the path to a piece of content
+            path - remaining, specifies operation to be invoked.
+                   To be deprecated in favor of +actins
+        """
+        self.is_post = request.method == "POST"
+
+        self.pre_handler()
+
+        ## Do a bit of path normalization: Except for root, start with /,
+        ## remove trailing /
+        if instance in ("/", ""):
+            instance = ""
+        else:
+            instance = "/{0}".format(instance.strip('/'))
+
+        ## an action may end in slash: remove it
+        if action:
+            action.rstrip('/')
+
+        locale.activate_content_language(None)
+        language = get_active_language()
+
+        self.instance = Node.get(instance, language=language)
+
+        if self.instance is None:
+            return self.notfound()
+
+        spoke = self.spoke(language=language)
+        ## retrieve content type info
+        if spoke:
+            ## update the context with addtional data from the spoke
+            self.context.update(spoke.context(self, self.request,
+                                self.instance))
+            perm = spoke.permissions.get('view')
+        else:
+            perm = Spoke.permissions.get('view')
+
+        ## Set default current tab
+        self.context['tab_action'] = 'attributes'
+
+        try:
+            if path:
+                handler = gethandler(self, path)
+                if handler:
+                    return handler()
+                return self.notfound()
+
+            if action:
+                action_handler = action_registry.get(action, self.instance.path,
+                                                 spoke)
+                if action_handler is None:
+                    return self.notfound()
+                ## Should the (decorator for) the action handler do permission checks?
+                required_permission = getattr(action_handler, 'permission', perm)
+                if not auth.has_access(self.request, spoke, spoke, required_permission):
+                    return self.forbidden()
+
+                ## if there's an action, assume it's actually an update action.
+                if self.toolbar:
+                    self.toolbar.status = Toolbar.UPDATE
+
+                ## Update context if it's a tab action
+                if tabaction(action_handler):
+                    self.context['tab_action'] = tabaction(action_handler)
+                return action_handler(self, request, action)
+
+            if not path:
+                ## special case: post to content means edit/update
+                if self.is_post:
+                    return self.edit()
+                return self.view()
+            return self.notfound()
+        finally: # XXX Does this work as expected?
+            self.post_handler()
+
+    ## GET and POST are treated alike, initially
+    post = get
 
     @property
     def toolbar(self):
@@ -234,8 +344,6 @@ class MainHandler(WheelRESTHandler):
 
     def pre_handler(self):
         """ invoked before a method """
-        super(MainHandler, self).pre_handler()
-
         ## configure the toolbar
         self._toolbar = get_toolbar()
         if self._toolbar:
@@ -266,7 +374,6 @@ class MainHandler(WheelRESTHandler):
             locale.activate_content_language(current_language)
 
     def post_handler(self):
-        super(MainHandler, self).post_handler()
         if self._stored_language:
             translation.activate(self._stored_language)
 
@@ -375,7 +482,7 @@ class MainHandler(WheelRESTHandler):
         self.context['tabs'] = ()
 
         ## if attach: do not accept slug
-        if self.post:
+        if self.is_post:
             self.context['form'] = \
             self.form = formclass(data=self.request.POST,
                                   parent=parent,
@@ -434,8 +541,8 @@ class MainHandler(WheelRESTHandler):
 
         return self.template(template)
 
-    def update(self):
-        action = self.kw.get('action', '')
+    @handler
+    def edit(self):
         language = self.active_language()
 
         instance = self.instance
@@ -449,29 +556,6 @@ class MainHandler(WheelRESTHandler):
             ## update the context with addtional data from the spoke
             self.context.update(self.spoke().context(self, self.request,
                                 self.instance))
-
-        self.context['tab_action'] = 'attributes' # default
-        if action:
-            ## match against path, not get_absolute_url which is configuration specific
-            action_handler = action_registry.get(action, self.instance.path,
-                                                 self.spoke())
-            if action_handler is None:
-                return self.notfound()
-
-            spoke = self.spoke()
-            if spoke:
-                perm = spoke.permissions.get('view')
-            else:
-                perm = Spoke.permissions.get('view')
-
-            required_permission = getattr(action_handler, 'permission', perm)
-            if not auth.has_access(self.request, spoke, spoke, required_permission):
-                return self.forbidden()
-
-
-            if tabaction(action_handler):
-                self.context['tab_action'] = tabaction(action_handler)
-            return action_handler(self, self.request, action)
 
 
         content = instance.content(language=language)
@@ -506,7 +590,7 @@ class MainHandler(WheelRESTHandler):
         formclass =  typeinfo.form
         slug = instance.slug(language=language)
 
-        if self.post:
+        if self.is_post:
             args = dict(parent=parent, data=self.request.POST,
                         reserved=self.reserved(),
                         skip_slug=self.instance.isroot(),
@@ -640,28 +724,28 @@ class MainHandler(WheelRESTHandler):
         else:
             perm = Spoke.permissions.get('view')
 
-        action = self.kw.get('action', '')
+        #action = self.kw.get('action', '')
         self.context['tab_action'] = 'attributes' # default
-        if action:
-            ## again, use node's path directly, not get_absolute_url, which is
-            ## configuration specific
-            action_handler = action_registry.get(action, self.instance.path,
-                                                 spoke)
-            if action_handler is None:
-                return self.notfound()
+        #if action:
+        #    ## again, use node's path directly, not get_absolute_url, which is
+        #    ## configuration specific
+        #    action_handler = action_registry.get(action, self.instance.path,
+        #                                         spoke)
+        #    if action_handler is None:
+        #        return self.notfound()
 
-            ## get permission from handler. If not present, use contents view permission
-            required_permission = getattr(action_handler, 'permission', perm) or perm
-            if not auth.has_access(self.request, spoke, spoke, required_permission):
-                return self.forbidden()
+        #    ## get permission from handler. If not present, use contents view permission
+        #    required_permission = getattr(action_handler, 'permission', perm) or perm
+        #    if not auth.has_access(self.request, spoke, spoke, required_permission):
+        #        return self.forbidden()
 
-            ## if there's an action, assume it's actually an update action.
-            if self.toolbar:
-                self.toolbar.status = Toolbar.UPDATE
+        #    ## if there's an action, assume it's actually an update action.
+        #    if self.toolbar:
+        #        self.toolbar.status = Toolbar.UPDATE
 
-            if tabaction(action_handler):
-                self.context['tab_action'] = tabaction(action_handler)
-            return action_handler(self, self.request, action)
+        #    if tabaction(action_handler):
+        #        self.context['tab_action'] = tabaction(action_handler)
+        #    return action_handler(self, self.request, action)
 
         if not auth.has_access(self.request, spoke, spoke, perm):
             return self.forbidden()
@@ -751,7 +835,7 @@ class MainHandler(WheelRESTHandler):
     @json
     @applyrequest
     def handle_reorder(self, rel, target, ref):
-        if not self.hasaccess() or not self.post:
+        if not self.hasaccess() or not self.is_post:
             return self.forbidden()
 
         targetnode = Node.objects.get(tree_path=target)
@@ -774,7 +858,7 @@ class MainHandler(WheelRESTHandler):
 
     def handle_contents_actions_cutcopypaste(self):
         """ handle cut/copy/paste of items """
-        if not self.hasaccess() or not self.post:
+        if not self.hasaccess() or not self.is_post:
             return self.forbidden()
 
         action = self.request.POST.get('action')
@@ -848,7 +932,7 @@ class MainHandler(WheelRESTHandler):
             Handle the action buttons from the contents listing:
             paste, delete (cut/copy can be done async)
         """
-        if not self.hasaccess() or not self.post:
+        if not self.hasaccess() or not self.is_post:
             return self.forbidden()
 
         count = 0
@@ -1161,7 +1245,7 @@ class MainHandler(WheelRESTHandler):
 
         ## use get() to return type-specific rendered light-form?
 
-        if not self.post:
+        if not self.is_post:
             form = formclass(parent=parent)
             if 'state' in form.fields:
                 form.fields['state'].initial = 'visible'  ## XXX BIG HACK ALERT. Issue 659

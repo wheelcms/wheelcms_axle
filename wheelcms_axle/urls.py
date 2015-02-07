@@ -1,5 +1,4 @@
 from django.conf.urls import patterns, url, include
-from two.ol.base import twpatterns
 from wheelcms_axle.main import MainHandler, wheel_500, wheel_404
 from wheelcms_axle.configuration import ConfigurationHandler
 from wheelcms_axle.search import SearchHandler
@@ -20,20 +19,26 @@ urlpatterns = patterns('',
     (r'^accounts/', include('userena.urls')),
 )
 
+main_actions = "({0})".format("|".join(MainHandler.url_actions()))
+
 urlpatterns += patterns('', 
     url("@/search", SearchHandler.as_view(), name="haystack_search"),
 
     ## Special url for configuration; issue #553
     url("@/configuration", ConfigurationHandler.as_view(), name="wheel_config"),
 
-    ## operations on the root (no explicit instance, so pass it explicitly)
-    twpatterns("/", MainHandler, name="wheel_main", instance=""),
-    ## actions on the root, again pass instance explicitly
-    twpatterns("/\+(?P<action>.+)", MainHandler, name="wheel_main", instance=""),
+    url("^(?P<path>{0})?$".format(main_actions),
+        MainHandler.as_view(), name="wheel_main", kwargs={'instance':""}),
+    # url("^$", MainHandler.as_view(), name="wheel_main", kwargs={'instance':""}),
+    url("^\+(?P<action>.+)$", MainHandler.as_view(), name="wheel_main",
+        kwargs={'instance':""}),
 
-    ## operations on an instance. Instance can be resolved from path
-    twpatterns(r"(?P<instance>.*)/\+(?P<action>.*)",
-               MainHandler, name="wheel_main"),
-    ## actions on an instance. Instance can be resolved from path
-    twpatterns("(?P<instance>.+)", MainHandler, name="wheel_main"),
+    ## instance path with optional action. Should have higher precedence,
+    ## else next entry will match as instance path
+    url("^(?P<instance>.*?)/(\+(?P<action>.+))?$",
+        MainHandler.as_view(), name="wheel_main"),
+    ## instance path with optional handler
+    url("^(?P<instance>.*?)/((?P<path>{0}))?$".format(main_actions),
+        MainHandler.as_view(), name="wheel_main"),
+
 )
