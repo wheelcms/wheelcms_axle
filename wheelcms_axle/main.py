@@ -334,6 +334,7 @@ class MainHandler(WheelView):
 
     def pre_handler(self):
         """ invoked before a method """
+        ## XXX Shouldn't most of the pre/post handler stuff be middleware?
         ## configure the toolbar
         self._toolbar = get_toolbar()
         if self._toolbar:
