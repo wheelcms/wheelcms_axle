@@ -151,7 +151,7 @@ class MainHandler(WheelView):
 
         ## an action may end in slash: remove it
         if action:
-            action.rstrip('/')
+            action = action.rstrip('/')
 
         locale.activate_content_language(None)
         language = get_active_language()
@@ -332,16 +332,6 @@ class MainHandler(WheelView):
                                  label=current_label),
                     languages=res)
 
-    def formclass(self, data=None, instance=None):
-        """
-            Invoked by dispatcher to initialize this handler's form.
-            But since we need more context to properly initialize, don't
-            do it here and return None in stead. If you need a form instance,
-            create it explicitly
-        """
-
-        return None
-
     def pre_handler(self):
         """ invoked before a method """
         ## configure the toolbar
@@ -378,50 +368,8 @@ class MainHandler(WheelView):
             translation.activate(self._stored_language)
 
     @classmethod
-    def coerce_with_request(cls, i, request=None):
-        """
-            coerce either a parent and instance, a parent or an instance.
-            If there's both a parent and an instance, the instance is relative
-            to the parent, so resolving needs to be done by combing them
-
-            We're supporting the parent/instance combo (somewhat) but don't
-            really need it - <instance>/update works fine, and no instance is
-            required for /create
-        """
-        ## reset content language
-        locale.activate_content_language(None)
-        language = get_active_language()
-
-        d = dict()
-
-        parent_path = ""
-        if i.get('parent') is not None:
-            parent_path = i['parent']
-            if parent_path:
-                parent_path = '/' + parent_path
-            parent = d['parent'] = Node.get(parent_path, language=language)
-            if parent is None:
-                return cls.notfound()
-
-        if i.get('instance') is not None:
-            instance_path = i['instance']
-            if not instance_path:  ## it can be ""
-                path = parent_path
-            else:
-                path = parent_path + "/" + instance_path
-
-            d['instance'] = instance = Node.get(path, language=language)
-
-            if instance is None:
-                return cls.notfound()
-        return d
-
-    ## XXX something should be deprecated here. Tests still depend
-    ## on requestless coerce()
-    coerce = coerce_with_request
-
-    @classmethod
     def reserved(cls):
+        ## XXX Can be mostly deprecated once handlers -> actions
         return set(["create", "update", "list"] + \
                [x[7:] for x in dir(cls) if x.startswith("handle_")] + \
                [x for x in dir(cls) if getattr(getattr(cls, x), "ishandler", False)])
@@ -723,29 +671,6 @@ class MainHandler(WheelView):
             perm = spoke.permissions.get('view')
         else:
             perm = Spoke.permissions.get('view')
-
-        #action = self.kw.get('action', '')
-        self.context['tab_action'] = 'attributes' # default
-        #if action:
-        #    ## again, use node's path directly, not get_absolute_url, which is
-        #    ## configuration specific
-        #    action_handler = action_registry.get(action, self.instance.path,
-        #                                         spoke)
-        #    if action_handler is None:
-        #        return self.notfound()
-
-        #    ## get permission from handler. If not present, use contents view permission
-        #    required_permission = getattr(action_handler, 'permission', perm) or perm
-        #    if not auth.has_access(self.request, spoke, spoke, required_permission):
-        #        return self.forbidden()
-
-        #    ## if there's an action, assume it's actually an update action.
-        #    if self.toolbar:
-        #        self.toolbar.status = Toolbar.UPDATE
-
-        #    if tabaction(action_handler):
-        #        self.context['tab_action'] = tabaction(action_handler)
-        #    return action_handler(self, self.request, action)
 
         if not auth.has_access(self.request, spoke, spoke, perm):
             return self.forbidden()
