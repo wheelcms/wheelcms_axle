@@ -159,6 +159,9 @@ class MainHandler(WheelView):
         if self.instance is None:
             return self.notfound()
 
+        ## make sure the instance is part of the context
+        self.context['instance'] = instance
+
         ## pre_handler is to be deprecated. It also depends on self.instance
         self.pre_handler()
 
