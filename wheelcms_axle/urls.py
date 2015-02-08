@@ -27,18 +27,17 @@ urlpatterns += patterns('',
     ## Special url for configuration; issue #553
     url("@/configuration", ConfigurationHandler.as_view(), name="wheel_config"),
 
-    url("^(?P<path>{0})?$".format(main_actions),
-        MainHandler.as_view(), name="wheel_main", kwargs={'instance':""}),
-    # url("^$", MainHandler.as_view(), name="wheel_main", kwargs={'instance':""}),
-    url("^\+(?P<action>.+)$", MainHandler.as_view(), name="wheel_main",
-        kwargs={'instance':""}),
+    url("^(?P<handlerpath>{0})?$".format(main_actions),
+        MainHandler.as_view(), name="wheel_main", kwargs={'nodepath':""}),
+    # url("^$", MainHandler.as_view(), name="wheel_main", kwargs={'nodepath':""}),
+    url("^\+(?P<action>.+)$", MainHandler.as_view(), name="wheel_main"),
 
-    ## instance path with optional action. Should have higher precedence,
-    ## else next entry will match as instance path
-    url("^(?P<instance>.*?)/(\+(?P<action>.+))?$",
+    ## nodepath with optional action. Should have higher precedence,
+    ## else next entry will match as nodepath
+    url("^(?P<nodepath>.*?)/(\+(?P<action>.+))?$",
         MainHandler.as_view(), name="wheel_main"),
-    ## instance path with optional handler
-    url("^(?P<instance>.*?)/((?P<path>{0}))?$".format(main_actions),
+    ## nodepath with optional handler
+    url("^(?P<nodepath>.*?)/((?P<handlerpath>{0}))?$".format(main_actions),
         MainHandler.as_view(), name="wheel_main"),
 
 )

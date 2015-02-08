@@ -120,9 +120,7 @@ def handler(f):
     return f
 
 class MainHandler(WheelView):
-    model = dict(instance=Node, parent=Node)
     instance = None
-    parent = None
 
     """
         Huidige situatie:
@@ -131,7 +129,7 @@ class MainHandler(WheelView):
         coerce_with_request is deels overgenomen; is parent/path setup nog nodig?
 
     """
-    def get(self, request, instance=None, path="", action="", **kw):
+    def get(self, request, nodepath=None, handlerpath="", action="", **kw):
         """
             instance - the path to a piece of content
             path - remaining, specifies operation to be invoked.
@@ -142,10 +140,10 @@ class MainHandler(WheelView):
 
         ## Do a bit of path normalization: Except for root, start with /,
         ## remove trailing /
-        if instance in ("/", ""):
-            instance = ""
+        if nodepath in ("/", ""):
+            nodepath = ""
         else:
-            instance = "/{0}".format(instance.strip('/'))
+            nodepath = "/{0}".format(nodepath.strip('/'))
 
         ## an action may end in slash: remove it
         if action:
@@ -154,7 +152,7 @@ class MainHandler(WheelView):
         locale.activate_content_language(None)
         language = get_active_language()
 
-        self.instance = Node.get(instance, language=language)
+        self.instance = Node.get(nodepath, language=language)
         if self.toolbar:
             self.toolbar.instance = self.instance
             self.toolbar.status = Toolbar.VIEW
@@ -163,7 +161,7 @@ class MainHandler(WheelView):
             return self.notfound()
 
         ## make sure the instance is part of the context
-        self.context['instance'] = instance
+        self.context['instance'] = self.instance
 
         ## pre_handler is to be deprecated. It also depends on self.instance
         self.pre_handler()
@@ -182,8 +180,8 @@ class MainHandler(WheelView):
         self.context['tab_action'] = 'attributes'
 
         try:
-            if path:
-                handler = gethandler(self, path)
+            if handlerpath:
+                handler = gethandler(self, handlerpath)
                 if handler:
                     return handler()
                 return self.notfound()
@@ -207,7 +205,7 @@ class MainHandler(WheelView):
                     self.context['tab_action'] = tabaction(action_handler)
                 return action_handler(self, request, action)
 
-            if not path:
+            if not handlerpath:
                 ## special case: post to content means edit/update
                 if self.is_post:
                     return self.edit()
@@ -440,15 +438,11 @@ class MainHandler(WheelView):
 
         formclass = typeinfo.form
 
-        parent = self.parent or self.instance
-        if parent and parent.path:
-            parentpath = parent.get_absolute_url()
-        else:
-            parentpath = Node.root().get_absolute_url()
+        parent = self.instance
+        parentpath = parent.get_absolute_url()
 
         self.context['redirect_cancel'] = parentpath + "?info=Create+canceled"
         self.context['form_action'] = 'create'  ## make it absolute?
-        self.context['parent'] = parent
 
         ## Hide tabs since we're creating new content
         self.context['tabs'] = ()
@@ -500,7 +494,6 @@ class MainHandler(WheelView):
         self.context['typeinfo'] = dict(name=typeinfo.name, title=typeinfo.title)
 
         self.context['attach'] = attach
-        self.context['instance'] = self.parent or None # ?? '/' or Node.root()?
         if attach:
             self.context['breadcrumb'] = self.breadcrumb(operation="Attach", details=' "%s"' % typeinfo.title)
         else:

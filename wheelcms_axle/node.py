@@ -589,7 +589,7 @@ class NodeBase(models.Model):
         try:
             if language:
                 translation.activate(language)
-            return reverse('wheel_main', kwargs={'instance':self.get_path(language).lstrip('/')})
+            return reverse('wheel_main', kwargs={'nodepath':self.get_path(language).lstrip('/')})
         finally:
             if language:
                 translation.activate(active_language)
