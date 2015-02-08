@@ -3,6 +3,7 @@ from django.conf import settings
 from django.template import loader, Context
 from django.http import HttpResponseServerError, HttpResponseNotFound, Http404
 from django.core.urlresolvers import resolve
+from django.contrib import messages
 
 from two.ol.base import applyrequest, context, json
 from wheelcms_axle.node import Node, NodeNotFound, CantMoveToOffspring
@@ -465,8 +466,7 @@ class MainHandler(WheelView):
                     return self.redirect(target.get_absolute_url(),
                                          success='"%s" created' % p.title)
                 except OSError, e:
-                    self.context['error_message'] = "An error occured " \
-                            "while saving: %s" % str(e)
+                    messages.error("An error occured while saving: %s" % str(e))
         else:
             default_language = typeinfo.default_language
 
@@ -557,8 +557,7 @@ class MainHandler(WheelView):
                     else:  # ordinary update
                         content = form.save()
                 except OSError, e:
-                    self.context['error_message'] = "An error occured " \
-                            "while saving: %s" % str(e)
+                    messages.error("An error occured while saving: %s" % str(e))
 
                 if create_translation:
                     if self.user().is_authenticated():
