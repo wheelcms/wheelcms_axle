@@ -62,4 +62,4 @@ from wheelcms_axle.toolbar import get_toolbar
 
 @register.inclusion_tag("wheelcms_axle/toolbar.html", takes_context=True)
 def toolbar(context):
-    return dict(instance=context.get('instance'), toolbar=get_toolbar(), user=context.get('request').user)
+    return dict(toolbar=get_toolbar())

@@ -26,7 +26,7 @@
                 </a>
                 <ul class="dropdown-menu">
                   {% for type in toolbar.children %}
-                    <li><a href="{{instance.get_absolute_url}}create?type={{type.name}}&attach=1">{{type.title}}</a></li>
+                    <li><a href="{{toolbar.instance.get_absolute_url}}create?type={{type.name}}&attach=1">{{type.title}}</a></li>
                   {% endfor %}
                 </ul>
               </div>
@@ -36,13 +36,13 @@
               {% if toolbar.show_create %}
                 {% if toolbar.single_child %}
                   <a class="btn btn-info"
-                       href="{{instance.get_absolute_url}}create?type={{toolbar.single_child.name}}">
+                       href="{{toolbar.instance.get_absolute_url}}create?type={{toolbar.single_child.name}}">
                        <i class="glyphicon glyphicon-plus-sign"></i> {% trans "content_create" %} {{toolbar.single_child.title}}</a>
                 {% else %}
                   {% with primary=toolbar.primary %}
                     {% if primary %}
                     <a class="btn btn-info"
-                       href="{{instance.get_absolute_url}}create?type={{primary.name}}">
+                       href="{{toolbar.instance.get_absolute_url}}create?type={{primary.name}}">
                       <i class="glyphicon glyphicon-plus-sign"></i>
                       {% trans "content_create" %} {{primary.title}}</a>
                     <button class="btn btn-info dropdown-toggle"
@@ -59,22 +59,22 @@
                 {% endif %}
                 <ul class="dropdown-menu">
                   {% for type in toolbar.children %}
-                    <li><a href="{{instance.get_absolute_url}}create?type={{type.name}}"><img class="spoke_icon" src="{{type.icon_path}}">{{type.title}}</a></li>
+                    <li><a href="{{toolbar.instance.get_absolute_url}}create?type={{type.name}}"><img class="spoke_icon" src="{{type.icon_path}}">{{type.title}}</a></li>
                   {% endfor %}
                 </ul>
                 {% endif %}
                 {% if toolbar.show_translate %}
-                <a class="btn btn-info" href="{{instance.get_absolute_url}}edit"><i class="glyphicon glyphicon-edit"></i> {% trans "content_translate" %}</a>
+                <a class="btn btn-info" href="{{toolbar.instance.get_absolute_url}}edit"><i class="glyphicon glyphicon-edit"></i> {% trans "content_translate" %}</a>
                 {% endif %}
                 {% if toolbar.show_update %}
-                <a class="btn btn-info" href="{{instance.get_absolute_url}}edit"><i class="glyphicon glyphicon-edit"></i> {% trans "content_edit" %}</a>
+                <a class="btn btn-info" href="{{toolbar.instance.get_absolute_url}}edit"><i class="glyphicon glyphicon-edit"></i> {% trans "content_edit" %}</a>
                 {% endif %}
                 {% if toolbar.show_list %}
-                <a class="btn btn-info" href="{{instance.get_absolute_url}}list"><i class="glyphicon glyphicon-list"></i> {% trans "content_list" %}</a>
+                <a class="btn btn-info" href="{{toolbar.instance.get_absolute_url}}list"><i class="glyphicon glyphicon-list"></i> {% trans "content_list" %}</a>
                 {% endif %}
                 <!-- make the button toggle -->
                 {% if toolbar.show_view %}
-                <a class="btn btn-info" href="{{instance.get_absolute_url|default:'.'}}"><i class="glyphicon glyphicon-eye-open"></i> {% trans "content_view" %} </a>
+                <a class="btn btn-info" href="{{toolbar.instance.get_absolute_url|default:'.'}}"><i class="glyphicon glyphicon-eye-open"></i> {% trans "content_view" %} </a>
                 {% endif %}
               </div>
               <div class="btn-group dropup navbar-btn">
@@ -90,7 +90,7 @@
                   {% endif %}
                 {% endfor %}
                 {% if 0 %}
-                <a class="btn btn-warning" href="{{instance.get_absolute_url}}">
+                <a class="btn btn-warning" href="{{toolbar.instance.get_absolute_url}}">
                   <i {% if action.icon %}class="glyphicon glyphicon-{{action.icon}}"{% endif %}></i> {% trans "Publish" %}
                 </a>
               {% endif %}
@@ -171,7 +171,7 @@
               </a>
               <ul class="dropdown-menu" role="menu">
                 {# <li><a href="/"><i class="glyphicon glyphicon-cog"></i> {% trans "user_preferences" %}</a></li> #}
-                <li><a href="{% url "userena_profile_detail" user.username %}"><i class="glyphicon glyphicon-user"></i> {% trans "user_profile" %}</a></li>
+                <li><a href="{% url "userena_profile_detail" toolbar.user.username %}"><i class="glyphicon glyphicon-user"></i> {% trans "user_profile" %}</a></li>
                 <li class="divider"></li>
                 <li><a href="{% url "userena_signout" %}"><i class="glyphicon glyphicon-off"></i> {% trans "user_logout" %}</a></li>
               </ul>

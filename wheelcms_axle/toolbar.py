@@ -56,6 +56,7 @@ class Toolbar(object):
     def __init__(self, instance, request, status=VIEW):
         self.instance = instance
         self.request = request
+        self.user = request.user
         self.status = status
 
     def type(self):

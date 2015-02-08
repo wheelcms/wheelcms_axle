@@ -25,7 +25,7 @@ from .actions import action_registry, tabaction
 
 from django.utils import translation
 from .models import WheelProfile
-from .toolbar import get_toolbar, create_toolbar, Toolbar
+from .toolbar import get_toolbar, Toolbar
 from .base import WheelView, context
 from .utils import applyrequest, json
 
@@ -138,6 +138,7 @@ class MainHandler(WheelView):
                    To be deprecated in favor of +actins
         """
         self.is_post = request.method == "POST"
+        self.toolbar = get_toolbar()
 
         ## Do a bit of path normalization: Except for root, start with /,
         ## remove trailing /
@@ -154,6 +155,9 @@ class MainHandler(WheelView):
         language = get_active_language()
 
         self.instance = Node.get(instance, language=language)
+        if self.toolbar:
+            self.toolbar.instance = self.instance
+            self.toolbar.status = Toolbar.VIEW
 
         if self.instance is None:
             return self.notfound()
@@ -214,26 +218,6 @@ class MainHandler(WheelView):
 
     ## GET and POST are treated alike, initially
     post = get
-
-    @property
-    def toolbar(self):
-        """
-            _toolbar is set in pre_handler, but in test situations this method
-            may not have been called. Additionally, the toolbar middleware may
-            not have been called.
-
-            Return a local, already configured _toolbar or create/initialize
-            one on the fly.
-        """
-        try:
-            return self._toolbar
-        except AttributeError:
-            self._toolbar = get_toolbar() or create_toolbar(self.request)
-            if self._toolbar:
-                self._toolbar.instance = self.instance
-                self._toolbar.status = Toolbar.VIEW
-
-        return self._toolbar
 
     def active_language(self):
         return get_active_language()
@@ -337,12 +321,6 @@ class MainHandler(WheelView):
 
     def pre_handler(self):
         """ invoked before a method """
-        ## XXX Shouldn't most of the pre/post handler stuff be middleware?
-        ## configure the toolbar
-        self._toolbar = get_toolbar()
-        if self._toolbar:
-            self._toolbar.status = Toolbar.VIEW
-            self._toolbar.instance = self.instance
 
         ## if user authenticated, find language setting, activate it.
         ## Will only work for requests that go through this handler
