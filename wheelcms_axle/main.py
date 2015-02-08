@@ -377,6 +377,48 @@ class MainHandler(WheelView):
                [x[7:] for x in dir(cls) if x.startswith("handle_")] + \
                [x for x in dir(cls) if getattr(getattr(cls, x), "ishandler", False)])
 
+    def view(self):
+        """ frontpage / view """
+        language = self.active_language()
+        spoke = self.spoke(language=language)
+
+
+        if spoke:
+            ## update the context with addtional data from the spoke
+            self.context.update(spoke.context(self, self.request,
+                                self.instance))
+            perm = spoke.permissions.get('view')
+        else:
+            perm = Spoke.permissions.get('view')
+
+        if not auth.has_access(self.request, spoke, spoke, perm):
+            return self.forbidden()
+
+
+        if spoke:
+            tpl = spoke.view_template()
+            ctx = template_registry.context.get((spoke.__class__, tpl))
+            if ctx:
+                self.context.update(ctx(self, self.request, self.instance))
+
+            stracks.content(spoke.instance.id,
+                            name=spoke.instance.title
+                           ).log("? (%s) viewed by ?" % spoke.title,
+                                 stracks.user(self.user()),
+                                 action=stracks.view())
+            return self.template(spoke.view_template())
+        elif self.instance.primary_content():
+            """ attached but untranslated """
+            if self.hasaccess():
+                return self.redirect(self.instance.get_absolute_url(language=language) + "edit",
+                    info="This content is not available in this language")
+            elif self.instance.isroot():
+                return self.template("wheelcms_axle/notranslation.html")
+
+            return self.notfound()
+
+        return self.template("wheelcms_axle/nospoke.html")
+
 
     @handler
     @applyrequest
@@ -658,48 +700,6 @@ class MainHandler(WheelView):
             res.append((operation + details, ""))
 
         return res
-
-    def view(self):
-        """ frontpage / view """
-        language = self.active_language()
-        spoke = self.spoke(language=language)
-
-
-        if spoke:
-            ## update the context with addtional data from the spoke
-            self.context.update(spoke.context(self, self.request,
-                                self.instance))
-            perm = spoke.permissions.get('view')
-        else:
-            perm = Spoke.permissions.get('view')
-
-        if not auth.has_access(self.request, spoke, spoke, perm):
-            return self.forbidden()
-
-
-        if spoke:
-            tpl = spoke.view_template()
-            ctx = template_registry.context.get((spoke.__class__, tpl))
-            if ctx:
-                self.context.update(ctx(self, self.request, self.instance))
-
-            stracks.content(spoke.instance.id,
-                            name=spoke.instance.title
-                           ).log("? (%s) viewed by ?" % spoke.title,
-                                 stracks.user(self.user()),
-                                 action=stracks.view())
-            return self.template(spoke.view_template())
-        elif self.instance.primary_content():
-            """ attached but untranslated """
-            if self.hasaccess():
-                return self.redirect(self.instance.get_absolute_url(language=language) + "edit",
-                    info="This content is not available in this language")
-            elif self.instance.isroot():
-                return self.template("wheelcms_axle/notranslation.html")
-
-            return self.notfound()
-
-        return self.template("wheelcms_axle/nospoke.html")
 
     def list(self):
         self.instance = Node.root()
