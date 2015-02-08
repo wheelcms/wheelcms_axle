@@ -62,7 +62,18 @@ class WheelView(View):
         raise ServerError()
 
     def redirect(self, url, permanent=False, hash=None,
-                 piggyback=False, **kw):
+                 piggyback=False, info=None,
+                 success=None, warning=None, error=None,
+                 **kw):
+        if info:
+            messages.info(self.request, info)
+        if success:
+            messages.success(self.request, success)
+        if warning:
+            messages.warning(self.request, warning)
+        if error:
+            messages.error(self.request, error)
+
         args = kw.copy()
         if piggyback:
             args.update(self.context['piggyback'])
