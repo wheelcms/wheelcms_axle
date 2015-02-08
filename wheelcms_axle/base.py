@@ -15,11 +15,11 @@ class WheelHandlerMixin(object):
 from django.views.generic import View
 from django.http import HttpResponse, Http404
 from django.template import RequestContext, loader
-from . import access
-from warnings import warn
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
 from django.http import HttpResponseForbidden
 from django.http import HttpResponseBadRequest, HttpResponseServerError
+from django.contrib import messages
+
 import settings
 import urllib
 
@@ -90,13 +90,31 @@ class WheelView(View):
                ["create", "edit"]
 
     def user(self):
-        ## deprecate?
-
+        warn("WheelView.user() has been deprecated.", DeprecationWarning)
         return self._user
+
+    def handle_oldstyle_messages(self, request):
+        """
+            If the request contains an "old style" info=... message,
+            pass it to the message framework.
+        """
+        map = dict(info=messages.INFO,
+                   success=messages.SUCCESS,
+                   warning=messages.WARNING,
+                   error=messages.ERROR)
+
+        for type in map:
+            message = request.REQUEST.get(type)
+            if message is not None:
+                warn("Passing messages through the url is deprecated; use messages.add_message()",
+                     DeprecationWarning)
+                messages.add_message(request, map[type], message)
 
     def dispatch(self, request, *args, **kwargs):
         self._user = request.user
         self.context = RequestContext(request)
+
+        self.handle_oldstyle_messages(request)
 
         try:
             return super(WheelView, self).dispatch(request, *args, **kwargs)
