@@ -141,8 +141,6 @@ class MainHandler(WheelView):
         """
         self.is_post = request.method == "POST"
 
-        self.pre_handler()
-
         ## Do a bit of path normalization: Except for root, start with /,
         ## remove trailing /
         if instance in ("/", ""):
@@ -161,6 +159,9 @@ class MainHandler(WheelView):
 
         if self.instance is None:
             return self.notfound()
+
+        ## pre_handler is to be deprecated. It also depends on self.instance
+        self.pre_handler()
 
         spoke = self.spoke(language=language)
         ## retrieve content type info
