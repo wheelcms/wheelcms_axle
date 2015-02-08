@@ -132,7 +132,6 @@ class MainHandler(WheelView):
         coerce_with_request is deels overgenomen; is parent/path setup nog nodig?
 
     """
-    ## This simulates the two.ol dispatching behaviour
     def get(self, request, instance=None, path="", action="", **kw):
         """
             instance - the path to a piece of content
