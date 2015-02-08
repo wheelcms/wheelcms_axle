@@ -5,7 +5,6 @@ from django.http import HttpResponseServerError, HttpResponseNotFound, Http404
 from django.core.urlresolvers import resolve
 from django.contrib import messages
 
-from two.ol.base import applyrequest, context, json
 from wheelcms_axle.node import Node, NodeNotFound, CantMoveToOffspring
 from wheelcms_axle.content import type_registry, ImageContent
 
@@ -27,6 +26,8 @@ from .actions import action_registry, tabaction
 from django.utils import translation
 from .models import WheelProfile
 from .toolbar import get_toolbar, create_toolbar, Toolbar
+from .base import WheelView, context
+from .utils import applyrequest, json
 
 import stracks
 
@@ -92,7 +93,6 @@ def strip_action(s):
         s = s.split("+", 1)[0].rstrip('/')
     return s
 
-from .base import WheelView
 
 def gethandler(h, name):
     """

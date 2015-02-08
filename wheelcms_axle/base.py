@@ -1,5 +1,10 @@
 from warnings import warn
+import types
 from . import access
+
+def context(f):
+    f.contextified = True
+    return f
 
 class WheelHandlerMixin(object):
     def hasaccess(self):
@@ -121,9 +126,22 @@ class WheelView(View):
                      DeprecationWarning)
                 messages.add_message(request, map[type], message)
 
+    def setup_context(self):
+        """ scan for "contextified" methods (using the @context decorator)
+            and add those to self.context """
+        for a in dir(self):
+            if a in ("as_view", ):
+                continue  ## django won't even let us look at these!
+
+            m = getattr(self, a)
+            if isinstance(m, (types.FunctionType, types.MethodType)) and \
+               getattr(m, 'contextified', False):
+                self.context[a] = m
+
     def dispatch(self, request, *args, **kwargs):
         self._user = request.user
         self.context = RequestContext(request)
+        self.setup_context()
 
         self.handle_oldstyle_messages(request)
 
