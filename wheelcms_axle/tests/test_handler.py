@@ -596,12 +596,12 @@ class TestTranslations(object):
 
 
         translation.activate('nl')
-        res = MainHandler.coerce(dict(instance="a"))
-        assert res['instance'] == n1
+        res = MainHandler.resolve("a")
+        assert res == n1
 
         translation.activate('en')
-        res = MainHandler.coerce(dict(instance="a"))
-        assert res['instance'] == n2
+        res = MainHandler.resolve("a")
+        assert res == n2
 
     def test_create_translation_get(self, client, root):
         """
@@ -610,13 +610,17 @@ class TestTranslations(object):
             Test the GET of the translation form
         """
         Type1(node=root, language="en").save()
-        request = superuser_request("/edit", method="GET",
+        request = superuser_request("/", method="GET",
                                     type=Type1.get_name())
         translation.activate('nl')
 
-        instance = MainHandlerTestable.coerce(dict(instance=""))
-        handler = MainHandlerTestable(request=request, instance=instance)
-        update = handler.update()
+        # instance = MainHandlerTestable.resolve("")
+        #handler = MainHandlerTestable(request=request, instance=instance)
+        #update = handler.edit()
+        view = MainHandlerTestable()
+        update = view.dispatch(request, nodepath="", handlerpath="edit")
+
+
         assert update['path'] == "wheelcms_axle/update.html"
         assert 'form' in update['context']
         f = update['context']['form']

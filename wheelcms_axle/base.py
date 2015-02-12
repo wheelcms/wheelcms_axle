@@ -139,6 +139,7 @@ class WheelView(View):
                 self.context[a] = m
 
     def dispatch(self, request, *args, **kwargs):
+        self.request = request
         self._user = request.user
         self.context = RequestContext(request)
         self.setup_context()

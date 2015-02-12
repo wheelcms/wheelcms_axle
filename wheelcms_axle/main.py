@@ -129,6 +129,21 @@ class MainHandler(WheelView):
         coerce_with_request is deels overgenomen; is parent/path setup nog nodig?
 
     """
+    @classmethod
+    def resolve(cls, nodepath):
+        """ resolve a node path to an actual node in correct language 
+            context. """
+        ## Do a bit of path normalization: Except for root, start with /,
+        ## remove trailing /
+        if nodepath in ("/", ""):
+            nodepath = ""
+        else:
+            nodepath = "/{0}".format(nodepath.strip('/'))
+
+        language = get_active_language()
+
+        return Node.get(nodepath, language=language)
+
     def get(self, request, nodepath=None, handlerpath="", action="", **kw):
         """
             instance - the path to a piece of content
@@ -138,21 +153,17 @@ class MainHandler(WheelView):
         self.is_post = request.method == "POST"
         self.toolbar = get_toolbar()
 
-        ## Do a bit of path normalization: Except for root, start with /,
-        ## remove trailing /
-        if nodepath in ("/", ""):
-            nodepath = ""
-        else:
-            nodepath = "/{0}".format(nodepath.strip('/'))
+        ## Why need this?
+        locale.activate_content_language(None)
+
+        self.instance = self.resolve(nodepath)
 
         ## an action may end in slash: remove it
         if action:
             action = action.rstrip('/')
 
-        locale.activate_content_language(None)
         language = get_active_language()
 
-        self.instance = Node.get(nodepath, language=language)
         if self.toolbar:
             self.toolbar.instance = self.instance
             self.toolbar.status = Toolbar.VIEW
