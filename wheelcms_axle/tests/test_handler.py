@@ -14,6 +14,7 @@ import pytest
 
 from twotest.util import create_request
 from django.contrib.auth.models import User
+from django.template import RequestContext
 
 from .fixtures import root
 
@@ -614,9 +615,6 @@ class TestTranslations(object):
                                     type=Type1.get_name())
         translation.activate('nl')
 
-        # instance = MainHandlerTestable.resolve("")
-        #handler = MainHandlerTestable(request=request, instance=instance)
-        #update = handler.edit()
         view = MainHandlerTestable()
         update = view.dispatch(request, nodepath="", handlerpath="edit")
 
@@ -641,15 +639,18 @@ class TestTranslations(object):
                                     language="nl")
         translation.activate('nl')
 
-        instance = MainHandlerTestable.coerce(dict(instance=""))
-        handler = MainHandlerTestable(request=request, instance=instance,
-                                      post=True)
-        pytest.raises(Redirect, handler.update)
+        view = MainHandlerTestable()
+        update = view.dispatch(request, nodepath="", handlerpath="edit")
+
+        assert update.status_code == 302  # redirect
 
         translated = root.content(language="nl")
         assert translated is not None
         assert translated.title == "Translation NL"
         assert translated.owner == request.user
+
+        # verify we've redirected back to the created content
+        assert update['location'] == translated.get_absolute_url()
 
 from .test_spoke import filedata, filedata2
 from .models import TestImage, TestImageType

@@ -49,6 +49,10 @@ class ServerError(BaseException):
     pass
 
 class WheelView(View):
+    def __init__(self, *args, **kwargs):
+        super(WheelView, self).__init__(*args, **kwargs)
+        self.context = {}
+
     ## special results
     @classmethod
     def notfound(cls):
