@@ -441,10 +441,13 @@ class TestActions(object):
         ## pretend there's still something in the buffer
         request.session['clipboard_copy'] = [t1.node.tree_path]
 
-        handler = MainHandlerTestable(request=request, instance=root, post=True)
+        view = MainHandlerTestable()
+        res = view.dispatch(request, nodepath="",
+                            handlerpath="contents_actions_cutcopypaste",
+                            action="cut")
 
-        pytest.raises(Redirect, handler.handle_contents_actions_cutcopypaste)
-
+        assert res.status_code == 302  # redirect
+        assert res['location'] == root.get_absolute_url() + 'list'
         assert request.session['clipboard_copy'] == []
         assert set(request.session['clipboard_cut']) == \
                set((t1.node.tree_path, t2.node.tree_path))
@@ -463,10 +466,13 @@ class TestActions(object):
         ## pretend there's still something in the buffer
         request.session['clipboard_cut'] = [t1.node.tree_path]
 
-        handler = MainHandlerTestable(request=request, instance=root, post=True)
+        view = MainHandlerTestable()
+        res = view.dispatch(request, nodepath="",
+                            handlerpath="contents_actions_cutcopypaste",
+                            action="copy")
 
-        pytest.raises(Redirect, handler.handle_contents_actions_cutcopypaste)
-
+        assert res.status_code == 302  # redirect
+        assert res['location'] == root.get_absolute_url() + 'list'
         assert request.session['clipboard_cut'] == []
         assert set(request.session['clipboard_copy']) == \
                set((t1.node.tree_path, t2.node.tree_path))
@@ -484,9 +490,14 @@ class TestActions(object):
                                                t2.node.tree_path])
         request.session['clipboard_copy'] = [t1.node.tree_path]
 
-        handler = MainHandlerTestable(request=request, instance=root, post=True)
+        view = MainHandlerTestable()
+        res = view.dispatch(request, nodepath="",
+                            handlerpath="contents_actions_cutcopypaste",
+                            action="paste")
 
-        pytest.raises(Redirect, handler.handle_contents_actions_cutcopypaste)
+        assert res.status_code == 302  # redirect
+        assert res['location'] == root.get_absolute_url() + 'list'
+
         assert len(root.children()) == 3
         assert list(root.children())[-1].content().title == "t1"
 
@@ -505,10 +516,14 @@ class TestActions(object):
                                                t2.node.tree_path])
         request.session['clipboard_cut'] = [t2.node.tree_path, t1.node.tree_path]
 
-        handler = MainHandlerTestable(request=request, instance=target,
-                                      post=True)
+        view = MainHandlerTestable()
+        res = view.dispatch(request, nodepath="/target",
+                            handlerpath="contents_actions_cutcopypaste",
+                            action="paste")
 
-        pytest.raises(Redirect, handler.handle_contents_actions_cutcopypaste)
+        assert res.status_code == 302  # redirect
+        assert res['location'] == target.get_absolute_url() + 'list'
+
         assert len(target.children()) == 2
         assert set(x.content().title for x in target.children()) == \
                set(('t1', 't2'))
@@ -527,10 +542,12 @@ class TestActions(object):
                                                t2.node.tree_path])
         request.session['clipboard_cut'] = [t2.node.tree_path, t1.node.tree_path]
 
-        handler = MainHandlerTestable(request=request, instance=root,
-                                      post=True)
+        view = MainHandlerTestable()
+        res = view.dispatch(request, nodepath="",
+                            handlerpath="contents_actions_delete")
 
-        pytest.raises(Redirect, handler.handle_contents_actions_delete)
+        assert res.status_code == 302  # redirect
+        assert res['location'] == root.get_absolute_url() + 'list'
 
         assert len(root.children()) == 0
         assert Type1.objects.all().count() == 0
@@ -548,9 +565,8 @@ class TestActions(object):
                                     target=n3.tree_path,
                                     ref=n1.tree_path)
 
-        handler = MainHandlerTestable(request=request, instance=root, post=True)
-
-        res = handler.handle_reorder()
+        view = MainHandlerTestable()
+        res = view.dispatch(request, nodepath="", handlerpath="reorder")
 
         n1 = Node.objects.get(pk=n1.pk)
         n2 = Node.objects.get(pk=n2.pk)
@@ -571,9 +587,8 @@ class TestActions(object):
                                     target=n1.tree_path,
                                     ref=n3.tree_path)
 
-        handler = MainHandlerTestable(request=request, instance=root, post=True)
-
-        res = handler.handle_reorder()
+        view = MainHandlerTestable()
+        res = view.dispatch(request, nodepath="", handlerpath="reorder")
 
         n1 = Node.objects.get(pk=n1.pk)
         n2 = Node.objects.get(pk=n2.pk)
