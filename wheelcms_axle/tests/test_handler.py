@@ -2,6 +2,7 @@
 import mock
 
 from django.utils import translation
+from django.http import Http404
 
 from wheelcms_axle.main import MainHandler
 from wheelcms_axle.models import Node
@@ -48,39 +49,22 @@ def superuser_request(path, method="GET", **data):
 class TestMainHandler(object):
     type = Type1Type
 
-    def test_coerce_instance(self, client, root):
+    def test_dispatch_existing(self, client, root):
         """ coerce a dict holding an instance path """
         a = root.add("a")
-        res = MainHandler.coerce(dict(instance="a"))
-        assert 'instance' in res
-        assert res['instance'] == a
-        assert 'parent' not in res
 
-    def test_coerce_parent(self, client, root):
-        """ coerce a dict holding an parent path """
-        a = root.add("a")
-        res = MainHandler.coerce(dict(parent="a"))
-        assert 'parent' in res
-        assert res['parent'] == a
-        assert 'instance' not in res
+        h = MainHandlerTestable()
+        request = superuser_request("/a")
+        res = h.dispatch(request, nodepath="/a")
+        assert h.instance == a
 
-    def test_coerce_instance_parent(self, client, root):
-        """ coerce a dict holding both instance and parent """
-        a = root.add("a")
-        b = a.add("b")
-        res = MainHandler.coerce(dict(instance="b", parent="a"))
-        assert 'instance' in res
-        assert 'parent' in res
-        assert res['instance'] == b
-        assert res['parent'] == a
-
-    def test_coerce_instance_notfound(self, client):
+    def test_dispatch_notfound(self, client):
         """ coerce a non-existing path for instance """
-        pytest.raises(NotFound, MainHandler.coerce, dict(instance="a"))
-
-    def test_coerce_parent_notfound(self, client):
-        """ coerce a non-existing path for parent """
-        pytest.raises(NotFound, MainHandler.coerce, dict(parent="a"))
+        request = superuser_request("/a")
+        h = MainHandlerTestable()
+        with pytest.raises(Http404):
+            res = h.dispatch(request, nodepath="/a")
+            assert h.instance is None
 
 
     def test_create_get_root(self, client, root):
