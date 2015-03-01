@@ -40,8 +40,8 @@ class TestConfigurationHandler(object):
 
             assert m.call_args[0][3] == p.modify_settings
 
-    def test_permission_process_denied(self, client):
-        """ Verify process is guarded by modify_settings permission """
+    def test_permission_post_denied(self, client):
+        """ Verify post is guarded by modify_settings permission """
         with mock.patch("wheelcms_axle.auth.has_access") as m:
             m.return_value = False
             request = create_request("POST", "/@/configuration", data={})
@@ -52,7 +52,7 @@ class TestConfigurationHandler(object):
 
             assert m.call_args[0][3] == p.modify_settings
 
-    def test_permission_process_access(self):
+    def test_permission_post_access(self):
         """ if permission is present, call should succeed """
         with mock.patch("wheelcms_axle.auth.has_access") as m:
             m.return_value = True
@@ -94,7 +94,7 @@ class TestConfigurationHandler(object):
 
             assert m.test.call_args is None
 
-    def test_action_process(self, client):
+    def test_action_post(self, client):
         """ Verify an action gets forwarded appropriately """
         m = mock.Mock(**{"test.action":True})
         mklass = mock.Mock(return_value=m)
@@ -109,7 +109,7 @@ class TestConfigurationHandler(object):
 
             assert m.test.call_args is not None
 
-    def test_nonaction_process(self, client):
+    def test_nonaction_post(self, client):
         """ Verify an action gets forwarded appropriately """
         m = mock.Mock(**{"test.action":False})
         mklass = mock.Mock(return_value=m)
@@ -120,6 +120,6 @@ class TestConfigurationHandler(object):
                         return_value=mklass):
             h = ConfigurationHandler()
             h.init_from_request(request)
-            h.process(request)
+            h.post(request)
 
             assert m.test.call_args is None

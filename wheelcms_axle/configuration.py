@@ -116,7 +116,7 @@ class ConfigurationHandler(WheelView):
 
 
     #@require(p.modify_settings)
-    def process(self, request):
+    def post(self, request):
         config = request.REQUEST.get('config', '')
         action = request.REQUEST.get('action', '')
         ## XXX Decorate this!
@@ -135,8 +135,5 @@ class ConfigurationHandler(WheelView):
                 return getattr(k, action)(self, instance)
 
         return klass().process(self, instance)
-
-    # backwards compatibility. Deprecate? XXX
-    post = process
 
 configuration_registry.register("", "Default", Configuration, ConfigurationForm)
