@@ -136,5 +136,7 @@ class ConfigurationHandler(WheelView):
 
         return klass().process(self, instance)
 
+    # backwards compatibility. Deprecate? XXX
+    post = process
 
 configuration_registry.register("", "Default", Configuration, ConfigurationForm)

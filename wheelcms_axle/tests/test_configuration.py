@@ -2,7 +2,7 @@ import pytest
 import mock
 
 from twotest.util import create_request
-from two.ol.base import Forbidden
+from ..base import Forbidden
 
 from ..configuration import ConfigurationHandler
 import wheelcms_axle.permissions as p
@@ -21,9 +21,10 @@ class TestConfigurationHandler(object):
             m.return_value = False
 
             request = create_request("GET", "/@/configuration", data={})
-            h = ConfigurationHandler(request)
+            h = ConfigurationHandler()
+            h.init_from_request(request)
             with pytest.raises(Forbidden):
-                h.index()
+                h.get(request)
 
             assert m.call_args[0][3] == p.modify_settings
 
@@ -33,8 +34,9 @@ class TestConfigurationHandler(object):
             m.return_value = True
 
             request = create_request("GET", "/@/configuration", data={})
-            h = ConfigurationHandler(request)
-            assert h.index() is not None
+            h = ConfigurationHandler()
+            h.init_from_request(request)
+            assert h.get(request) is not None
 
             assert m.call_args[0][3] == p.modify_settings
 
@@ -43,9 +45,10 @@ class TestConfigurationHandler(object):
         with mock.patch("wheelcms_axle.auth.has_access") as m:
             m.return_value = False
             request = create_request("POST", "/@/configuration", data={})
-            h = ConfigurationHandler(request)
+            h = ConfigurationHandler()
+            h.init_from_request(request)
             with pytest.raises(Forbidden):
-                h.process()
+                h.post(request)
 
             assert m.call_args[0][3] == p.modify_settings
 
@@ -54,9 +57,10 @@ class TestConfigurationHandler(object):
         with mock.patch("wheelcms_axle.auth.has_access") as m:
             m.return_value = True
             request = create_request("POST", "/@/configuration", data={})
-            h = ConfigurationHandler(request)
+            h = ConfigurationHandler()
+            h.init_from_request(request)
 
-            assert h.process() is not None
+            assert h.post(request) is not None
 
             assert m.call_args[0][3] == p.modify_settings
 
@@ -69,8 +73,9 @@ class TestConfigurationHandler(object):
         with mock.patch("wheelcms_axle.registries."
                         "configuration.configuration_registry.get",
                         return_value=mklass):
-            h = ConfigurationHandler(request)
-            h.index(action="test")
+            h = ConfigurationHandler()
+            h.init_from_request(request)
+            h.get(request)
 
             assert m.test.call_args is not None
 
@@ -83,8 +88,9 @@ class TestConfigurationHandler(object):
         with mock.patch("wheelcms_axle.registries."
                         "configuration.configuration_registry.get",
                         return_value=mklass):
-            h = ConfigurationHandler(request)
-            h.index(action="test")
+            h = ConfigurationHandler()
+            h.init_from_request(request)
+            h.get(request)
 
             assert m.test.call_args is None
 
@@ -97,8 +103,9 @@ class TestConfigurationHandler(object):
         with mock.patch("wheelcms_axle.registries."
                         "configuration.configuration_registry.get",
                         return_value=mklass):
-            h = ConfigurationHandler(request)
-            h.process(action="test")
+            h = ConfigurationHandler()
+            h.init_from_request(request)
+            h.post(request)
 
             assert m.test.call_args is not None
 
@@ -111,7 +118,8 @@ class TestConfigurationHandler(object):
         with mock.patch("wheelcms_axle.registries."
                         "configuration.configuration_registry.get",
                         return_value=mklass):
-            h = ConfigurationHandler(request)
-            h.process(action="test")
+            h = ConfigurationHandler()
+            h.init_from_request(request)
+            h.process(request)
 
             assert m.test.call_args is None

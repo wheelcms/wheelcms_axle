@@ -142,12 +142,14 @@ class WheelView(View):
                getattr(m, 'contextified', False):
                 self.context[a] = m
 
-    def dispatch(self, request, *args, **kwargs):
+    def init_from_request(self, request):
         self.request = request
         self._user = request.user
         self.context = RequestContext(request)
         self.setup_context()
 
+    def dispatch(self, request, *args, **kwargs):
+        self.init_from_request(request)
         self.handle_oldstyle_messages(request)
 
         try:
