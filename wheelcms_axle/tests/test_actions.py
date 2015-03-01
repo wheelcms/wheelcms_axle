@@ -18,12 +18,12 @@ class TestAction(object):
     def test_handler_action_decorator_root(self, client):
         root = Node.root()
         Type1(node=root, title="Root").save()
-        #child = root.add("child")
-        #Type1(node=child, title="Child").save()
+
         request = superuser_request("/+hello")
-        handler = MainHandlerTestable(request=request, instance=root,
-                                      kw=dict(action="hello"))
-        result = handler.view()
+        view = MainHandlerTestable()
+
+        result = view.dispatch(request, nodepath="", action="hello")
+
         assert len(result) == 5
         result, request, handler, spoke, action = result
         assert result == "Hello"
@@ -37,10 +37,10 @@ class TestAction(object):
         Type1(node=root, title="Root").save()
         child = root.add("child")
         Type1(node=child, title="Child").save()
+
         request = superuser_request("/child/+hello")
-        handler = MainHandlerTestable(request=request, instance=child,
-                                      kw=dict(action="hello"))
-        result = handler.view()
+        view = MainHandlerTestable()
+        result = view.dispatch(request, nodepath="/child", action="hello")
         assert len(result) == 5
         result, request, handler, spoke, action = result
         assert result == "Hello"
