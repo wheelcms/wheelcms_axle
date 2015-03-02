@@ -135,6 +135,8 @@ class MainHandler(WheelView):
             context. """
         ## Do a bit of path normalization: Except for root, start with /,
         ## remove trailing /
+        ## Old 'coerce' used to locale.activate_content_language(None),
+        ## Is that necessary for anything?
         if nodepath in ("/", ""):
             nodepath = ""
         else:
@@ -153,7 +155,6 @@ class MainHandler(WheelView):
         self.is_post = request.method == "POST"
         self.toolbar = get_toolbar()
 
-        ## Why need this?
         # locale.activate_content_language(None)
 
         self.instance = self.resolve(nodepath)
