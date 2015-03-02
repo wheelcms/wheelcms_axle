@@ -385,10 +385,13 @@ class TestBreadcrumb(object):
         Type1(node=root, title="Root").save()
         child = root.add("child")
         Type1(node=child, title="Child").save()
-        request = superuser_request("/child/create")
+        request = superuser_request("/child/create", type=Type1.get_name())
 
-        handler = MainHandlerTestable(request=request, instance=child)
-        context = handler.create(type=Type1.get_name())['context']
+        handler = MainHandlerTestable()
+        res = handler.dispatch(request, nodepath=child.path, handlerpath="create")
+
+        context = res['context']
+
         assert 'breadcrumb' in context
         assert context['breadcrumb'] == [('Home', root.get_absolute_url()),
                                          ('Child', child.get_absolute_url()),
@@ -399,10 +402,12 @@ class TestBreadcrumb(object):
         Type1(node=root, title="Root").save()
         child = root.add("child")
         Type1(node=child, title="Child").save()
-        request = superuser_request("/child/create")
+        request = superuser_request("/child/edit", method="GET")
 
-        handler = MainHandlerTestable(request=request, instance=child)
-        context = handler.update()['context']
+        handler = MainHandlerTestable()
+        res = handler.dispatch(request, nodepath=child.path, handlerpath="edit")
+        context = res['context']
+
         assert 'breadcrumb' in context
         assert context['breadcrumb'] == [
                    ('Home', root.get_absolute_url()),
