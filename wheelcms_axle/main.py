@@ -154,7 +154,7 @@ class MainHandler(WheelView):
         self.toolbar = get_toolbar()
 
         ## Why need this?
-        locale.activate_content_language(None)
+        # locale.activate_content_language(None)
 
         self.instance = self.resolve(nodepath)
 

@@ -67,64 +67,69 @@ class TestMainHandler(object):
             assert h.instance is None
 
 
-    def test_create_get_root(self, client, root):
-        """ test create on root - get """
+    def test_update_get_root(self, client, root):
+        """ test update on root - get """
         Type1(node=root).save()
-        request = superuser_request("/", type=Type1.get_name())
-        handler = MainHandlerTestable(request=request, instance=root)
-        create = handler.create()
-        assert create['path'] == "wheelcms_axle/create.html"
-        assert 'form' in create['context']
+        request = superuser_request("/edit", type=Type1.get_name())
+        view = MainHandlerTestable()
+        res = view.dispatch(request, nodepath="", handlerpath="edit")
+        assert res['path'] == "wheelcms_axle/update.html"
+        assert 'form' in res['context']
 
     def test_update_root(self, client, root):
         """ test /edit """
         Type1(node=root).save()
         request = superuser_request("/edit", method="POST", type=Type1.get_name())
-        instance = MainHandlerTestable.coerce(dict(instance=""))
-        handler = MainHandlerTestable(request=request, instance=instance)
-        update = handler.update()
-        assert update['path'] == "wheelcms_axle/update.html"
-        assert 'form' in update['context']
+        view = MainHandlerTestable()
+        res = view.dispatch(request, nodepath="", handlerpath="edit")
+        assert res['path'] == "wheelcms_axle/update.html"
+        assert 'form' in res['context']
 
     def test_create_attach_get(self, client, root):
         """ get the form for attaching content """
         Type1(node=root).save()
-        request = superuser_request("/", type=Type1.get_name())
-        handler = MainHandlerTestable(request=request, instance=root)
-        create = handler.create(type=Type1.get_name(), attach=True)
-        assert create['path'] == "wheelcms_axle/create.html"
-        assert 'form' in create['context']
+        request = superuser_request("/", type=Type1.get_name(), attach=True)
+        view = MainHandlerTestable()
+        res = view.dispatch(request, nodepath="", handlerpath="create")
+
+        assert res['path'] == "wheelcms_axle/create.html"
+        assert 'form' in res['context']
 
     def test_create_attach_post(self, client, root):
         """ post the form for attaching content """
         request = superuser_request("/create", method="POST",
-                                      title="Test", language="en")
-        handler = MainHandler(request=request, post=True,
-                              instance=dict(instance=root))
-        pytest.raises(Redirect, handler.create, type=Type1.get_name(), attach=True)
+                                      title="Test", language="en",
+                                      type=Type1.get_name(), attach=True)
+        view = MainHandlerTestable()
 
-        # pytest.set_trace()
+        res = view.dispatch(request, nodepath="", handlerpath="create")
+        assert res.status_code == 302
+
         assert root.content().title == "Test"
 
     def test_attached_form(self, client, root):
         """ The form when attaching should not contain a slug field since it
             will be attached to an existing node """
         Type1(node=root).save()
-        request = superuser_request("/")
-        handler = MainHandlerTestable(request=request, instance=root)
-        create = handler.create(type=Type1.get_name(), attach=True)
+        request = superuser_request("/", type=Type1.get_name(), attach=True)
+        handler = MainHandlerTestable()
 
-        form = create['context']['form']
+        res = handler.dispatch(request, nodepath="", handlerpath="create")
+
+        form = res['context']['form']
         assert 'slug' not in form.fields
 
     def test_create_post(self, client, root):
         request = superuser_request("/create", method="POST",
                                       title="Test",
                                       slug="test",
-                                      language="en")
-        handler = MainHandler(request=request, post=True,
-                              instance=dict(instance=root))
-        pytest.raises(Redirect, handler.create, type=Type1.get_name())
+                                      language="en",
+                                      type=Type1.get_name())
+        handler = MainHandlerTestable()
+
+        res = handler.dispatch(request, nodepath="", handlerpath="create")
+        assert res.status_code == 302
+
 
         node = Node.get("/test")
         assert node.content().title == "Test"
@@ -135,8 +140,9 @@ class TestMainHandler(object):
                                       title="Test",
                                       slug="",
                                       language="en")
-        handler = MainHandler(request=request, post=True, instance=root)
-        pytest.raises(Redirect, handler.update)
+        handler = MainHandlerTestable()
+        res = handler.dispatch(request, nodepath="", handlerpath="edit")
+        assert res.status_code == 302
 
         assert root.content().title == "Test"
 
@@ -146,10 +152,10 @@ class TestMainHandler(object):
         Type1(node=root, title="Hello", language="en").save()
         request = superuser_request("/edit", method="GET",
                                     language="nl")
-        handler = MainHandler(request=request, post=False, instance=root)
-        handler.update()
+        handler = MainHandlerTestable()
+        res = handler.dispatch(request, nodepath="", handlerpath="edit")
 
-        assert 'slug' not in handler.context['form'].fields
+        assert 'slug' not in res['context']['form'].fields
 
     def test_create_translation_root_post(self, client, root):
         """ test case where root has content but current language
@@ -160,9 +166,10 @@ class TestMainHandler(object):
                                     language="nl")
         locale.activate_content_language('nl')
 
-        handler = MainHandler(request=request, post=True, instance=root)
-        pytest.raises(Redirect, handler.update)
+        handler = MainHandlerTestable()
+        res = handler.dispatch(request, nodepath="", handlerpath="edit")
 
+        assert res.status_code == 302
         assert root.content(language='nl')
         assert root.content(language='en')
         assert root.content(language='nl') != root.content(language='en')
