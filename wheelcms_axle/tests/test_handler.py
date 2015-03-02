@@ -225,11 +225,12 @@ class TestMainHandler(object):
         request = superuser_request("/create", method="POST",
                            title=u"Testing «ταБЬℓσ»: 1<2 & 4+1>3, now 20% off!",
                            slug="test",
-                           language="en")
-        handler = MainHandler(request=request, post=True,
-                              instance=dict(instance=root))
-        pytest.raises(Redirect, handler.create, type=Type1.get_name())
+                           language="en",
+                           type=Type1.get_name())
+        handler = MainHandlerTestable()
+        res = handler.dispatch(request, nodepath="", handlerpath="create")
 
+        assert res.status_code == 302
         node = Node.get("/test")
         assert node.content().title == u"Testing «ταБЬℓσ»: 1<2 & 4+1>3, now 20% off!"
 
@@ -240,9 +241,10 @@ class TestMainHandler(object):
                                       title="TTesting «ταБЬℓσ»: 1<2 & 4+1>3, now 20% off!",
                                       slug="",
                                       language="en")
-        handler = MainHandler(request=request, post=True, instance=root)
-        pytest.raises(Redirect, handler.update)
+        handler = MainHandlerTestable()
+        res = handler.dispatch(request, nodepath="", handlerpath="edit")
 
+        assert res.status_code == 302
         assert root.content().title == u"TTesting «ταБЬℓσ»: 1<2 & 4+1>3, now 20% off!"
 
     def test_change_slug_inuse(self, client, root):
@@ -252,10 +254,10 @@ class TestMainHandler(object):
                                     title="Other", slug="inuse",
                                     language="en")
 
-        handler = MainHandlerTestable(request=request, post=True, instance=other.node)
-        handler.update()
+        handler = MainHandlerTestable()
+        res = handler.dispatch(request, nodepath="/other", handlerpath="edit")
 
-        form = handler.context['form']
+        form = res['context']['form']
         assert not form.is_valid()
         assert 'slug' in form.errors
 
@@ -266,8 +268,10 @@ class TestMainHandler(object):
                                     title="Other", slug="inuse2",
                                     language="en")
 
-        handler = MainHandlerTestable(request=request, post=True, instance=other.node)
-        pytest.raises(Redirect, handler.update)
+        handler = MainHandlerTestable()
+        res = handler.dispatch(request, nodepath="/other", handlerpath="edit")
+
+        assert res.status_code == 302
 
         form = handler.context['form']
         assert form.is_valid()
@@ -279,9 +283,9 @@ class TestMainHandler(object):
 
         request = superuser_request("/list", method="GET")
 
-        handler = MainHandlerTestable(request=request, instance=root)
+        handler = MainHandlerTestable()
+        res = handler.dispatch(request, nodepath="", handlerpath="list")
 
-        res = handler.handle_list()
         path = res['path']
         context = res['context']
 
@@ -292,7 +296,9 @@ class TestMainHandler(object):
 
         assert children[0]['active'] == t
         assert children[1]['active'] is None
-        assert children[1]['node'] == u
+        # fails because children[1]['node'] is language-wrapped
+        # assert children[1]['node'] == u
+        assert children[1]['node'].path == u.path
 
 
 @pytest.mark.usefixtures("localtyperegistry")
@@ -358,16 +364,6 @@ class TestBreadcrumb(object):
         assert handler.breadcrumb() == [("Home", root.get_absolute_url()),
                                         ("Child", child.get_absolute_url()),
                                         ("Unattached node /child/child2", "")]
-
-    def test_parent_instance(self, client, root):
-        """ handler initialized with a parent but no instance. Should
-            mean edit mode, but for now assume custom breadcrumb context """
-        Type1(node=root, title="Root").save()
-        request = create_request("GET", "/")
-        handler = MainHandlerTestable(request=request, kw=dict(parent=root))
-
-        assert handler.breadcrumb() == []
-
 
     def test_subsub_operation(self, client, root):
         """ a child with content under the root """

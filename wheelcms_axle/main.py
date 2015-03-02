@@ -135,7 +135,8 @@ class MainHandler(WheelView):
             context. """
         ## Do a bit of path normalization: Except for root, start with /,
         ## remove trailing /
-        ## Old 'coerce' used to locale.activate_content_language(None),
+        ## Old 'coerce' used to
+        # locale.activate_content_language(None)
         ## Is that necessary for anything?
         if nodepath in ("/", ""):
             nodepath = ""
@@ -713,7 +714,8 @@ class MainHandler(WheelView):
         children = []
 
         for child in self.instance.children():
-            c = dict(node=child, active=None, translations=[], ipath=child.tree_path)
+            c = dict(node=child, active=None, translations=[],
+                     ipath=child.tree_path)
             for lang, langtitle in translate.languages():
                 langcontent = child.content(language=lang)
                 c["translations"].append((lang, langcontent,
