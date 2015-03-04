@@ -2,12 +2,13 @@
     test permissions in the main handler
 """
 
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group, User, AnonymousUser
 from twotest.util import create_request
-from two.ol.base import Forbidden
+from wheelcms_axle.base import Forbidden
 from wheelcms_axle.tests.models import Type1, Type1Type
 from wheelcms_axle.models import Node
 from wheelcms_axle.main import MainHandler
+from wheelcms_axle import access
 
 import pytest
 
@@ -35,8 +36,8 @@ class BasePermissionTest(object):
         return handler
 
     def provide_user(self):
-        """ provide the user to test against. None = anonymous """
-        return None
+        """ provide the user to test against """
+        return AnonymousUser()
 
     def check(self, method, **kw):
         """ assert the test based on hasaccess """
@@ -47,11 +48,10 @@ class BasePermissionTest(object):
 
     def test_hasaccess(self, client):
         """ only powerusers have access """
-        handler = self.setup_handler()
         if self.has_access:
-            assert handler.hasaccess()
+            assert access.has_access(self.provide_user())
         else:
-            assert not handler.hasaccess()
+            assert not access.has_access(self.provide_user())
 
     def test_create_get(self, client):
         """ only powerusers can get the createform """
@@ -66,12 +66,12 @@ class BasePermissionTest(object):
     def test_update_get(self, client):
         """ only powerusers can view the update form """
         handler = self.setup_handler(with_instance=True)
-        self.check(handler.update)
+        self.check(handler.edit)
 
     def test_update_post(self, client):
         """ only powerusers can post updates """
         handler = self.setup_handler(method="POST", with_instance=True)
-        self.check(handler.update)
+        self.check(handler.edit)
 
     def test_unpublished_view(self, client):
         """ unpublished content is only visible to power users """
