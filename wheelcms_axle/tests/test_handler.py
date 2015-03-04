@@ -673,10 +673,12 @@ class TestImageCreateUpdate(object):
                                       title="Test",
                                       slug="test",
                                       language="en",
-                                      storage=filedata)
-        handler = MainHandler(request=request, post=True,
-                              instance=dict(instance=root))
-        pytest.raises(Redirect, handler.create, type=TestImage.get_name())
+                                      storage=filedata,
+                                      type=TestImage.get_name())
+        handler = MainHandlerTestable()
+        res = handler.dispatch(request, nodepath="", handlerpath="create")
+
+        assert res.status_code == 302
 
         node = Node.get("/test")
         filedata.seek(0)
@@ -690,8 +692,10 @@ class TestImageCreateUpdate(object):
                                       slug="",
                                       language="en",
                                       storage=filedata2)
-        handler = MainHandler(request=request, post=True, instance=node)
-        pytest.raises(Redirect, handler.update)
+        handler = MainHandlerTestable()
+        res = handler.dispatch(request, nodepath="/test", handlerpath="edit")
+
+        assert res.status_code == 302
 
         node = Node.get("/test")
         filedata2.seek(0)
