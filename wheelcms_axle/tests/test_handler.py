@@ -1,21 +1,15 @@
 # *-* encoding: utf-8
-import mock
-
+import pytest
 from django.utils import translation
 from django.http import Http404
 
-from wheelcms_axle.main import MainHandler
+from wheelcms_axle.main import MainHandler, handler
 from wheelcms_axle.models import Node
 from wheelcms_axle.tests.models import Type1, Type1Type
 from wheelcms_axle import locale
 
-
-from two.ol.base import NotFound, Redirect, handler
-import pytest
-
 from twotest.util import create_request
 from django.contrib.auth.models import User
-from django.template import RequestContext
 
 from .fixtures import root
 
