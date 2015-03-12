@@ -6,8 +6,6 @@ from wheelcms_axle.models import Node
 from wheelcms_axle.tests.models import Type1, Type1Type
 from twotest.util import create_request
 
-from two.ol.base import Redirect
-
 from .fixtures import superuser
 
 
@@ -26,13 +24,13 @@ class TestOwnership(object):
         request = create_request("POST", "/create",
                                  data=dict(title="Test",
                                            slug="test",
-                                           language="en"))
+                                           language="en",
+                                           type=Type1.get_name()))
         request.user = superuser
 
-        root = Node.root()
-        handler = MainHandler(request=request, post=True,
-                              instance=dict(parent=root))
-        pytest.raises(Redirect, handler.create, type=Type1.get_name())
+        handler = MainHandler()
+        res = handler.dispatch(request, nodepath="", handlerpath="create")
+        assert res.status_code == 302
 
         node = Node.get("/test")
         assert node.content().title == "Test"
