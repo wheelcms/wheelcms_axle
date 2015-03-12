@@ -54,8 +54,8 @@ def resolve_path(p):
         if not p.endswith('/'):
             p = p + '/'
         m = resolve(p)
-        if 'instance' in m.kwargs:
-            resolved = m.kwargs['instance'].rstrip('/')
+        if 'nodepath' in m.kwargs:
+            resolved = m.kwargs['nodepath'].rstrip('/')
             if resolved:
                 return '/' + resolved
             return '' # root
@@ -1139,7 +1139,6 @@ class MainHandler(WheelView):
 
         crumbtpl = self.render_template("wheelcms_axle/popup_crumbs.html",
                                         crumbs=crumbs)
-        print "SEL ", path,  start_selectable
         return dict(panels=panels, path=start.get_absolute_url(),
                     crumbs=crumbtpl, upload=upload, selectable=start_selectable)
 

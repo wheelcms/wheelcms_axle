@@ -27,10 +27,6 @@ urlpatterns += patterns('',
     ## Special url for configuration; issue #553
     url("@/configuration", ConfigurationHandler.as_view(), name="wheel_config"),
 
-    url("^(?P<handlerpath>{0})?$".format(main_actions),
-        MainHandler.as_view(), name="wheel_main", kwargs={'nodepath':""}),
-    # url("^$", MainHandler.as_view(), name="wheel_main", kwargs={'nodepath':""}),
-    url("^\+(?P<action>.+)$", MainHandler.as_view(), name="wheel_main"),
 
     ## nodepath with optional action. Should have higher precedence,
     ## else next entry will match as nodepath
@@ -39,5 +35,9 @@ urlpatterns += patterns('',
     ## nodepath with optional handler
     url("^(?P<nodepath>.*?)/((?P<handlerpath>{0}))?$".format(main_actions),
         MainHandler.as_view(), name="wheel_main"),
+    url("^(?P<handlerpath>{0})?$".format(main_actions),
+        MainHandler.as_view(), name="wheel_main", kwargs={'nodepath':""}),
+    # url("^$", MainHandler.as_view(), name="wheel_main", kwargs={'nodepath':""}),
+    url("^\+(?P<action>.+)$", MainHandler.as_view(), name="wheel_main", kwargs={'nodepath':""}),
 
 )

@@ -22,7 +22,8 @@ class TestInRoot(Base):
     urls = "wheelcms_axle.tests.urls_root"
 
     def test_rootnode(self, client):
-        assert Node.root().get_absolute_url() == self.base
+        n = Node.root()
+        assert n.get_absolute_url() == self.base
 
     def test_child_in_root(self, client):
         c = Node.root().add('foo')

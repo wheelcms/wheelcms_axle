@@ -3,6 +3,8 @@
     link/image selection/upload browser. It does a lot of stuff and needs
     some tests.
 """
+import json
+
 from ..models import Node
 
 from .models import Type1, Type1Type
@@ -33,7 +35,9 @@ class TestPanel(object):
         """
         root = Node.root()
         request = superuser_request("/", method="GET")
-        handler = MainHandlerTestable(request=request, instance=root)
+        handler = MainHandlerTestable()
+        handler.init_from_request(request)
+        handler.instance = Node.root()
         panels = handler.panels(path="", original="", mode="link")
         assert len(panels['panels']) == 2  ## bookmarks + 1 panel
         assert panels['path'] == root.get_absolute_url()
@@ -60,18 +64,23 @@ class TestPanel(object):
         """ panel in link mode, anything is selectable """
         root, t, i, f = self.setup_root_children()
 
-        request = superuser_request("/", method="GET")
-        handler = MainHandlerTestable(request=request, instance=Node.root())
+        request = superuser_request("/", method="GET", path="", original="", mode="link")
+        handler = MainHandlerTestable()
+        handler.init_from_request(request)
+        handler.instance = Node.root()
         panels = handler.panels(path="", original="", mode="link")
+
         assert len(panels['panels']) == 2
         assert panels['path'] == root.get_absolute_url()
 
         root_panel = panels['panels'][1]
+
         assert root_panel['context']['selectable']
         assert root_panel['context']['instance']['addables']
         children = root_panel['context']['instance']['children']
         assert len(children) == 3
-        assert set(x['path'] for x in children) == set((t.get_absolute_url(), i.get_absolute_url(), f.get_absolute_url()))
+        assert set(x['path'] for x in children) == \
+               set((t.get_absolute_url(), i.get_absolute_url(), f.get_absolute_url()))
         for c in children:
             assert c['selectable']
             assert not c['selected']
@@ -81,11 +90,13 @@ class TestPanel(object):
         root, t, i, f = self.setup_root_children()
 
         request = superuser_request("/", method="GET")
-        handler = MainHandlerTestable(request=request, instance=Node.root())
+        handler = MainHandlerTestable()
+        handler.init_from_request(request)
+        handler.instance = Node.root()
         panels = handler.panels(path="", original="", mode="image")
         assert len(panels['panels']) == 2
         assert panels['path'] == Node.root().get_absolute_url()
-        
+
         root_panel = panels['panels'][1]
         assert root_panel['context']['selectable']
         assert root_panel['context']['instance']['addables']
@@ -106,12 +117,14 @@ class TestPanel(object):
         root, _, image1, _ = self.setup_root_children()
 
         request = superuser_request(image1.get_absolute_url(), method="GET")
-        handler = MainHandlerTestable(request=request, instance=image1)
-        
+        handler = MainHandlerTestable()
+        handler.init_from_request(request)
+        handler.instance = image1
+
         panels = handler.panels(path=image1.get_absolute_url(), original="", mode="image")
         assert len(panels['panels']) == 3
         assert panels['path'] == image1.get_absolute_url()
-        
+
         crumbs = panels['crumbs']['context']['crumbs']
         assert len(crumbs) == 2
         assert crumbs[0]['path'] == root.get_absolute_url()

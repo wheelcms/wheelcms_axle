@@ -32,10 +32,10 @@ class MainHandlerTestable(MainHandler):
         pass
 
 
-def superuser_request(path, method="GET", **data):
+def superuser_request(_path, method="GET", **data):
     superuser, _ = User.objects.get_or_create(username="superuser",
                                                    is_superuser=True)
-    request = create_request(method, path, data=data)
+    request = create_request(method, _path, data=data)
     request.user = superuser
     return request
 
