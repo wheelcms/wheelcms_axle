@@ -3,7 +3,6 @@
 """
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from two.ol.util import classproperty
 
 from wheelcms_axle.tests.models import TestFile, TestImage
 from wheelcms_axle.tests.models import OtherTestFile, OtherTestImage
@@ -12,11 +11,12 @@ from wheelcms_axle.tests.models import OtherTestFileType, OtherTestImageType
 from wheelcms_axle.tests.models import Type1Type
 from wheelcms_axle.models import FileContent, ImageContent, ContentClass
 
-
 from wheelcms_axle.node import Node
 from wheelcms_axle.content import type_registry
 from wheelcms_axle.templates import template_registry
 from wheelcms_axle.spoke import Spoke
+
+from wheelcms_axle.utils import classproperty
 
 from .utils import MockedQueryDict, DummyContent
 
