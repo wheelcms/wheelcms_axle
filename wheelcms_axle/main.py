@@ -121,6 +121,7 @@ def handler(f):
 
 class MainHandler(WheelView):
     instance = None
+    toolbar = None
 
     """
         Huidige situatie:
@@ -153,7 +154,6 @@ class MainHandler(WheelView):
             path - remaining, specifies operation to be invoked.
                    To be deprecated in favor of +actins
         """
-        self.is_post = request.method == "POST"
         self.toolbar = get_toolbar()
 
         # locale.activate_content_language(None)

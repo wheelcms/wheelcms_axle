@@ -52,6 +52,7 @@ class WheelView(View):
     def __init__(self, *args, **kwargs):
         super(WheelView, self).__init__(*args, **kwargs)
         self.context = {}
+        self.is_post = False
 
     ## special results
     @classmethod
@@ -144,6 +145,7 @@ class WheelView(View):
 
     def init_from_request(self, request):
         self.request = request
+        self.is_post = request.method == "POST"
         self._user = request.user
         self.context = RequestContext(request)
         self.setup_context()

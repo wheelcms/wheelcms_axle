@@ -24,15 +24,17 @@ class BasePermissionTest(object):
     def setup_handler(self, user=None, method="GET", with_instance=False,
                       state="private"):
         """ setup the mainhandler """
-        ins = None
+        root = Node.root()
         if with_instance:
-            cont = Type1Type.create(node=Node.root(), state=state).save()
+            cont = Type1Type.create(node=root, state=state).save()
             cont.assign_perms()
-            ins =  cont.instance.node
-        request = create_request(method, "/")
+        request = create_request(method, "/", data={'type':Type1.get_name()})
         if self.provide_user():
             request.user = self.provide_user()
-        handler = MainHandler(request=request, instance=ins)
+        handler = MainHandler()
+        handler.init_from_request(request)
+        handler.instance = root
+
         return handler
 
     def provide_user(self):
@@ -56,12 +58,12 @@ class BasePermissionTest(object):
     def test_create_get(self, client):
         """ only powerusers can get the createform """
         handler = self.setup_handler()
-        self.check(handler.create, type=Type1.get_name())
+        self.check(handler.create)
 
     def test_create_post(self, client):
         """ only powerusers can post the createform """
         handler = self.setup_handler(method="POST")
-        self.check(handler.create, type=Type1.get_name())
+        self.check(handler.create)
 
     def test_update_get(self, client):
         """ only powerusers can view the update form """
