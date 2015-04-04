@@ -24,7 +24,6 @@ if __name__ == '__main__':
             'drole',
             'granules',
             'taggit',
-            'two.ol',
             'two.bootstrap',
             'twotest',
             'wheelcms_axle.tests',
