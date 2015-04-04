@@ -102,24 +102,12 @@ from django.dispatch import receiver
 from userena.signals import signup_complete
 from django.contrib.auth.signals import user_logged_in, user_logged_out
 
-import stracks
-## django 1.5
-## from django.contrib.auth.signals import user_login_failed
-## 
-## @receiver(user_login_failed)
-## def log_failure(sender, credentials, **kwargs):
-##     """ Log the user logging out """
-##     stracksclient.warning("Authentication failed", data=credentials)
-##
-
 from django.db.utils import DatabaseError
 import logging
 
 @receiver(post_save, sender=User)
 def log_create(sender, instance, created, **kwargs):
     """ Log the creation of a new user """
-    if created:
-        stracks.user(instance).log("? has been created")
     ## make sure it has a wheel profile
     try:
         WheelProfile.objects.get_or_create(user=instance)
@@ -135,22 +123,6 @@ def create_profiles(app, **kwargs):
     if app == "wheelcms_axle":
         for u in User.objects.all():
             WheelProfile.objects.get_or_create(user=u)
-
-@receiver(signup_complete, dispatch_uid='stracks.log_signup')
-def log_signup(sender, signal, user, **kwargs):
-    """ Log the creation of a new user """
-    stracks.user(user).log("? has completed (userena) signup")
-
-
-@receiver(user_logged_in, dispatch_uid='stracks.log_signin')
-def log_login(sender, request, user, **kwargs):
-    """ Log the user logging in """
-    stracks.user(user).log("? has logged in", action=stracks.login())
-
-@receiver(user_logged_out, dispatch_uid='stracks.log_signout')
-def log_logout(sender, request, user, **kwargs):
-    """ Log the user logging out """
-    stracks.user(user).log("? has logged out", action=stracks.logout())
 
 @receiver(post_save, dispatch_uid="wheelcms_axle.spoke.assign_perms")
 def assign_perms(sender, instance, created, **kwargs):

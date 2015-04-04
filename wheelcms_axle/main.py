@@ -29,9 +29,6 @@ from .toolbar import get_toolbar, Toolbar
 from .base import WheelView, context
 from .utils import applyrequest, json
 
-import stracks
-
-
 from wheelcms_axle import context_processors
 
 def resolve_path(p):
@@ -391,11 +388,6 @@ class MainHandler(WheelView):
             if ctx:
                 self.context.update(ctx(self, self.request, self.instance))
 
-            stracks.content(spoke.instance.id,
-                            name=spoke.instance.title
-                           ).log("? (%s) viewed by ?" % spoke.title,
-                                 stracks.user(self.user()),
-                                 action=stracks.view())
             return self.template(spoke.view_template())
         elif self.instance.primary_content():
             """ attached but untranslated """
@@ -487,10 +479,6 @@ class MainHandler(WheelView):
 
                     ## force reindex
                     typeinfo.model.objects.get(pk=p.pk).save()
-
-                    ent = stracks.content(p.id, name=p.title)
-                    ent.log("? (%s) created by ?" % typeinfo.title,
-                            stracks.user(self.user()), action=stracks.create())
 
                     return self.redirect(target.get_absolute_url(),
                                          success='"%s" created' % p.title)
@@ -602,9 +590,6 @@ class MainHandler(WheelView):
                 if slug and slug != self.instance.slug(language=content_language):
                     self.instance.rename(slug, language=content_language)
 
-                e = stracks.content(content.id, name=content.title)
-                e.log("? (%s) updated by ?" % content.spoke().title,
-                      stracks.user(self.user()), action=stracks.edit())
                 return self.redirect(instance.get_absolute_url(),
                                      success="Updated")
         else:
@@ -850,24 +835,11 @@ class MainHandler(WheelView):
             n = Node.objects.get(tree_path=p)
             ## XXX recursively delete, or not, or detach...
             if n:
-                content = n.content()
-                if content:
-                    stracks.content(content.id,
-                                name=content.title
-                               ).log("? (%s) removed by ?" %
-                                     content.spoke().title,
-                                     stracks.user(self.user()),
-                                     action=stracks.delete())
-                else:
-                    stracks.user(self.user()).log("Unattached node removed: "
-                                                  + n.get_absolute_url(),
-                                                  action=stracks.delete());
-
                 try:
                     n.parent().remove(n.slug())
                 except NodeNotFound:
                     ## should not happen but if it does, bag it and tag it
-                    stracks.content(content.id, name=content.title).exception()
+                    pass
 
                 n.delete()
                 count += 1
