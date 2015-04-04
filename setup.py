@@ -25,7 +25,9 @@ setup(name='wheelcms_axle',
           'mock',
           'wrapt',
           'reg==0.8',
-          'django_drole'
+          'django_drole',
+          'django-haystack==2.1.0',
+          'django-userena==1.3.0'
       ],
       entry_points={
       },
