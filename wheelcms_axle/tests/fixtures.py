@@ -27,9 +27,9 @@ def toolbar_registry():
 def localtyperegistry(request):
     registry = TypeRegistry()
     type_registry.set(registry)
-    if hasattr(request.cls, 'type'):
+    if hasattr(request.cls, 'type') and request.cls.type:
         registry.register(request.cls.type)
-    if hasattr(request.cls, 'other'):
+    if hasattr(request.cls, 'other') and request.cls.other:
         registry.register(request.cls.other)
     for type in getattr(request.cls, 'types', []):
         registry.register(type)
