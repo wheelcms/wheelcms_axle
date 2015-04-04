@@ -9,4 +9,3 @@ git+git://github.com/iivvoo/django_granules
 git+git://github.com/iivvoo/django_drole
 coveralls
 wrapt
-git+git://github.com/iivvoo/reg
