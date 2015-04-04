@@ -2,8 +2,6 @@ import mimetypes
 import os
 import datetime
 
-from two.ol.util import classproperty
-
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.db import models, IntegrityError
@@ -15,6 +13,7 @@ from .registry import Registry
 
 from .node import Node
 from .signals import state_changed
+from .utils import classproperty
 
 class ContentException(Exception):
     pass

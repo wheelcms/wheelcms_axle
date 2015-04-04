@@ -24,8 +24,7 @@ from .context import ContextWrappable
 from .impexp import WheelSerializer
 from .actions import action, tab
 
-from two.ol.util import classproperty
-from two.ol.base import json
+from .utils import classproperty, json
 
 from warnings import warn
 
