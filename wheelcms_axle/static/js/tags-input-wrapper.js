@@ -36,7 +36,7 @@ mod.directive('inputwrap', function($rootScope, $http) {
         template: '<tags-input ng-model="tags">' +
         '<auto-complete source="loadTags($query)"></auto-complete>' +
         '</tags-input>' +
-        '<input type="hidden" name="tags" value="<[flat_tags]>">'
+        '<input type="hidden" name="tags" value="{{flat_tags}}">'
     };
 });
 
