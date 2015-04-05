@@ -151,6 +151,7 @@ class MainHandler(WheelView):
             path - remaining, specifies operation to be invoked.
                    To be deprecated in favor of +actins
         """
+
         self.toolbar = get_toolbar()
 
         # locale.activate_content_language(None)
@@ -203,6 +204,9 @@ class MainHandler(WheelView):
                     return self.notfound()
                 ## Should the (decorator for) the action handler do permission checks?
                 required_permission = getattr(action_handler, 'permission', perm)
+                if required_permission is None:
+                    # default to spoke permission
+                    required_permission = perm
                 if not auth.has_access(self.request, spoke, spoke, required_permission):
                     return self.forbidden()
 
